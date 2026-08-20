@@ -1,0 +1,24 @@
+{
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "smartroad-system-3b23e",
+          "appId": "1:70160027856:android:6cebd2a1b53577c42bced5",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "smartroad-system-3b23e",
+          "configurations": {
+            "android": "1:70160027856:android:6cebd2a1b53577c42bced5"
+          }
+        }
+      }
+    }
+  }
+}

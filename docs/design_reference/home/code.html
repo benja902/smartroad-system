@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>URBES Dashboard - Inicio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#402500",
+                        "primary-fixed": "#d7e2ff",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#b7c7eb",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#6bfe9c",
+                        "secondary-fixed": "#6bfe9c",
+                        "on-secondary-fixed-variant": "#005228",
+                        "secondary": "#006d37",
+                        "surface-container-high": "#eae7ea",
+                        "primary-fixed-dim": "#b7c7eb",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb961",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#2b1700",
+                        "surface-bright": "#fbf8fb",
+                        "surface-dim": "#dbd9dc",
+                        "surface-container-low": "#f5f3f6",
+                        "background": "#fbf8fb",
+                        "surface": "#fbf8fb",
+                        "on-tertiary-fixed-variant": "#663e00",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f2f0f3",
+                        "surface-container-highest": "#e4e2e5",
+                        "on-error": "#ffffff",
+                        "on-background": "#1b1b1e",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#00210c",
+                        "surface-tint": "#4f5e7e",
+                        "on-primary-container": "#8393b5",
+                        "outline": "#75777e",
+                        "on-surface": "#1b1b1e",
+                        "primary": "#041632",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#303033",
+                        "on-tertiary-container": "#cd8100",
+                        "primary-container": "#1b2b48",
+                        "surface-container": "#efedf0",
+                        "outline-variant": "#c5c6ce",
+                        "secondary-fixed-dim": "#4ae183",
+                        "on-primary-fixed-variant": "#374765",
+                        "on-secondary-container": "#00743a",
+                        "surface-variant": "#e4e2e5",
+                        "tertiary-fixed": "#ffddb9",
+                        "on-surface-variant": "#44474d",
+                        "tertiary": "#241300",
+                        "on-primary-fixed": "#091b37"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "edge-margin": "20px",
+                        "md": "24px",
+                        "xl": "48px",
+                        "xs": "8px",
+                        "lg": "32px",
+                        "gutter": "12px",
+                        "base": "4px",
+                        "sm": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "label-sm": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "display-lg-mobile": ["Manrope"],
+                        "headline-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "display-lg-mobile": ["26px", { "lineHeight": "32px", "fontWeight": "800" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .ambient-shadow { box-shadow: 0px 4px 20px rgba(27, 43, 72, 0.08); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-24 antialiased">
+<header class="bg-surface dark:bg-surface flex justify-between items-center w-full px-edge-margin py-base max-w-[600px] mx-auto sticky top-0 z-40">
+<button class="text-on-surface-variant hover:opacity-80 transition-opacity flex items-center justify-center w-10 h-10 rounded-full">
+<span class="material-symbols-outlined text-[24px]">security</span>
+</button>
+<h1 class="text-headline-md font-headline-md font-extrabold tracking-tight text-primary dark:text-inverse-primary">
+                URBES
+            </h1>
+<button class="text-on-surface-variant hover:opacity-80 transition-opacity flex items-center justify-center w-10 h-10 rounded-full relative">
+<span class="material-symbols-outlined text-[24px]">sensors</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full"></span>
+</button>
+</header>
+<main class="px-edge-margin max-w-[600px] mx-auto flex flex-col gap-md pt-sm">
+<!-- Welcome Header -->
+<section class="flex justify-between items-center">
+<div>
+<h2 class="text-display-lg-mobile font-display-lg-mobile text-primary">Hola, Gean</h2>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Tu sistema URBES está funcionando correctamente</p>
+</div>
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container shrink-0">
+<span class="material-symbols-outlined text-2xl">person</span>
+</div>
+</section>
+<!-- System Status Card -->
+<section class="bg-surface-container-lowest rounded-2xl ambient-shadow p-md border border-surface-variant/50 relative overflow-hidden flex items-center justify-between">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+<div class="flex items-center space-x-sm relative z-10">
+<div class="w-12 h-12 rounded-full bg-secondary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<div>
+<h2 class="text-body-lg font-body-lg text-primary font-bold">URBES operativo</h2>
+<p class="text-body-md font-body-md text-on-surface-variant">Monitoreo activo</p>
+</div>
+</div>
+<div class="flex space-x-1 relative z-10">
+<div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+</div>
+</section>
+<!-- 4 Grid Indicators -->
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-surface-container-lowest rounded-xl p-3 ambient-shadow border border-surface-variant/50 flex items-center space-x-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">router</span>
+<span class="text-label-sm font-label-sm text-primary">Dispositivo conectado</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-3 ambient-shadow border border-surface-variant/50 flex items-center space-x-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">signal_cellular_alt</span>
+<span class="text-label-sm font-label-sm text-primary">4G conectado</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-3 ambient-shadow border border-surface-variant/50 flex items-center space-x-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">satellite_alt</span>
+<span class="text-label-sm font-label-sm text-primary">GNSS disponible</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-3 ambient-shadow border border-surface-variant/50 flex items-center space-x-2">
+<span class="material-symbols-outlined text-primary text-[20px]">update</span>
+<span class="text-label-sm font-label-sm text-primary">Última com: Hace 2 min</span>
+</div>
+</div>
+<!-- Vehicle Card -->
+<section class="bg-surface-container-lowest rounded-2xl ambient-shadow p-md border border-surface-variant/50 space-y-4">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[10px] font-semibold text-outline uppercase tracking-wider mb-1">Vehículo principal</p>
+<h3 class="text-headline-md font-headline-md text-primary font-bold">Toyota Hilux • Placa: ABC-123</h3>
+</div>
+<div class="bg-surface-container rounded-lg w-10 h-10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+</div>
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-secondary/10 text-secondary text-[10px] font-bold uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary mr-1.5"></span> DISPOSITIVO URBES CONECTADO
+</span>
+</section>
+<!-- Map Card -->
+<section class="bg-surface-container-lowest rounded-2xl ambient-shadow overflow-hidden border border-surface-variant/50">
+<div class="p-md pb-xs flex justify-between items-center bg-white relative z-10">
+<div>
+<p class="text-[10px] font-semibold text-outline uppercase tracking-wider mb-1">Última ubicación</p>
+<h3 class="text-body-lg font-body-lg text-primary font-bold">Huánuco, Perú</h3>
+</div>
+<button class="text-primary text-label-sm font-label-sm flex items-center hover:underline">
+      Ver mapa <span class="material-symbols-outlined text-[16px] ml-1">chevron_right</span>
+</button>
+</div>
+<div class="relative w-full h-48 bg-surface-container-high" data-alt="A high-quality, modern digital map interface centered on a generic urban grid layout in Huanuco, Peru. The map style is minimal, using light grey and white tones with subtle roads, avoiding clutter." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDQiFzQsNokstZdQCMgd_BmTSlbsk3l6Yz-OY0hK3LdHxwzn9Ra0A9L7f9zKXO5T4HHWzfN-_i8R7Lug24rQU3H80-2GRCHHJ0E2VdfopR9OU2seHW44d-wBK31vk7_M5DXpqrEL1vwUdk38hgXW0LxWX0WMrH_wW2o12CRHI2d2jWekwOQdV2HbZpjKZO2WU_Q6X1O1HHLQPn502OLqp6DfGBo6YCoLsuBzGXgeCer6DXI24iVjcyF'); background-size: cover; background-position: center;">
+<div class="absolute bottom-sm right-sm bg-surface-container-lowest rounded-full p-2 shadow-md">
+<span class="material-symbols-outlined text-primary text-[20px]">my_location</span>
+</div>
+<!-- Map Pin -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+<div class="w-6 h-6 bg-primary rounded-full border-2 border-white shadow-md flex items-center justify-center">
+<div class="w-2 h-2 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Access -->
+<section class="grid grid-cols-3 gap-sm">
+<button class="bg-surface-container-lowest rounded-xl p-sm ambient-shadow border border-surface-variant/30 flex flex-col items-center text-center space-y-2 hover:bg-surface-container-low transition-colors">
+<div class="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">group</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-primary font-bold leading-tight">Contactos de emergencia</p>
+<p class="text-[10px] text-on-surface-variant mt-0.5">Gestionar</p>
+</div>
+</button>
+<button class="bg-surface-container-lowest rounded-xl p-sm ambient-shadow border border-surface-variant/30 flex flex-col items-center text-center space-y-2 hover:bg-surface-container-low transition-colors">
+<div class="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">history</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-primary font-bold leading-tight">Historial</p>
+<p class="text-[10px] text-on-surface-variant mt-0.5">Ver viajes</p>
+</div>
+</button>
+<button class="bg-surface-container-lowest rounded-xl p-sm ambient-shadow border border-surface-variant/30 flex flex-col items-center text-center space-y-2 hover:bg-surface-container-low transition-colors">
+<div class="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-primary font-bold leading-tight">Vehículo</p>
+<p class="text-[10px] text-on-surface-variant mt-0.5">Detalles</p>
+</div>
+</button>
+</section>
+<!-- Recent Alerts -->
+<section class="space-y-sm mt-2 mb-lg">
+<div class="flex justify-between items-end px-1">
+<h3 class="text-headline-md font-headline-md text-primary px-xs">Alertas recientes</h3>
+</div>
+<div class="space-y-gutter">
+<div class="bg-surface-container-lowest rounded-xl p-sm ambient-shadow border border-surface-variant/50 flex items-center justify-between">
+<div class="flex items-center space-x-sm">
+<div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<p class="text-body-md font-body-md font-semibold text-primary">Sin incidentes recientes</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Todo en orden</p>
+</div>
+</div>
+</div>
+<div class="bg-transparent rounded-xl p-sm flex items-center justify-between opacity-60">
+<div class="flex items-center space-x-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">battery_alert</span>
+</div>
+<div>
+<p class="text-body-md font-body-md font-semibold text-primary">Batería baja detectada</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Revisado</p>
+</div>
+</div>
+<span class="text-label-sm font-label-sm text-outline">Hace 3 días</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Nav -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-edge-margin pt-sm pb-md max-w-[600px] left-1/2 -translate-x-1/2 bg-surface-container-lowest dark:bg-surface-container-high shadow-[0px_-4px_20px_rgba(27,43,72,0.08)] rounded-t-xl pb-[env(safe-area-inset-bottom,24px)]">
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim font-semibold scale-110 transition-transform w-16 group">
+<div class="w-10 h-8 rounded-full bg-primary-fixed/50 flex items-center justify-center mb-1">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+</div>
+<span class="text-label-sm font-label-sm text-[10px]">Inicio</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-70 hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 w-16 rounded-lg py-1">
+<span class="material-symbols-outlined mb-1">notifications</span>
+<span class="text-[10px] font-semibold">Alertas</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-70 hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 w-16 rounded-lg py-1">
+<span class="material-symbols-outlined mb-1">directions_car</span>
+<span class="text-[10px] font-semibold">Vehículo</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-70 hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 w-16 rounded-lg py-1">
+<span class="material-symbols-outlined mb-1">history</span>
+<span class="text-[10px] font-semibold">Historial</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-70 hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 w-16 rounded-lg py-1">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="text-[10px] font-semibold">Perfil</span>
+</button>
+</nav>
+</body></html>

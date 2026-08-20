@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>URBES - Emergencia Activa</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "surface-container-lowest": "#ffffff",
+                "primary-container": "#1b2b48",
+                "on-secondary-fixed-variant": "#005228",
+                "on-surface": "#1b1b1e",
+                "secondary-fixed-dim": "#4ae183",
+                "inverse-surface": "#303033",
+                "tertiary-fixed-dim": "#ffb961",
+                "on-secondary": "#ffffff",
+                "on-primary-container": "#8393b5",
+                "on-primary": "#ffffff",
+                "surface-tint": "#4f5e7e",
+                "surface-container-highest": "#e4e2e5",
+                "outline": "#75777e",
+                "surface-container-low": "#f5f3f6",
+                "on-background": "#1b1b1e",
+                "secondary-container": "#6bfe9c",
+                "inverse-primary": "#b7c7eb",
+                "on-tertiary-fixed": "#2b1700",
+                "on-tertiary": "#ffffff",
+                "primary": "#041632",
+                "background": "#fbf8fb",
+                "on-error": "#ffffff",
+                "tertiary": "#241300",
+                "surface-container-high": "#eae7ea",
+                "on-tertiary-fixed-variant": "#663e00",
+                "primary-fixed-dim": "#b7c7eb",
+                "primary-fixed": "#d7e2ff",
+                "surface-dim": "#dbd9dc",
+                "surface-variant": "#e4e2e5",
+                "on-primary-fixed-variant": "#374765",
+                "surface": "#fbf8fb",
+                "on-secondary-container": "#00743a",
+                "surface-bright": "#fbf8fb",
+                "tertiary-container": "#402500",
+                "on-surface-variant": "#44474d",
+                "on-error-container": "#93000a",
+                "tertiary-fixed": "#ffddb9",
+                "inverse-on-surface": "#f2f0f3",
+                "error-container": "#ffdad6",
+                "secondary-fixed": "#6bfe9c",
+                "on-primary-fixed": "#091b37",
+                "secondary": "#006d37",
+                "on-secondary-fixed": "#00210c",
+                "on-tertiary-container": "#cd8100",
+                "surface-container": "#efedf0",
+                "outline-variant": "#c5c6ce",
+                "error": "#ba1a1a"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "edge-margin": "20px",
+                "gutter": "12px",
+                "lg": "32px",
+                "xl": "48px",
+                "base": "4px",
+                "xs": "8px",
+                "md": "24px",
+                "sm": "16px"
+        },
+        "fontFamily": {
+                "body-lg": [
+                        "Manrope"
+                ],
+                "display-lg-mobile": [
+                        "Manrope"
+                ],
+                "display-lg": [
+                        "Manrope"
+                ],
+                "headline-md": [
+                        "Manrope"
+                ],
+                "label-sm": [
+                        "Manrope"
+                ],
+                "body-md": [
+                        "Manrope"
+                ]
+        },
+        "fontSize": {
+                "body-lg": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "display-lg-mobile": [
+                        "26px",
+                        {
+                                "lineHeight": "32px",
+                                "fontWeight": "800"
+                        }
+                ],
+                "display-lg": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "800"
+                        }
+                ],
+                "headline-md": [
+                        "20px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "700"
+                        }
+                ],
+                "label-sm": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Pulse Animation for Critical Alert */
+        @keyframes pulse-border {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(186, 26, 26, 0.4); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(186, 26, 26, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(186, 26, 26, 0); }
+        }
+        
+        .pulse-critical {
+            animation: pulse-border 2s infinite;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col font-body-md antialiased overflow-x-hidden">
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-[600px] mx-auto px-edge-margin py-xl flex flex-col items-center relative z-10 pb-32">
+<!-- Header Section -->
+<div class="flex flex-col items-center text-center mt-lg w-full mb-xl">
+<div class="w-24 h-24 bg-error-container text-error rounded-full flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-[48px]">car_crash</span>
+</div>
+<h1 class="text-on-surface text-display-lg-mobile font-display-lg-mobile mb-base uppercase">Accidente severo detectado</h1>
+<div class="flex flex-col items-center gap-xs">
+<div class="flex items-center justify-center gap-xs">
+<h2 class="font-label-sm text-label-sm text-error uppercase">ALERTA DE ACCIDENTE</h2>
+<span class="bg-error text-on-error px-2 py-0.5 rounded font-bold text-label-sm">NIVEL 3</span>
+</div>
+<p class="text-on-surface-variant text-body-md font-body-md max-w-[280px]">URBES activó automáticamente el protocolo de emergencia.</p>
+</div>
+</div>
+<!-- Active Status Banner -->
+<div class="w-full bg-error-container border border-error/20 rounded-[24px] p-md flex items-start gap-3 mb-sm">
+<span class="material-symbols-outlined text-error mt-0.5">warning</span>
+<div>
+<h4 class="font-body-lg text-body-lg text-error font-bold mb-1 uppercase">Emergencia activa</h4>
+<p class="font-body-md text-body-md text-on-error-container">La alerta fue enviada automáticamente y el incidente continúa activo.</p>
+</div>
+</div>
+<!-- Location Card -->
+<section class="w-full bg-surface-container-lowest rounded-[24px] overflow-hidden shadow-[0px_4px_20px_rgba(27,43,72,0.08)] mb-sm">
+<div class="p-md border-b border-outline-variant/30 flex justify-between items-center">
+<div>
+<h4 class="font-body-lg text-body-lg text-on-surface font-bold">Ubicación del incidente</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Huánuco, Perú | Ubicación compartida</p>
+</div>
+<span class="material-symbols-outlined text-outline">location_on</span>
+</div>
+<!-- Map Placeholder -->
+<div class="w-full h-48 bg-surface-container relative" data-alt="A detailed, modern map interface showing the city of Huánuco, Peru. The map style is clean and high-tech, using subtle muted navy and light gray tones. A distinct, glowing coral red marker pins the exact location of the incident, creating a focal point amidst the serene, atmospheric background. Bright, light-mode lighting enhances the professional and reliable aesthetic of the map design." data-location="Huanuco, Peru" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBS4f3Uj5YXTbdto7WPFXazj1QZa3dK8T7QNpEJuufa956gJy-uTsH3rjIwl1_Gu67nUuzMWAKb2-1a_kM9an47fUuVTOl4GEK_h6Jd3dXM9wow2-ACPrWWvmKJ2Sxrg0V2dZgIEsvKVTumSaeLCk8rtgigaRV6zZsBpGvMdyN4FIEkxDBn1kV5zko0uB72dQomLb6plLJZPEDUMOKbWZViieRryNZzHdZohgqOSypBHKYMoY29L77g'); background-size: cover; background-position: center;">
+<div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
+<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+<div class="w-8 h-8 bg-error/20 rounded-full flex items-center justify-center animate-pulse pulse-critical">
+<div class="w-3 h-3 bg-error rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Incident Information Row -->
+<section class="w-full grid grid-cols-1 md:grid-cols-2 gap-sm mb-sm">
+<div class="bg-surface-container-lowest rounded-[24px] p-md shadow-[0px_4px_20px_rgba(27,43,72,0.08)] flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Vehículo</p>
+<p class="font-body-lg text-body-lg text-on-surface font-bold">Toyota Hilux · ABC-123</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-surface-container-lowest rounded-[24px] p-md shadow-[0px_4px_20px_rgba(27,43,72,0.08)] flex items-center gap-3">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Hora</p>
+<p class="font-body-lg text-body-lg text-on-surface font-bold">14:31</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-[24px] p-md shadow-[0px_4px_20px_rgba(27,43,72,0.08)] flex items-center gap-3">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Origen</p>
+<p class="font-body-md text-body-md text-on-surface font-semibold leading-tight">Detección automática</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Emergency Protocol Status -->
+<section class="w-full bg-surface-container-lowest rounded-[24px] p-md shadow-[0px_4px_20px_rgba(27,43,72,0.08)] mb-lg">
+<h4 class="font-body-lg text-body-lg text-on-surface font-bold mb-4">Protocolo de emergencia</h4>
+<ul class="space-y-3">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Ubicación obtenida</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Alerta enviada</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">3 contactos notificados</span>
+</li>
+</ul>
+</section>
+<div class="w-full flex justify-center gap-md mt-auto pt-4 opacity-60">
+<div class="flex items-center gap-1 text-[10px] text-on-surface-variant font-bold uppercase">
+<span class="material-symbols-outlined text-[14px]">signal_cellular_4_bar</span> Canal de envío: 4G
+</div>
+<div class="flex items-center gap-1 text-[10px] text-on-surface-variant font-bold uppercase">
+<span class="material-symbols-outlined text-[14px]">satellite_alt</span> Respaldo satelital disponible
+</div>
+</div>
+</main>
+<!-- Fixed Bottom Actions & Footer Reassurance -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest/90 backdrop-blur-md border-t border-outline-variant/20 px-edge-margin pt-sm pb-lg z-40 flex justify-center">
+<div class="w-full max-w-[600px] flex flex-col gap-4">
+<div class="flex flex-col gap-sm">
+<button class="w-full min-h-[56px] rounded-xl border-2 border-primary text-primary font-body-lg text-body-lg font-bold flex items-center justify-center hover:bg-primary/5 transition-colors">
+                    VER INCIDENTE
+                </button>
+<button class="w-full min-h-[56px] rounded-xl bg-error text-on-error font-body-lg text-body-lg font-bold flex items-center justify-center gap-2 hover:bg-on-error-container transition-colors shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">call</span>
+                    LLAMAR A EMERGENCIAS
+                </button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-center text-[12px] leading-snug max-w-[400px] mx-auto">
+                La alerta permanecerá activa aunque cierres esta pantalla. URBES continuará actualizando el estado del incidente automáticamente.
+            </p>
+</div>
+</div>
+</body></html>

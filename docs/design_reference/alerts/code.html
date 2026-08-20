@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>URBES - Alertas</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#402500",
+                        "primary-fixed": "#d7e2ff",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#b7c7eb",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#6bfe9c",
+                        "secondary-fixed": "#6bfe9c",
+                        "on-secondary-fixed-variant": "#005228",
+                        "secondary": "#006d37",
+                        "surface-container-high": "#eae7ea",
+                        "primary-fixed-dim": "#b7c7eb",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb961",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#2b1700",
+                        "surface-bright": "#fbf8fb",
+                        "surface-dim": "#dbd9dc",
+                        "surface-container-low": "#f5f3f6",
+                        "background": "#fbf8fb",
+                        "surface": "#fbf8fb",
+                        "on-tertiary-fixed-variant": "#663e00",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f2f0f3",
+                        "surface-container-highest": "#e4e2e5",
+                        "on-error": "#ffffff",
+                        "on-background": "#1b1b1e",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#00210c",
+                        "surface-tint": "#4f5e7e",
+                        "on-primary-container": "#8393b5",
+                        "outline": "#75777e",
+                        "on-surface": "#1b1b1e",
+                        "primary": "#041632",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#303033",
+                        "on-tertiary-container": "#cd8100",
+                        "primary-container": "#1b2b48",
+                        "surface-container": "#efedf0",
+                        "outline-variant": "#c5c6ce",
+                        "secondary-fixed-dim": "#4ae183",
+                        "on-primary-fixed-variant": "#374765",
+                        "on-secondary-container": "#00743a",
+                        "surface-variant": "#e4e2e5",
+                        "tertiary-fixed": "#ffddb9",
+                        "on-surface-variant": "#44474d",
+                        "tertiary": "#241300",
+                        "on-primary-fixed": "#091b37"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "edge-margin": "20px",
+                        "md": "24px",
+                        "xl": "48px",
+                        "xs": "8px",
+                        "lg": "32px",
+                        "gutter": "12px",
+                        "base": "4px",
+                        "sm": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "label-sm": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "display-lg-mobile": ["Manrope"],
+                        "headline-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "display-lg-mobile": ["26px", { "lineHeight": "32px", "fontWeight": "800" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col pb-24">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface text-primary dark:text-inverse-primary docked full-width top-0 flat no shadows flex justify-between items-center w-full px-edge-margin py-base max-w-[600px] mx-auto z-40 sticky">
+<button class="hover:opacity-80 transition-opacity p-2 rounded-full active:scale-95 duration-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">security</span>
+</button>
+<h1 class="text-headline-md font-headline-md font-extrabold tracking-tight text-primary dark:text-inverse-primary">URBES</h1>
+<button class="hover:opacity-80 transition-opacity p-2 rounded-full active:scale-95 duration-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">sensors</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="flex-grow px-edge-margin pt-md max-w-[600px] mx-auto w-full flex flex-col gap-md"><div class="flex justify-between items-end mb-xs">
+<h2 class="text-display-lg-mobile font-display-lg-mobile text-primary">Alertas</h2>
+<span class="text-label-sm font-label-sm text-outline opacity-70">Actualizado hace 2 min</span>
+</div>
+<div class="flex flex-col gap-md">
+<!-- Active Alerts Section -->
+<div class="flex flex-col gap-sm">
+<div class="bg-surface-container-lowest rounded-[24px] shadow-[0px_4px_20px_rgba(27,43,72,0.08)] p-md border-t-4 border-[#F59E0B] relative overflow-hidden">
+<div class="flex items-start justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full bg-[#FEF3C7] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[#D97706] text-[28px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<h3 class="text-body-lg font-body-lg text-primary font-bold">Posible accidente detectado</h3>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Impacto inusual registrado en el vehículo.</p>
+</div>
+</div>
+<div class="bg-[#FEF3C7] text-[#D97706] px-2 py-1 rounded-full text-label-sm font-label-sm whitespace-nowrap">Nivel 2</div>
+</div>
+<div class="mt-sm pt-sm border-t border-outline-variant/30 flex justify-between items-center">
+<span class="text-label-sm font-label-sm text-outline">Hace 5 min • Av. Javier Prado</span>
+<button class="bg-[#F59E0B] text-white px-4 py-2 rounded-full text-label-sm font-label-sm font-bold active:scale-95 transition-transform">Ver Detalles</button>
+</div>
+</div>
+</div>
+<!-- Informative Events Section -->
+<div class="flex flex-col gap-sm">
+<h3 class="text-body-lg font-body-lg text-on-surface-variant font-bold px-2">Eventos informativos</h3>
+<div class="bg-surface-container-lowest rounded-[24px] shadow-[0px_4px_20px_rgba(27,43,72,0.08)] p-md border-t-4 border-outline-variant/30">
+<div class="flex items-start justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant text-[24px]" style="font-variation-settings: 'FILL' 1;">info</span>
+</div>
+<div>
+<h3 class="text-body-lg font-body-lg text-primary font-bold">Evento leve detectado</h3>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Se registró un movimiento o impacto menor en el vehículo.</p>
+</div>
+</div>
+<div class="bg-surface-container text-on-surface-variant px-2 py-1 rounded-full text-label-sm font-label-sm whitespace-nowrap">Nivel 1</div>
+</div>
+<div class="mt-sm flex items-center justify-between text-label-sm font-label-sm text-outline">
+<span>Hace 20 min • Huánuco, Perú</span>
+<span class="font-semibold">Sin acción requerida</span>
+</div>
+</div>
+</div>
+<!-- Technical Events Section -->
+<div class="flex flex-col gap-sm">
+<h3 class="text-body-lg font-body-lg text-on-surface-variant font-bold px-2">Estado técnico</h3>
+<div class="bg-surface-container-lowest rounded-[24px] shadow-[0px_4px_20px_rgba(27,43,72,0.08)] p-md border-t-4 border-primary-container">
+<div class="flex items-start justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[24px]" style="font-variation-settings: 'FILL' 1;">satellite_alt</span>
+</div>
+<div>
+<h3 class="text-body-lg font-body-lg text-primary font-bold">Conexión móvil no disponible</h3>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Usando comunicación satelital.</p>
+</div>
+</div>
+</div>
+<div class="mt-sm text-label-sm font-label-sm text-outline">
+<p class="mb-1">El sistema activó el canal de respaldo para mantener la comunicación.</p>
+<p>Hace 45 min • Ruta Panamericana Sur</p>
+</div>
+</div>
+</div>
+<!-- Recent History Section -->
+<div class="flex flex-col gap-sm">
+<h3 class="text-body-lg font-body-lg text-on-surface-variant font-bold px-2">Historial reciente</h3>
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_2px_10px_rgba(27,43,72,0.04)] p-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<p class="text-body-md font-body-md text-primary font-semibold">Incidente cerrado</p>
+<p class="text-label-sm font-label-sm text-outline">La alerta fue gestionada correctamente.</p>
+</div>
+</div>
+<span class="text-label-sm font-label-sm text-outline-variant">Ayer</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_2px_10px_rgba(27,43,72,0.04)] p-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]" style="font-variation-settings: 'FILL' 1;">cancel</span>
+</div>
+<div>
+<p class="text-body-md font-body-md text-primary font-semibold">Alerta cancelada</p>
+<p class="text-label-sm font-label-sm text-outline">El usuario indicó falsa alarma.</p>
+</div>
+</div>
+<span class="text-label-sm font-label-sm text-outline-variant">12 Mar</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_2px_10px_rgba(27,43,72,0.04)] p-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-fixed/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">signal_cellular_alt</span>
+</div>
+<div>
+<p class="text-body-md font-body-md text-primary font-semibold">Comunicación verificada</p>
+<p class="text-label-sm font-label-sm text-outline">4G y respaldo satelital disponibles.</p>
+</div>
+</div>
+<span class="text-label-sm font-label-sm text-outline-variant">Hace 1 h</span>
+</div>
+</div>
+</div></main>
+<!-- BottomNavBar -->
+<nav class="bg-surface-container-lowest dark:bg-surface-container-high docked full-width bottom-0 rounded-t-xl shadow-[0px_-4px_20px_rgba(27,43,72,0.08)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-edge-margin pt-sm pb-md max-w-[600px] left-1/2 -translate-x-1/2 md:hidden">
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-70 hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 active:scale-90 duration-150 p-2 rounded-lg group">
+<span class="material-symbols-outlined text-[24px] mb-1 group-hover:scale-110 transition-transform">home</span>
+<span class="text-label-sm font-label-sm">Inicio</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim font-semibold scale-110 transition-transform hover:bg-surface-container-low dark:hover:bg-surface-container-highest duration-200 active:scale-90 duration-150 p-2 rounded-lg group relative">
+<span class="material-symbols-outlined text-[24px] mb-1" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span class="text-label-sm font-label-sm">Alertas</span>
+<span class="absolute top-1 right-2 w-2.5 h-2.5 bg-error rounded-full border-2 border-surface-container-lowest"></span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-70 hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 active:scale-90 duration-150 p-2 rounded-lg group">
+<span class="material-symbols-outlined text-[24px] mb-1 group-hover:scale-110 transition-transform">directions_car</span>
+<span class="text-label-sm font-label-sm">Vehículo</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-70 hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 active:scale-90 duration-150 p-2 rounded-lg group">
+<span class="material-symbols-outlined text-[24px] mb-1 group-hover:scale-110 transition-transform">history</span>
+<span class="text-label-sm font-label-sm">Historial</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-70 hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 active:scale-90 duration-150 p-2 rounded-lg group">
+<span class="material-symbols-outlined text-[24px] mb-1 group-hover:scale-110 transition-transform">person</span>
+<span class="text-label-sm font-label-sm">Perfil</span>
+</button>
+</nav>
+</body></html>

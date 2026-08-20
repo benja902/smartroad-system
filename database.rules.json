@@ -1,0 +1,32 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "vehicles": {
+      ".read": "auth != null",
+      ".indexOn": ["ownerId"],
+      "$vehicleId": {
+        ".write": "auth != null"
+      }
+    },
+    "devices": {
+      ".read": "auth != null",
+      "$deviceId": {
+        ".write": "auth != null"
+      }
+    },
+    "events": {
+      ".read": "auth != null",
+      ".indexOn": ["userId", "deviceId", "detectedAt"],
+      "$eventId": {
+        ".write": "auth != null"
+      }
+    },
+    ".read": false,
+    ".write": false
+  }
+}
