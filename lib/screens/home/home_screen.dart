@@ -5,11 +5,13 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../models/alert_presentation.dart';
 import '../../navigation/app_router.dart';
 import '../../state/device_status_provider.dart';
 import '../../state/event_provider.dart';
 import '../../state/session_provider.dart';
 import '../../state/vehicle_provider.dart';
+import '../../widgets/attention_banner.dart';
 import 'widgets/device_indicators_grid.dart';
 import 'widgets/location_map_placeholder.dart';
 import 'widgets/quick_actions_row.dart';
@@ -26,6 +28,10 @@ class HomeScreen extends StatelessWidget {
     final deviceStatus = context.watch<DeviceStatusProvider>().status;
     final events = context.watch<EventProvider>().events;
     final vehicle = context.watch<VehicleProvider>().vehicle;
+    final eventProvider = context.read<EventProvider>();
+
+    final attentionEvents = events.where((e) => classify(e) == AlertPresentation.attention).toList();
+    final topAttentionEvent = attentionEvents.isEmpty ? null : attentionEvents.last;
 
     return Scaffold(
       body: SafeArea(
@@ -34,7 +40,7 @@ class HomeScreen extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: AppSpacing.contentMaxWidth),
             child: CustomScrollView(
               slivers: [
-                SliverToBoxAdapter(child: _Header(monitoring: deviceStatus?.monitoring ?? false)),
+                SliverToBoxAdapter(child: _Header(monitoring: deviceStatus?.online ?? false)),
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.edgeMargin,
@@ -48,8 +54,16 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(height: AppSpacing.md),
                       UrbesStatusCard(
                         operational: deviceStatus?.online ?? false,
-                        monitoring: deviceStatus?.monitoring ?? false,
+                        monitoring: deviceStatus?.online ?? false,
                       ),
+                      if (topAttentionEvent != null) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        AttentionBanner(
+                          event: topAttentionEvent,
+                          onAcknowledge: () => eventProvider.acknowledge(topAttentionEvent.dedupKey),
+                          onViewDetails: () => context.push('${AppRoutes.incidentDetail}/${topAttentionEvent.dedupKey}'),
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.md),
                       if (deviceStatus != null) DeviceIndicatorsGrid(status: deviceStatus),
                       const SizedBox(height: AppSpacing.md),
@@ -59,7 +73,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       LocationMapPlaceholder(
-                        location: deviceStatus?.location,
+                        position: deviceStatus?.gnss,
                         onViewMap: () {},
                       ),
                       const SizedBox(height: AppSpacing.md),

@@ -18,6 +18,9 @@ class DeviceIndicatorsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cellularOk = status.modem?.registered == true;
+    final gnssOk = status.gnss?.fix == true;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final tileWidth = (constraints.maxWidth - AppSpacing.sm) / 2;
@@ -37,16 +40,16 @@ class DeviceIndicatorsGrid extends StatelessWidget {
               width: tileWidth,
               child: _IndicatorTile(
                 icon: Icons.signal_cellular_alt,
-                label: status.cellularConnected ? status.networkType.label : 'Sin conexión celular',
-                ok: status.cellularConnected,
+                label: cellularOk ? (status.modem?.tech ?? 'Celular conectado') : 'Sin conexión celular',
+                ok: cellularOk,
               ),
             ),
             SizedBox(
               width: tileWidth,
               child: _IndicatorTile(
                 icon: Icons.satellite_alt_outlined,
-                label: status.gnssAvailable ? 'GNSS disponible' : 'GNSS no disponible',
-                ok: status.gnssAvailable,
+                label: gnssOk ? 'GNSS disponible' : 'GNSS no disponible',
+                ok: gnssOk,
               ),
             ),
             SizedBox(

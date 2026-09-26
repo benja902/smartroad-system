@@ -1,109 +1,124 @@
-# URBES — Contrato de datos del dispositivo (ESP32 / LilyGO T-SIM7000G)
+# URBES — Contrato de datos del dispositivo (SDA / ESP32 · LilyGo T-SIM7600G-H)
 
-Este documento define exactamente qué debe escribir el firmware en Firebase Realtime Database. Es un contrato de datos, no de arquitectura de firmware: el ESP32 decide localmente si hubo un accidente y con qué nivel; Firebase y Flutter solo observan y reaccionan a lo que el dispositivo escribe. Ni Flutter ni Firebase ejecutan el algoritmo de detección.
+Fuente de verdad: `manual-sda.html` (documento SDA-DOC-01, firmware 1.0.0). Este documento resume, para efectos de la app Flutter, exactamente qué campos llegan y de dónde, sin describir la arquitectura interna del firmware.
 
-Base de datos: `smartroad-system-3b23e-default-rtdb` (Firebase Realtime Database).
+## Transporte real (no lo implementa Flutter)
 
-Transporte: HTTPS (REST API de Realtime Database) sobre SIM7000G. No se usa MQTT en esta fase.
+El equipo habla **MQTT 3.1.1 sobre TLS** con un broker (HiveMQ Cloud), no HTTPS y no Firebase directo. Un **servicio puente** (Node.js, en `bridge/` — fuera de la app Flutter, se despliega por separado en Cloud Run, ver `bridge/README.md`) mantiene la conexión MQTT, escribe en Firebase Realtime Database, y proyecta las cancelaciones. Flutter **nunca** habla MQTT — solo lee/escribe en RTDB a través de los repositorios (`FirebaseEventRepository`, `FirebaseDeviceRepository`).
 
-## Estructura general
+## Tópicos MQTT (referencia, los consume el puente)
+
+| Tópico | Contenido | Cadencia |
+|---|---|---|
+| `sda/{id}/availability` | `online`/`offline`, texto plano, LWT | al conectar/desconectar |
+| `sda/{id}/status` | estado completo del equipo | cada 60s (10-3600 configurable) |
+| `sda/{id}/event` | choque, vuelco, SOS, cancelación, técnico | por evento |
+| `sda/{id}/position` | posición GNSS | 30s en marcha / 300s detenido |
+| `sda/{id}/diag` | diagnóstico ampliado | cada hora / bajo demanda |
+
+## Esquema en Realtime Database (lo que escribe el puente, lo que lee Flutter)
 
 ```
-users/{uid}
-vehicles/{vehicleId}
-devices/{deviceId}/
-  status/
-  hardware/
-  network/
-  gnss/
-  location/
-events/{eventId}
+devices/{deviceId}          → último status.* (ver DeviceStatus más abajo) + online + lastSeen
+events/{deviceId_seq}       → un evento por (deviceId, seq) — ver AccidentEvent más abajo
+vehicles/{vehicleId}        → administrado por la app, no por el firmware
+users/{uid}                 → administrado por la app
 ```
 
-`users/` y `vehicles/` los gestiona la app (Flutter), no el firmware. El firmware solo escribe bajo `devices/{deviceId}/...` y crea nuevos nodos en `events/`.
+## Mensaje de evento (`AccidentEvent`)
 
-## `devices/{deviceId}/status`
+Payload real publicado en `sda/{id}/event` (choque grave, ejemplo del manual):
 
-Estado general del dispositivo. El firmware debe actualizar esto en cada heartbeat (frecuencia sugerida: cada 30-60s, o al cambiar cualquier valor).
+```json
+{
+  "id": "SDA-A4C138", "type": "crash", "seq": 143,
+  "ts": "2026-08-19T14:32:07Z", "time_src": "gnss", "uptime_s": 48213,
+  "vehicle_label": "Camioneta 04", "contact_phone": "+51987654321",
+  "severity": "grave",
+  "detection": { "peak_g": 38.40, "delta_v_kmh": 24.10, "duration_ms": 62,
+                 "axis_peak": "y", "rollover": false, "tilt_deg": 12.5, "gyro_max_dps": 145.0 },
+  "position": { "fix": true, "lat": -9.930833, "lon": -76.241944, "alt_m": 1894.0,
+                "speed_kmh": 0.0, "heading": 218.0, "hdop": 1.1, "sats": 9, "fix_age_s": 3 },
+  "device": { "battery_v": 4.02, "rssi_dbm": -73, "operator": "Claro PE",
+              "uptime_s": 48213, "sd": true, "degraded": false },
+  "queued": false
+}
+```
 
-| Campo | Tipo | Descripción |
+### Campos que vienen del firmware (verbatim)
+
+| Campo | Tipo | Notas |
 |---|---|---|
-| `online` | boolean | El dispositivo está encendido y reportando. |
-| `monitoring` | boolean | El algoritmo de detección de accidentes está activo. |
-| `lastSeen` | number | Timestamp Unix en milisegundos del último reporte. |
+| `id` | texto | id del dispositivo |
+| `type` | texto | `crash`\|`rollover`\|`sos`\|`cancel`\|`test`\|`power_loss`\|`low_battery`\|`booted` |
+| `seq` | entero | identidad del evento junto con `id`. **Un evento `cancel` tiene su propio `seq`, distinto del evento que anula.** |
+| `ts` | texto ISO8601 o `null` | hora real del hecho; `null` si el equipo no tenía hora |
+| `time_src` | texto | `gnss`\|`network`\|`ntp`\|`uptime`\|`none` |
+| `uptime_s` | entero | segundos desde el arranque |
+| `vehicle_label` | texto opcional | configurado en el equipo |
+| `contact_phone` | texto opcional | configurado en el equipo |
+| `severity` | texto | `leve`\|`moderado`\|`grave`\|`none`. Solo relevante para `crash`/`rollover` |
+| `detection` | objeto opcional | solo en `crash`/`rollover` |
+| `position` | objeto opcional | se omite si nunca hubo fix |
+| `device` | objeto | snapshot de diagnóstico al momento del evento |
+| `queued` | booleano | `true` = reenvío diferido desde la cola del equipo; el evento ya ocurrió, posiblemente hace horas |
+| `cancels_seq` | entero, solo en `cancel` | **el `seq` del evento ORIGINAL que se anula** — no es el `seq` propio del evento `cancel` |
+| `reason`, `elapsed_s` | solo en `cancel` | motivo y segundos transcurridos desde el evento original |
 
-## `devices/{deviceId}/hardware`
+### Campos que agrega el puente (backend), no el firmware
 
-Diagnóstico de los sensores físicos.
+| Campo | Notas |
+|---|---|
+| `receivedAt` | timestamp del servidor al escribir |
+| `userId` | denormalizado desde `vehicles/{deviceId}.ownerId`, para poder consultar por usuario sin join del lado del cliente |
+| `cancelledBySeq`, `cancelledAt` | **proyectados sobre el nodo del evento ORIGINAL** (clave `deviceId_cancelsSeq`, no `deviceId_seq` del propio `cancel`) cuando llega un `cancel` que lo referencia. Requiere escritura idempotente/`merge` — si el `cancel` llega antes que el evento original (MQTT no garantiza orden), el `merge` sobre la misma clave hace que se autocorrijan sin importar el orden de llegada |
 
-| Campo | Tipo | Descripción |
-|---|---|---|
-| `adxl375Connected` | boolean | Acelerómetro ADXL375 responde correctamente. |
-| `lsm6ds3Connected` | boolean | IMU LSM6DS3 responde correctamente. |
-| `sim7000Connected` | boolean | Módulo SIM7000G responde correctamente. |
+### El único campo que la app puede escribir
 
-## `devices/{deviceId}/network`
+| Campo | Notas |
+|---|---|
+| `acknowledged` | el usuario marcó "Ya lo vi" en la app. Es la única escritura que las reglas de seguridad permiten desde el cliente |
 
-Estado de la conexión celular.
+Clave de deduplicación en RTDB: **`{deviceId}_{seq}`** (equivalente al `{id}-{seq}` del manual). Una reentrega del mismo evento (QoS 1, o reenvío desde la cola) escribe sobre la misma clave y no duplica.
 
-| Campo | Tipo | Descripción |
-|---|---|---|
-| `cellularConnected` | boolean | Hay conexión de datos celular activa. |
-| `networkType` | string | Uno de: `"none"`, `"cellular2g"`, `"cellular3g"`, `"cellular4g"`, `"wifi"`. |
-| `signalStrength` | number | Barras de señal, entero de 0 a 4. |
+## Mensaje de estado (`DeviceStatus`)
 
-## `devices/{deviceId}/gnss`
+Payload real publicado en `sda/{id}/status`:
 
-Estado del posicionamiento satelital.
+```json
+{
+  "id": "SDA-A4C138", "ts": "2026-08-19T14:30:00Z", "state": "idle", "fw": "1.0.0",
+  "sensors": {
+    "adxl375":   { "ok": true, "addr": "0x53", "peak_g_60s": 1.40 },
+    "lsm6ds3tr": { "ok": true, "addr": "0x6A", "tilt_deg": 3.1, "gyro_max_dps": 12.0 },
+    "pcf8574":   { "ok": true, "addr": "0x20" }
+  },
+  "inputs":  { "sos": false, "cancel": false },
+  "outputs": { "led_red": false, "led_green": true, "buzzer": false },
+  "sd":      { "present": true, "total_mb": 15200, "free_mb": 14980, "queued_events": 0 },
+  "modem":   { "registered": true, "rssi_dbm": -73, "tech": "LTE", "operator": "Claro PE" },
+  "gnss":    { "fix": true, "lat": -9.930833, "lon": -76.241944, "alt_m": 1894.0,
+               "speed_kmh": 42.3, "heading": 218.0, "hdop": 1.1, "sats": 9, "fix_age_s": 2 },
+  "power":   { "battery_v": 4.02, "charging": true, "vin_ok": true },
+  "system":  { "uptime_s": 48213, "heap_free": 148320, "reset_reason": "POWERON", "wifi_ap_clients": 0 }
+}
+```
 
-| Campo | Tipo | Descripción |
-|---|---|---|
-| `available` | boolean | El módulo GNSS está encendido y accesible. |
-| `fix` | boolean | Hay un fix de posición válido actualmente. |
+`state` (`boot`\|`selftest`\|`idle`\|`pre_alarm`\|`sending`\|`alert_active`\|`cancelled`\|`safe_mode`) es el estado operativo del propio equipo — **no** el estado de un evento. Como `status` se publica cada 60s por defecto y `pre_alarm` dura ~10s por defecto, es muy improbable observar `pre_alarm` en vivo — ninguna pantalla debe depender de capturarlo a tiempo.
 
-## `devices/{deviceId}/location`
+`online`/`lastSeen` **no** vienen de este mensaje — vienen del tópico separado `availability` (semántica LWT: `offline` significa que se cayó el enlace de datos, no que el equipo dejó de vigilar; sigue detectando y guarda en microSD mientras tanto).
 
-Última posición conocida del vehículo. Solo se actualiza cuando hay `fix` válido.
-
-| Campo | Tipo | Descripción |
-|---|---|---|
-| `latitude` | number | Grados decimales. |
-| `longitude` | number | Grados decimales. |
-| `displayName` | string \| null | Nombre legible del lugar, si el dispositivo puede resolverlo (opcional — puede omitirse y dejar que el backend/app lo resuelva más adelante). |
-| `updatedAt` | number | Timestamp Unix en milisegundos de este fix. |
-
-## `events/{eventId}`
-
-Un evento por cada detección de impacto. `{eventId}` lo genera el firmware (recomendado: `push()` de la REST API de RTDB, que genera IDs ordenables por tiempo) o puede ser un ID propio único por dispositivo+timestamp.
-
-| Campo | Tipo | Descripción |
-|---|---|---|
-| `id` | string | Igual a la key del nodo (duplicado dentro del valor para facilitar lecturas planas). |
-| `deviceId` | string | ID de este dispositivo. |
-| `userId` | string | UID del propietario del vehículo (el firmware lo conoce por configuración/aprovisionamiento). |
-| `level` | string | Uno de: `"level1"`, `"level2"`, `"level3"`. Decidido localmente por el firmware. |
-| `status` | string | Uno de: `"detected"`, `"pendingConfirmation"`, `"confirmed"`, `"cancelled"`, `"emergencyActive"`, `"closed"`. Ver reglas por nivel abajo. |
-| `detectedAt` | number | Timestamp Unix en milisegundos del impacto. |
-| `deadline` | number \| null | Solo para `level2`: `detectedAt + 15000` (ms). `null` para `level1`/`level3`. |
-| `peakG` | number \| null | Aceleración pico registrada, en G. |
-| `location` | object \| null | Mismo formato que `devices/{deviceId}/location`, capturado en el momento del evento. |
-| `contactsNotified` | number | Cuántos contactos de emergencia fueron notificados hasta el momento. |
-| `rescueNotified` | boolean | Si se notificó a servicios de rescate/SAMU (fase futura; el firmware puede dejarlo en `false` por ahora). |
-
-### Reglas por nivel al crear el evento
-
-- **Nivel 1**: crear con `status: "detected"`, `deadline: null`. El firmware no necesita actualizarlo después salvo diagnóstico adicional.
-- **Nivel 2**: crear con `status: "pendingConfirmation"`, `deadline: detectedAt + 15000`. La app (Flutter) es responsable de mostrar el countdown y, según la acción del usuario o el vencimiento del plazo, actualizar `status` a `"confirmed"`/`"emergencyActive"` o `"cancelled"`. El firmware **no** debe sobrescribir `status` una vez que el usuario haya interactuado — debe limitarse a observar el valor si necesita reaccionar (p. ej. encender una sirena).
-- **Nivel 3**: crear directamente con `status: "emergencyActive"`. Sin `deadline`, sin paso intermedio.
-
-El cierre del incidente (`status: "closed"`) lo dispara la app o un operador — el firmware no debe cerrarlo automáticamente salvo que se defina lo contrario en una fase posterior.
-
-## Autenticación del dispositivo (pendiente de definir)
-
-Este documento no fija todavía cómo se autentica el ESP32 ante Firebase (token de dispositivo, secreto de base de datos legado, o un custom token emitido por un backend). Es una decisión de la fase de hardware, no bloquea el desarrollo de Flutter. Las reglas de seguridad actuales (`database.rules.json`) exigen `auth != null` para leer/escribir bajo `devices/` y `events/` — el mecanismo concreto de autenticación del firmware se definirá cuando se aborde la integración real del ESP32.
+`pcf8574` (expansor de botones/LED/buzzer) es un componente crítico según el manual — sin él no hay botones, LED ni buzzer, aunque la detección y la publicación siguen funcionando.
 
 ## Lo que Flutter NO hace
 
-- No decide si hubo un accidente ni con qué severidad.
-- No escribe en `devices/{deviceId}/hardware`, `network`, ni `gnss` — esos nodos son de solo lectura para la app.
-- Sí puede escribir en `events/{eventId}` para transiciones de estado que dependen del usuario (confirmar, cancelar, cerrar) dentro de los límites descritos arriba.
+- No decide si hubo un accidente ni con qué severidad — eso lo decide el firmware.
+- No escribe en `status.*` (sensores, red, GNSS, alimentación) — son de solo lectura para la app.
+- No confirma ni cancela alertas — esas acciones son físicas en el equipo (botones SOS/CANCELAR) y llegan a Flutter como eventos (`type: cancel`), nunca como una acción que la app origina.
+- Solo puede escribir `acknowledged` sobre un evento existente.
+
+## Requisito para quien construya el puente (fuera de este repo)
+
+- Escribir `events/{deviceId}_{seq}` con `merge`/idempotencia — nunca sobrescribir el nodo completo, para que una cancelación desordenada (llega antes que el evento original) se autocorrija cuando el evento original llegue después.
+- Denormalizar `userId` en cada evento desde `vehicles/{deviceId}.ownerId` al momento de escribir.
+- Proyectar `cancelledBySeq`/`cancelledAt` sobre la clave del evento **original** (`deviceId_cancelsSeq`), nunca sobre la clave del propio evento `cancel`.

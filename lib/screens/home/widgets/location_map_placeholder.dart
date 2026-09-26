@@ -5,7 +5,7 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../models/location_model.dart';
+import '../../../models/gnss_position.dart';
 import '../../../widgets/section_header.dart';
 
 /// Map card. Renders a placeholder (no map SDK wired up yet) that keeps
@@ -13,13 +13,17 @@ import '../../../widgets/section_header.dart';
 /// centered pin, "mi ubicación" affordance. Uses AspectRatio instead of a
 /// fixed pixel height so it scales with screen width.
 class LocationMapPlaceholder extends StatelessWidget {
-  final LocationModel? location;
+  final GnssPosition? position;
   final VoidCallback? onViewMap;
 
-  const LocationMapPlaceholder({super.key, this.location, this.onViewMap});
+  const LocationMapPlaceholder({super.key, this.position, this.onViewMap});
 
   @override
   Widget build(BuildContext context) {
+    final coordinatesLabel = position == null
+        ? 'Ubicación no disponible'
+        : '${position!.latitude.toStringAsFixed(5)}, ${position!.longitude.toStringAsFixed(5)}';
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
@@ -41,9 +45,12 @@ class LocationMapPlaceholder extends StatelessWidget {
                       const SectionHeader(label: 'Última ubicación'),
                       const SizedBox(height: AppSpacing.base),
                       Text(
-                        location?.displayName ?? 'Ubicación no disponible',
+                        coordinatesLabel,
                         style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w700, color: AppColors.primary),
                       ),
+                      if (position != null && !position!.fix)
+                        Text('Sin fix GNSS actual — última posición conocida',
+                            style: AppTypography.labelSm.copyWith(color: AppColors.warning)),
                     ],
                   ),
                 ),

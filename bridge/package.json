@@ -1,0 +1,13 @@
+{
+  "name": "puente-urbes-sda",
+  "type": "module",
+  "private": true,
+  "engines": { "node": "20" },
+  "dependencies": {
+    "mqtt": "^5.10.1",
+    "firebase-admin": "^12.7.0"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}

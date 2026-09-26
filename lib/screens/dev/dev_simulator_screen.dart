@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../models/accident_event_type.dart';
+import '../../models/accident_severity.dart';
+import '../../models/alert_presentation.dart';
 import '../../repositories/device_repository.dart';
 import '../../repositories/event_repository.dart';
 import '../../repositories/mock/mock_device_repository.dart';
@@ -15,7 +18,8 @@ import '../../state/event_provider.dart';
 /// hardware. Only reachable from main_dev.dart (never main.dart). Casts
 /// the injected repositories to their concrete Mock types to call
 /// simulator-only methods that intentionally aren't on the production
-/// repository interfaces.
+/// repository interfaces. Triggers mirror the real firmware taxonomy
+/// (type + severity + queued), not an invented level system.
 class DevSimulatorScreen extends StatelessWidget {
   const DevSimulatorScreen({super.key});
 
@@ -37,7 +41,7 @@ class DevSimulatorScreen extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.edgeMargin),
               children: [
                 Text(
-                  'Simula el hardware y los eventos de accidente sin necesidad de un ESP32 conectado.',
+                  'Simula el hardware y los eventos del sistema SDA sin necesidad de un equipo conectado.',
                   style: AppTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -46,7 +50,7 @@ class DevSimulatorScreen extends StatelessWidget {
                   children: [
                     _StatusSwitch(
                       label: 'Sistema operativo',
-                      value: status?.online == true && status?.monitoring == true,
+                      value: status?.online == true,
                       onChanged: deviceRepo.setSystemOperational,
                     ),
                     _StatusSwitch(
@@ -56,12 +60,12 @@ class DevSimulatorScreen extends StatelessWidget {
                     ),
                     _StatusSwitch(
                       label: 'Red celular offline',
-                      value: status?.cellularConnected == false,
+                      value: status?.modem?.registered == false,
                       onChanged: deviceRepo.setCellularOffline,
                     ),
                     _StatusSwitch(
                       label: 'GNSS offline',
-                      value: status?.gnssAvailable == false,
+                      value: status?.gnss?.fix == false,
                       onChanged: deviceRepo.setGnssOffline,
                     ),
                   ],
@@ -72,23 +76,39 @@ class DevSimulatorScreen extends StatelessWidget {
                   children: [
                     _StatusSwitch(
                       label: 'ADXL375 offline',
-                      value: status?.adxl375Connected == false,
+                      value: status?.adxl375?.ok == false,
                       onChanged: deviceRepo.setAdxl375Offline,
                     ),
                     _StatusSwitch(
                       label: 'LSM6DS3 offline',
-                      value: status?.lsm6ds3Connected == false,
+                      value: status?.lsm6ds3?.ok == false,
                       onChanged: deviceRepo.setLsm6ds3Offline,
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _SectionCard(
-                  title: 'Disparar accidente',
+                  title: 'Disparar choque / vuelco (por severidad)',
                   children: [
-                    _ActionButton(label: 'Simular Nivel 1', onPressed: eventRepo.triggerLevel1),
-                    _ActionButton(label: 'Simular Nivel 2', onPressed: eventRepo.triggerLevel2),
-                    _ActionButton(label: 'Simular Nivel 3', onPressed: eventRepo.triggerLevel3),
+                    _ActionButton(label: 'Choque leve', onPressed: () => eventRepo.triggerCrash(severity: AccidentSeverity.leve)),
+                    _ActionButton(label: 'Choque moderado', onPressed: () => eventRepo.triggerCrash(severity: AccidentSeverity.moderado)),
+                    _ActionButton(label: 'Choque grave', onPressed: () => eventRepo.triggerCrash(severity: AccidentSeverity.grave)),
+                    _ActionButton(label: 'Vuelco grave', onPressed: () => eventRepo.triggerRollover(severity: AccidentSeverity.grave)),
+                    _ActionButton(
+                      label: 'Choque grave DIFERIDO (queued)',
+                      onPressed: () => eventRepo.triggerCrash(severity: AccidentSeverity.grave, queued: true),
+                    ),
+                    _ActionButton(label: 'SOS', onPressed: eventRepo.triggerSos),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                _SectionCard(
+                  title: 'Eventos técnicos',
+                  children: [
+                    _ActionButton(label: 'Prueba de sistema (test)', onPressed: () => eventRepo.triggerTechnical(AccidentEventType.test)),
+                    _ActionButton(label: 'Pérdida de alimentación', onPressed: () => eventRepo.triggerTechnical(AccidentEventType.powerLoss)),
+                    _ActionButton(label: 'Batería baja', onPressed: () => eventRepo.triggerTechnical(AccidentEventType.lowBattery)),
+                    _ActionButton(label: 'Reinicio del equipo', onPressed: () => eventRepo.triggerTechnical(AccidentEventType.booted)),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -97,22 +117,18 @@ class DevSimulatorScreen extends StatelessWidget {
                   children: [
                     Text(
                       criticalEvent == null
-                          ? 'No hay ningún evento crítico activo.'
-                          : '${criticalEvent.level.name} • ${criticalEvent.status.name} • id: ${criticalEvent.id}',
+                          ? 'No hay ningún evento forzando la pantalla crítica.'
+                          : '${criticalEvent.type.name} • ${criticalEvent.severity.name} • seq ${criticalEvent.seq} • ${classify(criticalEvent).name}',
                       style: AppTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     _ActionButton(
-                      label: 'Confirmar Nivel 2 ("Necesito ayuda")',
-                      onPressed: criticalEvent == null ? null : () => eventRepo.confirmEmergency(criticalEvent.id),
+                      label: 'Cancelar (simula botón CANCELAR del equipo)',
+                      onPressed: criticalEvent == null ? null : () => eventRepo.triggerCancel(criticalEvent.seq),
                     ),
                     _ActionButton(
-                      label: 'Cancelar alerta Nivel 2',
-                      onPressed: criticalEvent == null ? null : () => eventRepo.cancelAlert(criticalEvent.id),
-                    ),
-                    _ActionButton(
-                      label: 'Cerrar incidente',
-                      onPressed: criticalEvent == null ? null : () => eventRepo.closeIncident(criticalEvent.id),
+                      label: 'Marcar como atendido ("Ya lo vi")',
+                      onPressed: criticalEvent == null ? null : () => eventRepo.acknowledge(criticalEvent.dedupKey),
                     ),
                   ],
                 ),
@@ -127,7 +143,7 @@ class DevSimulatorScreen extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Text(
-                            '${event.level.name} • ${event.status.name} • ${event.id}',
+                            '${event.type.name} • ${event.severity.name} • seq ${event.seq} • ${classify(event).name}${event.queued ? ' • DIFERIDO' : ''}',
                             style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant),
                           ),
                         ),

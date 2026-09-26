@@ -1,25 +1,29 @@
 import 'dart:async';
 
 import '../../models/accident_event.dart';
-import '../../models/accident_level.dart';
-import '../../models/event_status.dart';
+import '../../models/accident_event_type.dart';
+import '../../models/accident_severity.dart';
+import '../../models/alert_presentation.dart';
+import '../../models/detection_data.dart';
 import '../event_repository.dart';
 import 'mock_data_seed.dart';
 
 /// Mock EventRepository. Also exposes dev-simulator-only trigger methods
-/// (triggerLevel1/2/3) that live on this concrete class, not on the
+/// (triggerCrash, triggerRollover, triggerSos, triggerCancel,
+/// triggerTechnical) that live on this concrete class, not on the
 /// EventRepository interface — the /dev panel casts to this type
-/// explicitly, keeping the production-facing interface clean.
+/// explicitly, and these mirror the real firmware taxonomy instead of an
+/// invented one.
 class MockEventRepository implements EventRepository {
-  final List<AccidentEvent> _events = [];
-  int _nextId = 1;
+  final Map<String, AccidentEvent> _events = {};
+  int _nextSeq = 1;
 
   final _eventsController = StreamController<List<AccidentEvent>>.broadcast();
   final _criticalController = StreamController<AccidentEvent?>.broadcast();
 
   @override
   Stream<List<AccidentEvent>> watchEvents(String userId) async* {
-    yield List.unmodifiable(_events);
+    yield _sortedEvents;
     yield* _eventsController.stream;
   }
 
@@ -29,98 +33,130 @@ class MockEventRepository implements EventRepository {
     yield* _criticalController.stream;
   }
 
+  List<AccidentEvent> get _sortedEvents {
+    final list = _events.values.toList()
+      ..sort((a, b) => (a.ts ?? a.receivedAt).compareTo(b.ts ?? b.receivedAt));
+    return List.unmodifiable(list);
+  }
+
   AccidentEvent? get _criticalEvent {
-    for (final event in _events.reversed) {
-      if (event.isActiveCritical) return event;
+    for (final event in _sortedEvents.reversed) {
+      if (shouldForceCriticalScreen(event)) return event;
     }
     return null;
   }
 
-  /// Level1: registered directly as `detected`, never leaves that status
-  /// except being superseded by a later event. Does not trigger navigation.
-  AccidentEvent triggerLevel1() {
-    final event = AccidentEvent(
-      id: _generateId(),
-      deviceId: MockDataSeed.deviceId,
-      userId: MockDataSeed.userId,
-      level: AccidentLevel.level1,
-      status: EventStatus.detected,
-      detectedAt: DateTime.now(),
-      location: MockDataSeed.initialLocation,
-      peakG: 2.1,
-    );
-    return _add(event);
-  }
-
-  /// Level2: starts in `pendingConfirmation` with a 15s wall-clock deadline
-  /// so the countdown UI can derive remaining time from `deadline` instead
-  /// of owning a local timer duration.
-  AccidentEvent triggerLevel2() {
+  AccidentEvent _triggerAccident({
+    required AccidentEventType type,
+    required AccidentSeverity severity,
+    bool queued = false,
+  }) {
+    final seq = _nextSeq++;
     final now = DateTime.now();
+    final occurredAt = queued ? now.subtract(const Duration(hours: 2)) : now;
     final event = AccidentEvent(
-      id: _generateId(),
       deviceId: MockDataSeed.deviceId,
+      type: type,
+      seq: seq,
+      ts: occurredAt,
+      timeSrc: 'gnss',
+      uptimeS: 48213,
+      vehicleLabel: 'Camioneta 04',
+      severity: severity,
+      detection: type == AccidentEventType.sos
+          ? null
+          : DetectionData(
+              peakG: severity == AccidentSeverity.grave
+                  ? 42.0
+                  : severity == AccidentSeverity.moderado
+                      ? 30.0
+                      : 18.0,
+              deltaVKmh: severity == AccidentSeverity.grave ? 24.0 : 12.0,
+              durationMs: 62,
+              axisPeak: 'y',
+              rollover: type == AccidentEventType.rollover,
+            ),
+      position: MockDataSeed.initialPosition,
+      queued: queued,
+      receivedAt: now,
       userId: MockDataSeed.userId,
-      level: AccidentLevel.level2,
-      status: EventStatus.pendingConfirmation,
-      detectedAt: now,
-      deadline: now.add(const Duration(seconds: 15)),
-      location: MockDataSeed.initialLocation,
-      peakG: 5.4,
-      contactsNotified: 2,
     );
-    return _add(event);
-  }
-
-  /// Level3: skips pendingConfirmation entirely, active immediately.
-  AccidentEvent triggerLevel3() {
-    final event = AccidentEvent(
-      id: _generateId(),
-      deviceId: MockDataSeed.deviceId,
-      userId: MockDataSeed.userId,
-      level: AccidentLevel.level3,
-      status: EventStatus.emergencyActive,
-      detectedAt: DateTime.now(),
-      location: MockDataSeed.initialLocation,
-      peakG: 9.8,
-      contactsNotified: 3,
-      rescueNotified: true,
-    );
-    return _add(event);
-  }
-
-  @override
-  Future<void> confirmEmergency(String eventId) async {
-    _update(eventId, (event) => event.copyWith(status: EventStatus.emergencyActive));
-  }
-
-  @override
-  Future<void> cancelAlert(String eventId) async {
-    _update(eventId, (event) => event.copyWith(status: EventStatus.cancelled));
-  }
-
-  @override
-  Future<void> closeIncident(String eventId) async {
-    _update(eventId, (event) => event.copyWith(status: EventStatus.closed));
-  }
-
-  String _generateId() => 'event-${_nextId++}';
-
-  AccidentEvent _add(AccidentEvent event) {
-    _events.add(event);
+    _events[event.dedupKey] = event;
     _emit();
     return event;
   }
 
-  void _update(String eventId, AccidentEvent Function(AccidentEvent) transform) {
-    final index = _events.indexWhere((event) => event.id == eventId);
-    if (index == -1) return;
-    _events[index] = transform(_events[index]);
+  AccidentEvent triggerCrash({AccidentSeverity severity = AccidentSeverity.grave, bool queued = false}) {
+    return _triggerAccident(type: AccidentEventType.crash, severity: severity, queued: queued);
+  }
+
+  AccidentEvent triggerRollover({AccidentSeverity severity = AccidentSeverity.grave, bool queued = false}) {
+    return _triggerAccident(type: AccidentEventType.rollover, severity: severity, queued: queued);
+  }
+
+  AccidentEvent triggerSos({bool queued = false}) {
+    return _triggerAccident(type: AccidentEventType.sos, severity: AccidentSeverity.none, queued: queued);
+  }
+
+  /// Simulates the physical CANCELAR button: publishes a `cancel` event
+  /// (its own seq) referencing [cancelsSeq], and projects
+  /// cancelledBySeq/cancelledAt onto the original — mirroring what the
+  /// real bridge does with a merge write.
+  void triggerCancel(int cancelsSeq) {
+    final originalKey = '${MockDataSeed.deviceId}_$cancelsSeq';
+    final original = _events[originalKey];
+
+    final cancelSeq = _nextSeq++;
+    final now = DateTime.now();
+    _events['${MockDataSeed.deviceId}_$cancelSeq'] = AccidentEvent(
+      deviceId: MockDataSeed.deviceId,
+      type: AccidentEventType.cancel,
+      seq: cancelSeq,
+      ts: now,
+      cancelsSeq: cancelsSeq,
+      reason: 'button',
+      elapsedS: original == null ? null : now.difference(original.ts ?? now).inSeconds,
+      receivedAt: now,
+      userId: MockDataSeed.userId,
+    );
+
+    if (original != null) {
+      _events[originalKey] = original.copyWith(cancelledBySeq: cancelSeq, cancelledAt: now);
+    }
+    _emit();
+  }
+
+  AccidentEvent triggerTechnical(AccidentEventType type) {
+    assert(type == AccidentEventType.test ||
+        type == AccidentEventType.powerLoss ||
+        type == AccidentEventType.lowBattery ||
+        type == AccidentEventType.booted);
+    final seq = _nextSeq++;
+    final now = DateTime.now();
+    final event = AccidentEvent(
+      deviceId: MockDataSeed.deviceId,
+      type: type,
+      seq: seq,
+      ts: now,
+      severity: AccidentSeverity.none,
+      receivedAt: now,
+      userId: MockDataSeed.userId,
+    );
+    _events[event.dedupKey] = event;
+    _emit();
+    return event;
+  }
+
+  @override
+  Future<void> acknowledge(String dedupKey) async {
+    final event = _events[dedupKey];
+    if (event == null) return;
+    _events[dedupKey] = event.copyWith(acknowledged: true);
     _emit();
   }
 
   void _emit() {
-    _eventsController.add(List.unmodifiable(_events));
+    _eventsController.add(_sortedEvents);
     _criticalController.add(_criticalEvent);
   }
 }

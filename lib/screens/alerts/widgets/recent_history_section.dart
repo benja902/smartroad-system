@@ -7,18 +7,19 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_time_formatting.dart';
 import '../../../models/accident_event.dart';
-import '../../../models/event_status.dart';
+import '../../../models/alert_presentation.dart';
 import '../../../widgets/section_header.dart';
 
-/// Resolved events (closed or cancelled), most recent first.
+/// Resolved/deferred events: cancelled by the device, acknowledged by the
+/// user, or arrived late from the offline queue — most recent first.
 class RecentHistorySection extends StatelessWidget {
-  final List<AccidentEvent> resolvedEvents;
+  final List<AccidentEvent> events;
 
-  const RecentHistorySection({super.key, required this.resolvedEvents});
+  const RecentHistorySection({super.key, required this.events});
 
   @override
   Widget build(BuildContext context) {
-    final recent = resolvedEvents.reversed.take(5).toList();
+    final recent = events.reversed.take(5).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,15 +50,37 @@ class _HistoryRow extends StatelessWidget {
 
   const _HistoryRow({required this.event});
 
-  bool get _isCancelled => event.status == EventStatus.cancelled;
-
   @override
   Widget build(BuildContext context) {
-    final icon = _isCancelled ? Icons.cancel : Icons.check_circle;
-    final color = _isCancelled ? AppColors.onSurfaceVariant : AppColors.success;
-    final title = _isCancelled ? 'Alerta cancelada' : 'Incidente cerrado';
-    final subtitle =
-        _isCancelled ? 'El usuario indicó falsa alarma.' : 'La alerta fue gestionada correctamente.';
+    final presentation = classify(event);
+
+    final IconData icon;
+    final Color color;
+    final String title;
+    final String subtitle;
+
+    switch (presentation) {
+      case AlertPresentation.cancelled:
+        icon = Icons.cancel;
+        color = AppColors.onSurfaceVariant;
+        title = 'Alerta cancelada';
+        subtitle = 'Anulada desde el equipo.';
+      case AlertPresentation.attended:
+        icon = Icons.check_circle;
+        color = AppColors.success;
+        title = 'Incidente atendido';
+        subtitle = 'Marcado como visto en la app.';
+      case AlertPresentation.deferred:
+        icon = Icons.schedule;
+        color = AppColors.warning;
+        title = 'Evento recibido con retraso';
+        subtitle = 'Ocurrió antes de que el equipo recuperara conexión.';
+      default:
+        icon = Icons.info_outline;
+        color = AppColors.onSurfaceVariant;
+        title = 'Evento registrado';
+        subtitle = '';
+    }
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
@@ -80,11 +103,15 @@ class _HistoryRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: AppTypography.bodyMd.copyWith(fontWeight: FontWeight.w600, color: AppColors.primary)),
-                Text(subtitle, style: AppTypography.labelSm.copyWith(color: AppColors.outline)),
+                if (subtitle.isNotEmpty)
+                  Text(subtitle, style: AppTypography.labelSm.copyWith(color: AppColors.outline)),
               ],
             ),
           ),
-          Text(formatRelativeTime(event.detectedAt), style: AppTypography.labelSm.copyWith(color: AppColors.outlineVariant)),
+          Text(
+            formatRelativeTime(event.ts ?? event.receivedAt),
+            style: AppTypography.labelSm.copyWith(color: AppColors.outlineVariant),
+          ),
         ],
       ),
     );

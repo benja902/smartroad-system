@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/date_time_formatting.dart';
+import '../../../models/accident_event.dart';
+import '../../../models/accident_event_type.dart';
 import '../../../models/device_status.dart';
 import '../../../widgets/section_header.dart';
 import 'alert_card.dart';
@@ -15,42 +18,57 @@ class _TechnicalIssue {
   const _TechnicalIssue({required this.icon, required this.title, required this.description});
 }
 
-/// Current technical/diagnostic status derived from DeviceStatus — not an
-/// AccidentEvent. Shows active issues (e.g. cellular down, GNSS
-/// unavailable) or an all-clear row when everything is connected.
+/// Current diagnostic status derived from DeviceStatus, plus technical
+/// events (test/power_loss/low_battery/booted) — never mixed with the
+/// accident feed.
 class TechnicalStatusSection extends StatelessWidget {
   final DeviceStatus? status;
+  final List<AccidentEvent> technicalEvents;
 
-  const TechnicalStatusSection({super.key, this.status});
+  const TechnicalStatusSection({super.key, this.status, this.technicalEvents = const []});
 
   List<_TechnicalIssue> _issuesFor(DeviceStatus status) {
     final issues = <_TechnicalIssue>[];
-    if (!status.cellularConnected) {
+    if (status.modem?.registered != true) {
       issues.add(const _TechnicalIssue(
-        icon: Icons.satellite_alt,
-        title: 'Conexión móvil no disponible',
-        description: 'El sistema activó el canal de respaldo para mantener la comunicación.',
+        icon: Icons.signal_cellular_off,
+        title: 'Sin red celular',
+        description: 'El equipo no está registrado en la red móvil en este momento.',
       ));
     }
-    if (!status.gnssAvailable || !status.gnssFix) {
+    if (status.gnss?.fix != true) {
       issues.add(const _TechnicalIssue(
         icon: Icons.gps_off,
         title: 'GNSS sin señal',
         description: 'La ubicación puede no actualizarse hasta recuperar señal satelital.',
       ));
     }
-    if (!status.adxl375Connected || !status.lsm6ds3Connected) {
+    if (status.adxl375?.ok == false || status.lsm6ds3?.ok == false) {
       issues.add(const _TechnicalIssue(
         icon: Icons.sensors_off,
         title: 'Sensor de impacto desconectado',
         description: 'Uno de los sensores de detección no está respondiendo.',
       ));
     }
+    if (status.pcf8574?.ok == false) {
+      issues.add(const _TechnicalIssue(
+        icon: Icons.power_off,
+        title: 'Expansor de botones/LED desconectado',
+        description: 'Sin él no funcionan los botones SOS/CANCELAR, los LED ni el buzzer.',
+      ));
+    }
+    if (status.storage?.present == false) {
+      issues.add(const _TechnicalIssue(
+        icon: Icons.sd_card_alert,
+        title: 'microSD ausente',
+        description: 'La cola de reenvío pasa a memoria volátil y se pierde el registro histórico.',
+      ));
+    }
     if (!status.online) {
       issues.add(const _TechnicalIssue(
         icon: Icons.wifi_off,
         title: 'Dispositivo desconectado',
-        description: 'No se reciben datos del dispositivo URBES en este momento.',
+        description: 'No se reciben datos del equipo en este momento.',
       ));
     }
     return issues;
@@ -126,7 +144,47 @@ class TechnicalStatusSection extends StatelessWidget {
               ],
             ],
           ),
+        if (technicalEvents.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.sm),
+          for (final event in technicalEvents) _TechnicalEventRow(event: event),
+        ],
       ],
+    );
+  }
+}
+
+class _TechnicalEventRow extends StatelessWidget {
+  final AccidentEvent event;
+
+  const _TechnicalEventRow({required this.event});
+
+  String get _label {
+    switch (event.type) {
+      case AccidentEventType.test:
+        return 'Prueba de sistema ejecutada';
+      case AccidentEventType.powerLoss:
+        return 'Pérdida de alimentación externa';
+      case AccidentEventType.lowBattery:
+        return 'Batería baja detectada';
+      case AccidentEventType.booted:
+        return 'El equipo se reinició';
+      default:
+        return 'Evento técnico';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+      child: Row(
+        children: [
+          const Icon(Icons.build_outlined, size: 18, color: AppColors.onSurfaceVariant),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(child: Text(_label, style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface))),
+          Text(formatRelativeTime(event.ts ?? event.receivedAt), style: AppTypography.labelSm.copyWith(color: AppColors.outline)),
+        ],
+      ),
     );
   }
 }

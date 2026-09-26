@@ -1,124 +1,124 @@
-import 'location_model.dart';
+import 'device_diagnostics.dart';
+import 'device_operational_state.dart';
+import 'gnss_position.dart';
+import 'modem_status.dart';
+import 'power_status.dart';
+import 'sensor_diagnostics.dart';
+import 'storage_status.dart';
 
-enum NetworkType { none, cellular2g, cellular3g, cellular4g, wifi }
-
-extension NetworkTypeLabel on NetworkType {
-  String get label {
-    switch (this) {
-      case NetworkType.none:
-        return 'Sin conexión celular';
-      case NetworkType.cellular2g:
-        return '2G conectado';
-      case NetworkType.cellular3g:
-        return '3G conectado';
-      case NetworkType.cellular4g:
-        return '4G conectado';
-      case NetworkType.wifi:
-        return 'Wi-Fi conectado';
-    }
-  }
-}
-
+/// Mirrors the firmware's `status` message (docs/device_contract.md),
+/// grouped by origin the same way the wire payload is. `online` is not
+/// part of `status` — it comes from the separate `availability` channel
+/// (LWT semantics: "the link dropped", not "stopped watching"), paired
+/// with `lastSeen` so the UI can tell how fresh everything else is.
 class DeviceStatus {
   final String deviceId;
-  final bool online;
-  final bool monitoring;
-  final bool adxl375Connected;
-  final bool lsm6ds3Connected;
-  final bool sim7000Connected;
-  final bool cellularConnected;
-  final NetworkType networkType;
+  final DeviceOperationalState state;
+  final String? firmwareVersion;
 
-  /// Signal bars, 0-4.
-  final int signalStrength;
-  final bool gnssAvailable;
-  final bool gnssFix;
+  final AdxlSensorStatus? adxl375;
+  final ImuSensorStatus? lsm6ds3;
+  final ExpanderStatus? pcf8574;
+
+  final ButtonInputs? inputs;
+  final OutputSignals? outputs;
+
+  final StorageStatus? storage;
+  final ModemStatus? modem;
+  final GnssPosition? gnss;
+  final PowerStatus? power;
+  final SystemDiagnostics? system;
+
+  /// From the `availability` MQTT topic (Last Will and Testament) via the
+  /// bridge — not from `status.state`.
+  final bool online;
   final DateTime lastSeen;
-  final LocationModel? location;
 
   const DeviceStatus({
     required this.deviceId,
-    required this.online,
-    required this.monitoring,
-    required this.adxl375Connected,
-    required this.lsm6ds3Connected,
-    required this.sim7000Connected,
-    required this.cellularConnected,
-    required this.networkType,
-    required this.signalStrength,
-    required this.gnssAvailable,
-    required this.gnssFix,
+    this.state = DeviceOperationalState.unknown,
+    this.firmwareVersion,
+    this.adxl375,
+    this.lsm6ds3,
+    this.pcf8574,
+    this.inputs,
+    this.outputs,
+    this.storage,
+    this.modem,
+    this.gnss,
+    this.power,
+    this.system,
+    this.online = false,
     required this.lastSeen,
-    this.location,
   });
 
+  /// Convenience for the mock repository (dev simulator toggles) and
+  /// tests. The real Firebase repository never mutates a DeviceStatus —
+  /// it only ever parses fresh ones from snapshots.
   DeviceStatus copyWith({
-    String? deviceId,
+    DeviceOperationalState? state,
+    AdxlSensorStatus? adxl375,
+    ImuSensorStatus? lsm6ds3,
+    ExpanderStatus? pcf8574,
+    StorageStatus? storage,
+    ModemStatus? modem,
+    GnssPosition? gnss,
+    PowerStatus? power,
     bool? online,
-    bool? monitoring,
-    bool? adxl375Connected,
-    bool? lsm6ds3Connected,
-    bool? sim7000Connected,
-    bool? cellularConnected,
-    NetworkType? networkType,
-    int? signalStrength,
-    bool? gnssAvailable,
-    bool? gnssFix,
     DateTime? lastSeen,
-    LocationModel? location,
   }) {
     return DeviceStatus(
-      deviceId: deviceId ?? this.deviceId,
+      deviceId: deviceId,
+      state: state ?? this.state,
+      firmwareVersion: firmwareVersion,
+      adxl375: adxl375 ?? this.adxl375,
+      lsm6ds3: lsm6ds3 ?? this.lsm6ds3,
+      pcf8574: pcf8574 ?? this.pcf8574,
+      inputs: inputs,
+      outputs: outputs,
+      storage: storage ?? this.storage,
+      modem: modem ?? this.modem,
+      gnss: gnss ?? this.gnss,
+      power: power ?? this.power,
+      system: system,
       online: online ?? this.online,
-      monitoring: monitoring ?? this.monitoring,
-      adxl375Connected: adxl375Connected ?? this.adxl375Connected,
-      lsm6ds3Connected: lsm6ds3Connected ?? this.lsm6ds3Connected,
-      sim7000Connected: sim7000Connected ?? this.sim7000Connected,
-      cellularConnected: cellularConnected ?? this.cellularConnected,
-      networkType: networkType ?? this.networkType,
-      signalStrength: signalStrength ?? this.signalStrength,
-      gnssAvailable: gnssAvailable ?? this.gnssAvailable,
-      gnssFix: gnssFix ?? this.gnssFix,
       lastSeen: lastSeen ?? this.lastSeen,
-      location: location ?? this.location,
     );
   }
 
-  factory DeviceStatus.fromJson(Map<String, dynamic> json) {
+  factory DeviceStatus.fromJson(String deviceId, Map<String, dynamic> json) {
+    Map<String, dynamic>? section(String key) {
+      final value = json[key];
+      return value == null ? null : Map<String, dynamic>.from(value as Map);
+    }
+
+    final sensors = section('sensors');
+    final availability = section('availability');
+
     return DeviceStatus(
-      deviceId: json['deviceId'] as String,
-      online: json['online'] as bool,
-      monitoring: json['monitoring'] as bool,
-      adxl375Connected: json['adxl375Connected'] as bool,
-      lsm6ds3Connected: json['lsm6ds3Connected'] as bool,
-      sim7000Connected: json['sim7000Connected'] as bool,
-      cellularConnected: json['cellularConnected'] as bool,
-      networkType: NetworkType.values.byName(json['networkType'] as String),
-      signalStrength: json['signalStrength'] as int,
-      gnssAvailable: json['gnssAvailable'] as bool,
-      gnssFix: json['gnssFix'] as bool,
-      lastSeen: DateTime.parse(json['lastSeen'] as String),
-      location: json['location'] == null
+      deviceId: deviceId,
+      state: DeviceOperationalState.parse(json['state'] as String?),
+      firmwareVersion: json['fw'] as String?,
+      adxl375: sensors?['adxl375'] == null
           ? null
-          : LocationModel.fromJson(json['location'] as Map<String, dynamic>),
+          : AdxlSensorStatus.fromJson(Map<String, dynamic>.from(sensors!['adxl375'] as Map)),
+      lsm6ds3: sensors?['lsm6ds3tr'] == null
+          ? null
+          : ImuSensorStatus.fromJson(Map<String, dynamic>.from(sensors!['lsm6ds3tr'] as Map)),
+      pcf8574: sensors?['pcf8574'] == null
+          ? null
+          : ExpanderStatus.fromJson(Map<String, dynamic>.from(sensors!['pcf8574'] as Map)),
+      inputs: section('inputs') == null ? null : ButtonInputs.fromJson(section('inputs')!),
+      outputs: section('outputs') == null ? null : OutputSignals.fromJson(section('outputs')!),
+      storage: section('sd') == null ? null : StorageStatus.fromJson(section('sd')!),
+      modem: section('modem') == null ? null : ModemStatus.fromJson(section('modem')!),
+      gnss: section('gnss') == null ? null : GnssPosition.fromJson(section('gnss')!),
+      power: section('power') == null ? null : PowerStatus.fromJson(section('power')!),
+      system: section('system') == null ? null : SystemDiagnostics.fromJson(section('system')!),
+      online: availability?['online'] as bool? ?? json['online'] as bool? ?? false,
+      lastSeen: json['lastSeen'] == null
+          ? DateTime.fromMillisecondsSinceEpoch(0)
+          : DateTime.fromMillisecondsSinceEpoch((json['lastSeen'] as num).toInt()),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'deviceId': deviceId,
-      'online': online,
-      'monitoring': monitoring,
-      'adxl375Connected': adxl375Connected,
-      'lsm6ds3Connected': lsm6ds3Connected,
-      'sim7000Connected': sim7000Connected,
-      'cellularConnected': cellularConnected,
-      'networkType': networkType.name,
-      'signalStrength': signalStrength,
-      'gnssAvailable': gnssAvailable,
-      'gnssFix': gnssFix,
-      'lastSeen': lastSeen.toIso8601String(),
-      'location': location?.toJson(),
-    };
   }
 }

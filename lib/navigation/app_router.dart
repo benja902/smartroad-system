@@ -1,15 +1,13 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
-import '../models/accident_level.dart';
-import '../models/event_status.dart';
+import '../models/alert_presentation.dart';
 import '../screens/alerts/alerts_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen_placeholder.dart';
 import '../screens/contacts/contacts_screen_placeholder.dart';
 import '../screens/dev/dev_simulator_screen.dart';
-import '../screens/emergency/level2_screen.dart';
-import '../screens/emergency/level3_screen.dart';
+import '../screens/emergency/active_emergency_screen.dart';
 import '../screens/history/history_screen_placeholder.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/incident_detail/incident_detail_screen_placeholder.dart';
@@ -17,6 +15,7 @@ import '../screens/profile/profile_screen_placeholder.dart';
 import '../screens/vehicle/vehicle_screen_placeholder.dart';
 import '../state/event_provider.dart';
 import '../state/session_provider.dart';
+import 'dev_navigation_override.dart';
 import 'main_shell.dart';
 
 class AppRoutes {
@@ -31,8 +30,7 @@ class AppRoutes {
   static const register = '/register';
   static const contacts = '/contacts';
   static const incidentDetail = '/incident';
-  static const emergencyLevel2 = '/emergency/level2';
-  static const emergencyLevel3 = '/emergency/level3';
+  static const activeEmergency = '/emergency/active';
   static const dev = '/dev';
 }
 
@@ -45,6 +43,7 @@ class AppRouter {
   static GoRouter build({
     required EventProvider eventProvider,
     required SessionProvider sessionProvider,
+    DevNavigationOverride? devOverride,
     bool includeDevRoute = false,
   }) {
     return GoRouter(
@@ -64,23 +63,27 @@ class AppRouter {
         }
 
         final event = eventProvider.criticalEvent;
-        final onEmergencyRoute =
-            location == AppRoutes.emergencyLevel2 || location == AppRoutes.emergencyLevel3;
+        final onEmergencyRoute = location == AppRoutes.activeEmergency;
+        final onDevRoute = location == AppRoutes.dev;
 
-        if (event != null &&
-            event.level == AccidentLevel.level3 &&
-            event.status != EventStatus.closed) {
-          return location == AppRoutes.emergencyLevel3 ? null : AppRoutes.emergencyLevel3;
+        // shouldForceCriticalScreen (not clasificar(...) == ...) on purpose —
+        // keeps presentation and interruption behavior decoupled.
+        if (event != null && shouldForceCriticalScreen(event)) {
+          // Dev-only escape hatch: "Volver a /dev" sets devOverride.eventKey
+          // to the event it left behind, so returning to /dev for THAT
+          // specific event isn't immediately bounced back. A genuinely new
+          // critical event (different dedupKey) still forces navigation to
+          // the emergency screen even while /dev is open — this only
+          // suppresses the redirect for the exact event you dismissed to
+          // go inspect /dev, not forever. Harmless in production: /dev
+          // isn't a registered route there, so onDevRoute is never true.
+          final devOverrideActive = onDevRoute && devOverride?.eventKey == event.dedupKey;
+          return (onEmergencyRoute || devOverrideActive) ? null : AppRoutes.activeEmergency;
         }
 
-        if (event != null &&
-            event.level == AccidentLevel.level2 &&
-            (event.status == EventStatus.pendingConfirmation ||
-                event.status == EventStatus.confirmed)) {
-          return location == AppRoutes.emergencyLevel2 ? null : AppRoutes.emergencyLevel2;
-        }
+        devOverride?.eventKey = null;
 
-        if (event == null && onEmergencyRoute) {
+        if (onEmergencyRoute) {
           return AppRoutes.home;
         }
 
@@ -117,12 +120,8 @@ class AppRouter {
           ],
         ),
         GoRoute(
-          path: AppRoutes.emergencyLevel2,
-          builder: (context, state) => const Level2Screen(),
-        ),
-        GoRoute(
-          path: AppRoutes.emergencyLevel3,
-          builder: (context, state) => const Level3Screen(),
+          path: AppRoutes.activeEmergency,
+          builder: (context, state) => const ActiveEmergencyScreen(),
         ),
         GoRoute(
           path: AppRoutes.login,

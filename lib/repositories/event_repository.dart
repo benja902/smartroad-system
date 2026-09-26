@@ -4,18 +4,16 @@ abstract class EventRepository {
   /// Full event log for a user — feeds Alertas and Home's recent-alerts list.
   Stream<List<AccidentEvent>> watchEvents(String userId);
 
-  /// The single most recent non-resolved level2/level3 event, or null.
-  /// Kept as its own stream (not derived client-side from [watchEvents])
-  /// so the app router's redirect has a cheap, single-purpose signal, and
-  /// so a future Firebase implementation can point this at a small
-  /// dedicated RTDB node instead of downloading the full event history.
+  /// The single most recent event where shouldForceCriticalScreen() is
+  /// true, or null. Kept as its own stream (not derived client-side from
+  /// [watchEvents]) so the router's redirect has a cheap, single-purpose
+  /// signal.
   Stream<AccidentEvent?> watchCriticalEvent(String userId);
 
-  /// User pressed "Necesito ayuda ahora", or a level2 countdown expired.
-  Future<void> confirmEmergency(String eventId);
-
-  /// User pressed "Cancelar alerta" during a level2 pendingConfirmation.
-  Future<void> cancelAlert(String eventId);
-
-  Future<void> closeIncident(String eventId);
+  /// The only mutation the app is allowed to make on an event — marks it
+  /// as seen by the user. This is what lets the critical screen stop
+  /// forcing itself even if the physical CANCELAR button on the device
+  /// was never pressed (e.g. a false alarm nobody cancels from the
+  /// equipment).
+  Future<void> acknowledge(String dedupKey);
 }

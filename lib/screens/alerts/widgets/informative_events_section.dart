@@ -5,11 +5,13 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_time_formatting.dart';
 import '../../../models/accident_event.dart';
+import '../../../models/accident_event_type.dart';
 import '../../../widgets/section_header.dart';
 import '../../../widgets/status_pill.dart';
 import 'alert_card.dart';
 
-/// Level1 events — informative, never interrupt navigation.
+/// crash/rollover events classified as informative (severity leve, or
+/// none/unknown) — never interrupts navigation.
 class InformativeEventsSection extends StatelessWidget {
   final List<AccidentEvent> events;
 
@@ -48,7 +50,10 @@ class _InformativeEventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locationLabel = event.location?.displayName;
+    final locationLabel = event.position?.fix == true
+        ? '${event.position!.latitude.toStringAsFixed(4)}, ${event.position!.longitude.toStringAsFixed(4)}'
+        : null;
+    final title = event.type == AccidentEventType.rollover ? 'Evento de vuelco leve' : 'Evento leve detectado';
 
     return AlertCard(
       accentColor: AppColors.outlineVariant,
@@ -69,15 +74,14 @@ class _InformativeEventCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Evento leve detectado',
-                        style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w700, color: AppColors.primary)),
+                    Text(title, style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w700, color: AppColors.primary)),
                     const SizedBox(height: 2),
                     Text('Se registró un movimiento o impacto menor en el vehículo.',
                         style: AppTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant)),
                   ],
                 ),
               ),
-              const StatusPill(label: 'Nivel 1', color: AppColors.onSurfaceVariant),
+              const StatusPill(label: 'Leve', color: AppColors.onSurfaceVariant),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -86,7 +90,7 @@ class _InformativeEventCard extends StatelessWidget {
             spacing: AppSpacing.sm,
             children: [
               Text(
-                [formatRelativeTime(event.detectedAt), ?locationLabel].join(' • '),
+                [formatRelativeTime(event.ts ?? event.receivedAt), ?locationLabel].join(' • '),
                 style: AppTypography.labelSm.copyWith(color: AppColors.outline),
               ),
               Text('Sin acción requerida',

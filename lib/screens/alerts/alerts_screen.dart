@@ -6,8 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/utils/date_time_formatting.dart';
-import '../../models/accident_level.dart';
-import '../../models/event_status.dart';
+import '../../models/alert_presentation.dart';
 import '../../navigation/app_router.dart';
 import '../../state/device_status_provider.dart';
 import '../../state/event_provider.dart';
@@ -23,11 +22,19 @@ class AlertsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final events = context.watch<EventProvider>().events;
     final deviceStatus = context.watch<DeviceStatusProvider>().status;
+    final eventProvider = context.read<EventProvider>();
 
-    final activeAlerts = events.where((e) => e.isActiveCritical).toList();
-    final informativeEvents = events.where((e) => e.level == AccidentLevel.level1).toList();
-    final resolvedEvents = events
-        .where((e) => e.status == EventStatus.closed || e.status == EventStatus.cancelled)
+    final activeAlerts = events
+        .where((e) => const {AlertPresentation.activeEmergency, AlertPresentation.attention}.contains(classify(e)))
+        .toList();
+    final informativeEvents = events.where((e) => classify(e) == AlertPresentation.informative).toList();
+    final technicalEvents = events.where((e) => classify(e) == AlertPresentation.technical).toList();
+    final historyEvents = events
+        .where((e) => const {
+              AlertPresentation.cancelled,
+              AlertPresentation.attended,
+              AlertPresentation.deferred,
+            }.contains(classify(e)))
         .toList();
 
     return Scaffold(
@@ -51,14 +58,15 @@ class AlertsScreen extends StatelessWidget {
                       const SizedBox(height: AppSpacing.md),
                       ActiveAlertsSection(
                         activeAlerts: activeAlerts,
-                        onViewDetails: (event) => context.push('${AppRoutes.incidentDetail}/${event.id}'),
+                        onViewDetails: (event) => context.push('${AppRoutes.incidentDetail}/${event.dedupKey}'),
+                        onAcknowledge: (event) => eventProvider.acknowledge(event.dedupKey),
                       ),
                       const SizedBox(height: AppSpacing.md),
                       InformativeEventsSection(events: informativeEvents),
                       const SizedBox(height: AppSpacing.md),
-                      TechnicalStatusSection(status: deviceStatus),
+                      TechnicalStatusSection(status: deviceStatus, technicalEvents: technicalEvents),
                       const SizedBox(height: AppSpacing.md),
-                      RecentHistorySection(resolvedEvents: resolvedEvents),
+                      RecentHistorySection(events: historyEvents),
                     ]),
                   ),
                 ),

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'navigation/app_router.dart';
 import 'navigation/dev_mode_flag.dart';
+import 'navigation/dev_navigation_override.dart';
 import 'state/event_provider.dart';
 import 'state/session_provider.dart';
 
@@ -19,6 +20,7 @@ class UrbesApp extends StatefulWidget {
 
 class _UrbesAppState extends State<UrbesApp> {
   late final GoRouter _router;
+  final _devOverride = DevNavigationOverride();
 
   @override
   void initState() {
@@ -26,14 +28,18 @@ class _UrbesAppState extends State<UrbesApp> {
     _router = AppRouter.build(
       eventProvider: context.read<EventProvider>(),
       sessionProvider: context.read<SessionProvider>(),
+      devOverride: _devOverride,
       includeDevRoute: widget.includeDevRoute,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Provider<DevModeFlag>.value(
-      value: DevModeFlag(widget.includeDevRoute),
+    return MultiProvider(
+      providers: [
+        Provider<DevModeFlag>.value(value: DevModeFlag(widget.includeDevRoute)),
+        Provider<DevNavigationOverride>.value(value: _devOverride),
+      ],
       child: MaterialApp.router(
         title: 'URBES',
         debugShowCheckedModeBanner: false,

@@ -5,17 +5,25 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_time_formatting.dart';
 import '../../../models/accident_event.dart';
-import '../../../models/accident_level.dart';
+import '../../../models/accident_event_type.dart';
+import '../../../models/alert_presentation.dart';
 import '../../../widgets/section_header.dart';
 import '../../../widgets/status_pill.dart';
 import 'alert_card.dart';
 
-/// Level2/3 events that are still unresolved — the most urgent section.
+/// Events currently classified as activeEmergency or attention — the most
+/// urgent, unresolved section.
 class ActiveAlertsSection extends StatelessWidget {
   final List<AccidentEvent> activeAlerts;
   final void Function(AccidentEvent event) onViewDetails;
+  final void Function(AccidentEvent event) onAcknowledge;
 
-  const ActiveAlertsSection({super.key, required this.activeAlerts, required this.onViewDetails});
+  const ActiveAlertsSection({
+    super.key,
+    required this.activeAlerts,
+    required this.onViewDetails,
+    required this.onAcknowledge,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +41,11 @@ class ActiveAlertsSection extends StatelessWidget {
           Column(
             children: [
               for (final event in activeAlerts) ...[
-                _ActiveAlertCard(event: event, onViewDetails: () => onViewDetails(event)),
+                _ActiveAlertCard(
+                  event: event,
+                  onViewDetails: () => onViewDetails(event),
+                  onAcknowledge: () => onAcknowledge(event),
+                ),
                 if (event != activeAlerts.last) const SizedBox(height: AppSpacing.sm),
               ],
             ],
@@ -46,22 +58,37 @@ class ActiveAlertsSection extends StatelessWidget {
 class _ActiveAlertCard extends StatelessWidget {
   final AccidentEvent event;
   final VoidCallback onViewDetails;
+  final VoidCallback onAcknowledge;
 
-  const _ActiveAlertCard({required this.event, required this.onViewDetails});
+  const _ActiveAlertCard({required this.event, required this.onViewDetails, required this.onAcknowledge});
 
-  Color get _color => event.level == AccidentLevel.level3 ? AppColors.critical : AppColors.warning;
+  bool get _isEmergency => classify(event) == AlertPresentation.activeEmergency;
 
-  String get _title =>
-      event.level == AccidentLevel.level3 ? 'Accidente severo detectado' : 'Posible accidente detectado';
+  Color get _color => _isEmergency ? AppColors.critical : AppColors.warning;
 
-  String get _description => event.level == AccidentLevel.level3
-      ? 'Impacto de alta severidad registrado en el vehículo.'
-      : 'Impacto inusual registrado en el vehículo.';
+  String get _title {
+    if (event.type == AccidentEventType.sos) return 'Auxilio solicitado (SOS)';
+    if (event.type == AccidentEventType.rollover) return _isEmergency ? 'Volcadura detectada' : 'Posible volcadura';
+    return _isEmergency ? 'Choque severo detectado' : 'Posible accidente detectado';
+  }
+
+  String get _description {
+    final peakG = event.detection?.peakG;
+    if (event.type == AccidentEventType.sos) return 'El ocupante solicitó ayuda manualmente.';
+    if (peakG != null) return 'Impacto registrado: ${peakG.toStringAsFixed(1)} g.';
+    return 'Impacto inusual registrado en el vehículo.';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final levelLabel = event.level == AccidentLevel.level3 ? 'Nivel 3' : 'Nivel 2';
-    final locationLabel = event.location?.displayName;
+    final label = event.type == AccidentEventType.sos
+        ? 'SOS'
+        : _isEmergency
+            ? 'Grave'
+            : 'Moderado';
+    final locationLabel = event.position?.fix == true
+        ? '${event.position!.latitude.toStringAsFixed(4)}, ${event.position!.longitude.toStringAsFixed(4)}'
+        : null;
 
     return AlertCard(
       accentColor: _color,
@@ -88,7 +115,7 @@ class _ActiveAlertCard extends StatelessWidget {
                   ],
                 ),
               ),
-              StatusPill(label: levelLabel, color: _color),
+              StatusPill(label: label, color: _color),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -101,18 +128,25 @@ class _ActiveAlertCard extends StatelessWidget {
             runSpacing: AppSpacing.xs,
             children: [
               Text(
-                [formatRelativeTime(event.detectedAt), ?locationLabel].join(' • '),
+                [formatRelativeTime(event.ts ?? event.receivedAt), ?locationLabel].join(' • '),
                 style: AppTypography.labelSm.copyWith(color: AppColors.outline),
               ),
-              ElevatedButton(
-                onPressed: onViewDetails,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _color,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(0, 40),
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                ),
-                child: const Text('Ver Detalles'),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton(onPressed: onAcknowledge, child: const Text('Ya lo vi')),
+                  const SizedBox(width: AppSpacing.xs),
+                  ElevatedButton(
+                    onPressed: onViewDetails,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _color,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(0, 40),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    ),
+                    child: const Text('Ver Detalles'),
+                  ),
+                ],
               ),
             ],
           ),

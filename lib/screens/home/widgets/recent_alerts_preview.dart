@@ -7,8 +7,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_time_formatting.dart';
 import '../../../models/accident_event.dart';
-import '../../../models/accident_level.dart';
-import '../../../models/event_status.dart';
+import '../../../models/accident_event_type.dart';
+import '../../../models/alert_presentation.dart';
 
 /// Preview of the most recent events on Home. Shows an all-clear row when
 /// there is no event history yet.
@@ -19,7 +19,8 @@ class RecentAlertsPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final recent = events.reversed.take(3).toList();
+    final visible = events.where((e) => classify(e) != AlertPresentation.cancellation).toList();
+    final recent = visible.reversed.take(3).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,8 +43,11 @@ class RecentAlertsPreview extends StatelessWidget {
                   icon: _iconFor(event),
                   iconColor: _colorFor(event),
                   title: _titleFor(event),
-                  subtitle: formatRelativeTime(event.detectedAt),
-                  emphasized: event.isActiveCritical,
+                  subtitle: formatRelativeTime(event.ts ?? event.receivedAt),
+                  emphasized: const {
+                    AlertPresentation.activeEmergency,
+                    AlertPresentation.attention,
+                  }.contains(classify(event)),
                 ),
                 if (event != recent.last) const SizedBox(height: AppSpacing.gutter),
               ],
@@ -54,38 +58,51 @@ class RecentAlertsPreview extends StatelessWidget {
   }
 
   IconData _iconFor(AccidentEvent event) {
-    if (event.status == EventStatus.cancelled) return Icons.cancel_outlined;
-    if (event.status == EventStatus.closed) return Icons.check_circle_outline;
-    switch (event.level) {
-      case AccidentLevel.level1:
-        return Icons.info_outline;
-      case AccidentLevel.level2:
-        return Icons.warning_amber_outlined;
-      case AccidentLevel.level3:
-        return Icons.report;
+    final presentation = classify(event);
+    if (presentation == AlertPresentation.cancelled) return Icons.cancel_outlined;
+    if (presentation == AlertPresentation.attended) return Icons.check_circle_outline;
+    if (presentation == AlertPresentation.technical) return Icons.build_outlined;
+    switch (event.type) {
+      case AccidentEventType.sos:
+        return Icons.emergency_share;
+      case AccidentEventType.rollover:
+        return Icons.change_circle;
+      default:
+        return presentation == AlertPresentation.informative ? Icons.info_outline : Icons.warning_amber_outlined;
     }
   }
 
   Color _colorFor(AccidentEvent event) {
-    if (!event.isActiveCritical) return AppColors.onSurfaceVariant;
-    switch (event.level) {
-      case AccidentLevel.level1:
-        return AppColors.success;
-      case AccidentLevel.level2:
-        return AppColors.warning;
-      case AccidentLevel.level3:
+    switch (classify(event)) {
+      case AlertPresentation.activeEmergency:
         return AppColors.critical;
+      case AlertPresentation.attention:
+        return AppColors.warning;
+      case AlertPresentation.informative:
+        return AppColors.success;
+      default:
+        return AppColors.onSurfaceVariant;
     }
   }
 
   String _titleFor(AccidentEvent event) {
-    switch (event.level) {
-      case AccidentLevel.level1:
-        return 'Evento informativo detectado';
-      case AccidentLevel.level2:
-        return 'Posible accidente — Nivel 2';
-      case AccidentLevel.level3:
-        return 'Accidente severo — Nivel 3';
+    switch (event.type) {
+      case AccidentEventType.sos:
+        return 'Auxilio solicitado (SOS)';
+      case AccidentEventType.rollover:
+        return 'Volcadura detectada';
+      case AccidentEventType.crash:
+        return 'Impacto detectado';
+      case AccidentEventType.test:
+        return 'Prueba de sistema';
+      case AccidentEventType.powerLoss:
+        return 'Pérdida de alimentación';
+      case AccidentEventType.lowBattery:
+        return 'Batería baja';
+      case AccidentEventType.booted:
+        return 'Equipo reiniciado';
+      default:
+        return 'Evento del sistema';
     }
   }
 }

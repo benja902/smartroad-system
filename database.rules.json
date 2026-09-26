@@ -8,7 +8,7 @@
     },
     "vehicles": {
       ".read": "auth != null",
-      ".indexOn": ["ownerId"],
+      ".indexOn": ["ownerId", "deviceId"],
       "$vehicleId": {
         ".write": "auth != null"
       }
@@ -16,14 +16,17 @@
     "devices": {
       ".read": "auth != null",
       "$deviceId": {
-        ".write": "auth != null"
+        ".write": false
       }
     },
     "events": {
       ".read": "auth != null",
-      ".indexOn": ["userId", "deviceId", "detectedAt"],
+      ".indexOn": ["userId", "deviceId", "seq"],
       "$eventId": {
-        ".write": "auth != null"
+        ".write": false,
+        "acknowledged": {
+          ".write": "auth != null"
+        }
       }
     },
     ".read": false,

@@ -48,11 +48,8 @@ class EventProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> confirmEmergency(String eventId) => _eventRepository.confirmEmergency(eventId);
-
-  Future<void> cancelAlert(String eventId) => _eventRepository.cancelAlert(eventId);
-
-  Future<void> closeIncident(String eventId) => _eventRepository.closeIncident(eventId);
+  /// The only mutation the app can make on an event: mark it as seen.
+  Future<void> acknowledge(String dedupKey) => _eventRepository.acknowledge(dedupKey);
 
   @override
   void dispose() {

@@ -3,12 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
 import 'package:smartroad/app.dart';
+import 'package:smartroad/models/accident_severity.dart';
 import 'package:smartroad/repositories/event_repository.dart';
 import 'package:smartroad/repositories/mock/mock_event_repository.dart';
 import 'test_helpers.dart';
 
 void main() {
-  testWidgets('Level3 detection forces immediate navigation with no countdown', (tester) async {
+  testWidgets('Grave crash forces the active-emergency screen with real actions only', (tester) async {
     final key = GlobalKey();
     await tester.pumpWidget(mockAppProviders(child: UrbesApp(key: key)));
     await tester.pumpAndSettle();
@@ -16,16 +17,17 @@ void main() {
     final context = key.currentContext!;
     final repo = context.read<EventRepository>() as MockEventRepository;
 
-    repo.triggerLevel3();
+    repo.triggerCrash();
     await tester.pumpAndSettle();
 
-    expect(find.text('ACCIDENTE SEVERO DETECTADO'), findsOneWidget);
+    expect(find.text('CHOQUE SEVERO DETECTADO'), findsOneWidget);
     expect(find.text('LLAMAR A EMERGENCIAS'), findsOneWidget);
-    // No countdown/cancel affordances on Nivel 3.
+    // No confirm/cancel affordances — the app can't originate either.
+    expect(find.text('Necesito ayuda ahora'), findsNothing);
     expect(find.text('Cancelar alerta'), findsNothing);
   });
 
-  testWidgets('Level2 detection shows countdown; cancel returns to Home', (tester) async {
+  testWidgets('SOS forces the same active-emergency screen', (tester) async {
     final key = GlobalKey();
     await tester.pumpWidget(mockAppProviders(child: UrbesApp(key: key)));
     await tester.pumpAndSettle();
@@ -33,22 +35,28 @@ void main() {
     final context = key.currentContext!;
     final repo = context.read<EventRepository>() as MockEventRepository;
 
-    repo.triggerLevel2();
+    repo.triggerSos();
     await tester.pumpAndSettle();
 
-    expect(find.text('POSIBLE ACCIDENTE DETECTADO'), findsOneWidget);
-    expect(find.text('Cancelar alerta'), findsOneWidget);
+    expect(find.text('AUXILIO SOLICITADO'), findsOneWidget);
+  });
 
-    await tester.ensureVisible(find.text('Cancelar alerta'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Cancelar alerta'));
+  testWidgets('Queued grave crash never forces the critical screen', (tester) async {
+    final key = GlobalKey();
+    await tester.pumpWidget(mockAppProviders(child: UrbesApp(key: key)));
     await tester.pumpAndSettle();
 
-    expect(find.text('POSIBLE ACCIDENTE DETECTADO'), findsNothing);
+    final context = key.currentContext!;
+    final repo = context.read<EventRepository>() as MockEventRepository;
+
+    repo.triggerCrash(queued: true);
+    await tester.pumpAndSettle();
+
+    expect(find.text('CHOQUE SEVERO DETECTADO'), findsNothing);
     expect(find.text('Inicio'), findsOneWidget);
   });
 
-  testWidgets('Level2 confirmEmergency transitions to active state on the same route', (tester) async {
+  testWidgets('A cancel referencing the active event closes the critical screen', (tester) async {
     final key = GlobalKey();
     await tester.pumpWidget(mockAppProviders(child: UrbesApp(key: key)));
     await tester.pumpAndSettle();
@@ -56,14 +64,49 @@ void main() {
     final context = key.currentContext!;
     final repo = context.read<EventRepository>() as MockEventRepository;
 
-    repo.triggerLevel2();
+    final event = repo.triggerCrash();
+    await tester.pumpAndSettle();
+    expect(find.text('CHOQUE SEVERO DETECTADO'), findsOneWidget);
+
+    repo.triggerCancel(event.seq);
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Necesito ayuda ahora'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Necesito ayuda ahora'));
+    expect(find.text('CHOQUE SEVERO DETECTADO'), findsNothing);
+    expect(find.text('Inicio'), findsOneWidget);
+  });
+
+  testWidgets('"Ya lo vi" acknowledges the event and closes the critical screen', (tester) async {
+    final key = GlobalKey();
+    await tester.pumpWidget(mockAppProviders(child: UrbesApp(key: key)));
     await tester.pumpAndSettle();
 
-    expect(find.text('EMERGENCIA EN CURSO'), findsOneWidget);
+    final context = key.currentContext!;
+    final repo = context.read<EventRepository>() as MockEventRepository;
+
+    repo.triggerCrash();
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Ya lo vi — marcar como atendido'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ya lo vi — marcar como atendido'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('CHOQUE SEVERO DETECTADO'), findsNothing);
+    expect(find.text('Inicio'), findsOneWidget);
+  });
+
+  testWidgets('Moderado crash does not force the critical screen', (tester) async {
+    final key = GlobalKey();
+    await tester.pumpWidget(mockAppProviders(child: UrbesApp(key: key)));
+    await tester.pumpAndSettle();
+
+    final context = key.currentContext!;
+    final repo = context.read<EventRepository>() as MockEventRepository;
+
+    repo.triggerCrash(severity: AccidentSeverity.moderado);
+    await tester.pumpAndSettle();
+
+    expect(find.text('CHOQUE SEVERO DETECTADO'), findsNothing);
+    expect(find.text('Inicio'), findsOneWidget);
   });
 }
