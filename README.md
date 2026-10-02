@@ -1,17 +1,24 @@
-# smartroad
+# SmartRoad
 
-A new Flutter project.
+SmartRoad es una aplicación Android desarrollada con Flutter para recibir, procesar y notificar incidentes generados por el dispositivo SDA.
 
-## Getting Started
+## Arquitectura vigente
 
-This project is a starting point for a Flutter application.
+- El backend se alojará en Google Cloud.
+- Firebase Authentication gestiona la identidad.
+- Firebase Realtime Database es la fuente de datos de la aplicación.
+- Firebase Cloud Messaging entrega las notificaciones.
+- El consumidor MQTT persistente y el webhook HTTP de Iridium/Ground Control son componentes backend separados que convergen en el mismo modelo canónico de incidentes.
 
-A few resources to get you started if this is your first Flutter project:
+La infraestructura concreta y su despliegue se definirán e implementarán en la fase 8 del plan.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Documentación normativa
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- [Manual vigente del SDA](manual-sda%20(4).html): referencia versionada del dispositivo.
+- [Contrato del dispositivo](docs/device_contract.md): contrato que debe consumir el software.
+- [Arquitectura](docs/ARCHITECTURE.md): arquitectura objetivo.
+- [Alcance del MVP](docs/MVP_SCOPE.md): alcance aprobado.
+- [Plan de implementación](docs/IMPLEMENTATION_PLAN.md): fases de implementación.
+- [Reglas de trabajo](AGENTS.md): reglas permanentes.
+
+`manual-sda.html` y cualquier manual anterior se conservan únicamente como antecedentes históricos. No deben utilizarse para definir comportamiento vigente cuando contradigan a `manual-sda (4).html`.

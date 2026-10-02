@@ -4,6 +4,19 @@ import 'detection_data.dart';
 import 'event_device_snapshot.dart';
 import 'gnss_position.dart';
 
+DateTime? _parseEventTimestamp(Object? value) {
+  if (value == null) return null;
+  if (value is String) return DateTime.tryParse(value);
+  if (value is num) {
+    try {
+      return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+    } on Error {
+      return null;
+    }
+  }
+  return null;
+}
+
 /// An accident-system event, shaped to match exactly what the firmware
 /// publishes (via the MQTT→backend bridge) per docs/device_contract.md —
 /// not an app-invented abstraction. Fields are grouped by where they come
@@ -48,6 +61,10 @@ class AccidentEvent {
   /// app can query a user's events cheaply without a client-side join.
   final String userId;
 
+  /// Vehicle resolved by the backend from the active device association.
+  /// Optional while historical events still contain only [userId].
+  final String? vehicleId;
+
   /// Set by the bridge, projected onto THIS event's node when a `cancel`
   /// event referencing it (cancelsSeq == this.seq) arrives. Written via an
   /// idempotent/merge write keyed by deviceId+cancelsSeq — see
@@ -77,6 +94,7 @@ class AccidentEvent {
     this.elapsedS,
     required this.receivedAt,
     required this.userId,
+    this.vehicleId,
     this.cancelledBySeq,
     this.cancelledAt,
     this.acknowledged = false,
@@ -109,6 +127,7 @@ class AccidentEvent {
       elapsedS: elapsedS,
       receivedAt: receivedAt,
       userId: userId,
+      vehicleId: vehicleId,
       cancelledBySeq: cancelledBySeq ?? this.cancelledBySeq,
       cancelledAt: cancelledAt ?? this.cancelledAt,
       acknowledged: acknowledged ?? this.acknowledged,
@@ -120,7 +139,7 @@ class AccidentEvent {
       deviceId: json['id'] as String? ?? json['deviceId'] as String,
       type: AccidentEventType.parse(json['type'] as String?),
       seq: (json['seq'] as num).toInt(),
-      ts: json['ts'] == null ? null : DateTime.tryParse(json['ts'] as String),
+      ts: _parseEventTimestamp(json['ts']),
       timeSrc: json['time_src'] as String?,
       uptimeS: (json['uptime_s'] as num?)?.toInt(),
       vehicleLabel: json['vehicle_label'] as String?,
@@ -143,6 +162,7 @@ class AccidentEvent {
           ? DateTime.now()
           : DateTime.fromMillisecondsSinceEpoch((json['receivedAt'] as num).toInt()),
       userId: json['userId'] as String? ?? '',
+      vehicleId: json['vehicleId'] as String?,
       cancelledBySeq: (json['cancelledBySeq'] as num?)?.toInt(),
       cancelledAt: json['cancelledAt'] == null
           ? null
@@ -171,6 +191,7 @@ class AccidentEvent {
       'elapsed_s': elapsedS,
       'receivedAt': receivedAt.millisecondsSinceEpoch,
       'userId': userId,
+      'vehicleId': vehicleId,
       'cancelledBySeq': cancelledBySeq,
       'cancelledAt': cancelledAt?.millisecondsSinceEpoch,
       'acknowledged': acknowledged,

@@ -5,6 +5,7 @@ import '../../models/accident_event_type.dart';
 import '../../models/accident_severity.dart';
 import '../../models/alert_presentation.dart';
 import '../../models/detection_data.dart';
+import '../../models/user_incident_state.dart';
 import '../event_repository.dart';
 import 'mock_data_seed.dart';
 
@@ -16,21 +17,42 @@ import 'mock_data_seed.dart';
 /// invented one.
 class MockEventRepository implements EventRepository {
   final Map<String, AccidentEvent> _events = {};
+  final Map<String, Map<String, bool>> _userIncidentState = {};
+  final bool readUserIncidentState;
+
+  MockEventRepository({this.readUserIncidentState = false});
+
+  /// DEV fixture only; does not change the acknowledge production contract.
+  void seedUserIncidentState(
+    String userId,
+    String eventKey, {
+    required bool acknowledged,
+  }) {
+    (_userIncidentState[userId] ??= {})[eventKey] = acknowledged;
+    _emit();
+  }
+
   int _nextSeq = 1;
 
   final _eventsController = StreamController<List<AccidentEvent>>.broadcast();
-  final _criticalController = StreamController<AccidentEvent?>.broadcast();
 
   @override
-  Stream<List<AccidentEvent>> watchEvents(String userId) async* {
-    yield _sortedEvents;
-    yield* _eventsController.stream;
+  Stream<List<AccidentEvent>> watchEvents(
+    String userId, {
+    String? vehicleId,
+  }) async* {
+    yield _eventsFor(userId, vehicleId);
+    yield* _eventsController.stream.map((_) => _eventsFor(userId, vehicleId));
   }
 
   @override
-  Stream<AccidentEvent?> watchCriticalEvent(String userId) async* {
-    yield _criticalEvent;
-    yield* _criticalController.stream;
+  Stream<AccidentEvent?> watchCriticalEvent(
+    String userId, {
+    String? vehicleId,
+  }) async* {
+    await for (final events in watchEvents(userId, vehicleId: vehicleId)) {
+      yield _criticalEventFrom(events);
+    }
   }
 
   List<AccidentEvent> get _sortedEvents {
@@ -39,8 +61,30 @@ class MockEventRepository implements EventRepository {
     return List.unmodifiable(list);
   }
 
-  AccidentEvent? get _criticalEvent {
-    for (final event in _sortedEvents.reversed) {
+  List<AccidentEvent> _eventsFor(String userId, String? vehicleId) {
+    final events = vehicleId == null
+        ? _sortedEvents
+        : _sortedEvents
+              .where(
+                (event) =>
+                    event.userId == userId || event.vehicleId == vehicleId,
+              )
+              .toList(growable: false);
+    if (!readUserIncidentState) return List.unmodifiable(events);
+    return List.unmodifiable(
+      events.map((event) {
+        final personal = _userIncidentState[userId]?[event.dedupKey];
+        return applyUserIncidentState(
+          event,
+          userId,
+          personal == null ? null : {'acknowledged': personal},
+        );
+      }),
+    );
+  }
+
+  AccidentEvent? _criticalEventFrom(List<AccidentEvent> events) {
+    for (final event in events.reversed) {
       if (shouldForceCriticalScreen(event)) return event;
     }
     return null;
@@ -50,6 +94,7 @@ class MockEventRepository implements EventRepository {
     required AccidentEventType type,
     required AccidentSeverity severity,
     bool queued = false,
+    String? vehicleId,
   }) {
     final seq = _nextSeq++;
     final now = DateTime.now();
@@ -69,8 +114,8 @@ class MockEventRepository implements EventRepository {
               peakG: severity == AccidentSeverity.grave
                   ? 42.0
                   : severity == AccidentSeverity.moderado
-                      ? 30.0
-                      : 18.0,
+                  ? 30.0
+                  : 18.0,
               deltaVKmh: severity == AccidentSeverity.grave ? 24.0 : 12.0,
               durationMs: 62,
               axisPeak: 'y',
@@ -80,22 +125,46 @@ class MockEventRepository implements EventRepository {
       queued: queued,
       receivedAt: now,
       userId: MockDataSeed.userId,
+      vehicleId: vehicleId,
     );
     _events[event.dedupKey] = event;
     _emit();
     return event;
   }
 
-  AccidentEvent triggerCrash({AccidentSeverity severity = AccidentSeverity.grave, bool queued = false}) {
-    return _triggerAccident(type: AccidentEventType.crash, severity: severity, queued: queued);
+  AccidentEvent triggerCrash({
+    AccidentSeverity severity = AccidentSeverity.grave,
+    bool queued = false,
+    String? vehicleId,
+  }) {
+    return _triggerAccident(
+      type: AccidentEventType.crash,
+      severity: severity,
+      queued: queued,
+      vehicleId: vehicleId,
+    );
   }
 
-  AccidentEvent triggerRollover({AccidentSeverity severity = AccidentSeverity.grave, bool queued = false}) {
-    return _triggerAccident(type: AccidentEventType.rollover, severity: severity, queued: queued);
+  AccidentEvent triggerRollover({
+    AccidentSeverity severity = AccidentSeverity.grave,
+    bool queued = false,
+    String? vehicleId,
+  }) {
+    return _triggerAccident(
+      type: AccidentEventType.rollover,
+      severity: severity,
+      queued: queued,
+      vehicleId: vehicleId,
+    );
   }
 
-  AccidentEvent triggerSos({bool queued = false}) {
-    return _triggerAccident(type: AccidentEventType.sos, severity: AccidentSeverity.none, queued: queued);
+  AccidentEvent triggerSos({bool queued = false, String? vehicleId}) {
+    return _triggerAccident(
+      type: AccidentEventType.sos,
+      severity: AccidentSeverity.none,
+      queued: queued,
+      vehicleId: vehicleId,
+    );
   }
 
   /// Simulates the physical CANCELAR button: publishes a `cancel` event
@@ -115,22 +184,29 @@ class MockEventRepository implements EventRepository {
       ts: now,
       cancelsSeq: cancelsSeq,
       reason: 'button',
-      elapsedS: original == null ? null : now.difference(original.ts ?? now).inSeconds,
+      elapsedS: original == null
+          ? null
+          : now.difference(original.ts ?? now).inSeconds,
       receivedAt: now,
       userId: MockDataSeed.userId,
     );
 
     if (original != null) {
-      _events[originalKey] = original.copyWith(cancelledBySeq: cancelSeq, cancelledAt: now);
+      _events[originalKey] = original.copyWith(
+        cancelledBySeq: cancelSeq,
+        cancelledAt: now,
+      );
     }
     _emit();
   }
 
   AccidentEvent triggerTechnical(AccidentEventType type) {
-    assert(type == AccidentEventType.test ||
-        type == AccidentEventType.powerLoss ||
-        type == AccidentEventType.lowBattery ||
-        type == AccidentEventType.booted);
+    assert(
+      type == AccidentEventType.test ||
+          type == AccidentEventType.powerLoss ||
+          type == AccidentEventType.lowBattery ||
+          type == AccidentEventType.booted,
+    );
     final seq = _nextSeq++;
     final now = DateTime.now();
     final event = AccidentEvent(
@@ -157,6 +233,5 @@ class MockEventRepository implements EventRepository {
 
   void _emit() {
     _eventsController.add(_sortedEvents);
-    _criticalController.add(_criticalEvent);
   }
 }

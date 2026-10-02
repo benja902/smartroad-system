@@ -1,0 +1,3577 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Documentación técnica y de operación del sensor de accidentes vehiculares SDA.">
+<title>Sensor de Accidentes SDA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#F6F7F8; --surface:#FFFFFF; --surface-2:#EEF1F4; --surface-3:#E1E5E9;
+  --ink:#0D0F13; --ink-2:#3F4750; --ink-3:#7B8492;
+  --line:#E1E5E9; --line-2:#C9CFD6;
+  --accent:#2F6FEB; --accent-soft:#EEF3FE; --accent-ink:#1E52C0;
+  --signal:#C77A0A; --ok:#0E8F5E; --warn:#C77A0A; --crit:#C5363B;
+  --ok-bg:#D6F2E5; --warn-bg:#FCEBCB; --crit-bg:#FBDDDE;
+  --code-bg:#14171C; --code-ink:#EEF1F4; --code-dim:#9AA0AA;
+  --shadow:0 1px 3px rgba(20,23,28,.08), 0 12px 28px rgba(20,23,28,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0B0D0F; --surface:#14171C; --surface-2:#21252C; --surface-3:#333844;
+    --ink:#EEF1F4; --ink-2:#A6AEB8; --ink-3:#7B8492;
+    --line:#262B31; --line-2:#3F4750;
+    --accent:#6291F0; --accent-soft:#141C2B; --accent-ink:#9CBBF5;
+    --signal:#F4A11A; --ok:#35BF8B; --warn:#F4A11A; --crit:#E5484D;
+    --ok-bg:#0F2620; --warn-bg:#2A2011; --crit-bg:#2B1618;
+    --code-bg:#08090C; --code-ink:#EEF1F4; --code-dim:#7B8492;
+    --shadow:0 1px 3px rgba(0,0,0,.5), 0 12px 28px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0B0D0F; --surface:#14171C; --surface-2:#21252C; --surface-3:#333844;
+  --ink:#EEF1F4; --ink-2:#A6AEB8; --ink-3:#7B8492;
+  --line:#262B31; --line-2:#3F4750;
+  --accent:#6291F0; --accent-soft:#141C2B; --accent-ink:#9CBBF5;
+  --signal:#F4A11A; --ok:#35BF8B; --warn:#F4A11A; --crit:#E5484D;
+  --ok-bg:#0F2620; --warn-bg:#2A2011; --crit-bg:#2B1618;
+  --code-bg:#08090C; --code-ink:#EEF1F4; --code-dim:#7B8492;
+  --shadow:0 1px 3px rgba(0,0,0,.5), 0 12px 28px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Manrope",system-ui,-apple-system,Segoe UI,sans-serif;
+  font-size:16px; line-height:1.62; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:Archivo,"Manrope",system-ui,sans-serif; text-wrap:balance; margin:0}
+code,pre,.mono,.num{font-family:"JetBrains Mono",ui-monospace,Consolas,monospace}
+a{color:var(--accent-ink); text-underline-offset:3px}
+:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(47,111,235,.45); border-radius:4px}
+
+.cover{background:#14171C; border-bottom:1px solid #21252C}
+.cover-in{max-width:1180px; margin:0 auto; padding:60px 24px 46px; display:grid; gap:22px}
+.eyebrow{font-family:"JetBrains Mono",monospace; font-size:12px; letter-spacing:.14em;
+  text-transform:uppercase; color:#6291F0; margin:0}
+.cover h1{font-size:clamp(30px,4.6vw,52px); line-height:1.06; letter-spacing:-.02em;
+  max-width:16ch; color:#FFFFFF; font-weight:700}
+.cover p.lead{margin:0; max-width:64ch; font-size:17px; color:#A6AEB8}
+.cover-meta{display:flex; flex-wrap:wrap; gap:10px 26px; padding-top:16px;
+  border-top:1px solid #333844; font-size:13.5px; color:#9AA0AA}
+.cover-meta b{font-family:"JetBrains Mono",monospace; font-weight:500; color:#EEF1F4}
+
+.wrap{max-width:1180px; margin:0 auto; padding:0 24px; display:grid; gap:40px;
+  grid-template-columns:1fr; align-items:start}
+@media(min-width:1000px){ .wrap{grid-template-columns:230px minmax(0,1fr); gap:56px} }
+
+nav.toc{position:static; padding:28px 0 0; font-size:14px}
+@media(min-width:1000px){ nav.toc{position:sticky; top:0; max-height:100vh; overflow-y:auto; padding:36px 0 40px} }
+nav.toc h2{font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--ink-3); font-weight:500; margin:0 0 12px}
+nav.toc ol{list-style:none; margin:0; padding:0; display:grid; gap:2px}
+nav.toc a{display:grid; grid-template-columns:24px 1fr; gap:6px; padding:5px 8px; border-radius:5px;
+  color:var(--ink-2); text-decoration:none; line-height:1.35}
+nav.toc a:hover{background:var(--surface-2); color:var(--ink)}
+nav.toc a .n{font-family:"JetBrains Mono",monospace; font-size:12px; color:var(--ink-3)}
+
+main{padding:36px 0 90px; min-width:0; display:grid; gap:60px}
+section{scroll-margin-top:24px; display:grid; gap:20px}
+section > h2{font-size:clamp(23px,2.6vw,30px); letter-spacing:-.015em; line-height:1.15;
+  padding-bottom:10px; border-bottom:2px solid var(--accent); display:grid; gap:6px}
+section > h2 .n{font-family:"JetBrains Mono",monospace; font-size:12px; letter-spacing:.14em;
+  color:var(--accent); font-weight:500}
+h3{font-size:19px; letter-spacing:-.01em; margin-top:14px}
+h4{font-size:15.5px; letter-spacing:.005em; color:var(--ink-2)}
+p{margin:0; max-width:74ch}
+section > ul, section > ol{max-width:74ch}
+ul,ol{margin:0; padding-left:22px; display:grid; gap:7px}
+li{padding-left:2px}
+li::marker{color:var(--ink-3)}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  padding:22px 24px; display:grid; gap:14px; box-shadow:var(--shadow)}
+.card h3{margin-top:0}
+.grid2{display:grid; gap:16px; grid-template-columns:1fr}
+@media(min-width:760px){ .grid2{grid-template-columns:1fr 1fr} }
+.grid3{display:grid; gap:16px; grid-template-columns:1fr}
+@media(min-width:760px){ .grid3{grid-template-columns:repeat(3,1fr)} }
+
+.note{border-left:3px solid var(--accent); background:var(--accent-soft);
+  padding:14px 18px; border-radius:0 8px 8px 0; display:grid; gap:6px; font-size:15px; max-width:78ch}
+.note.warn{border-left-color:var(--warn); background:var(--warn-bg)}
+.note.crit{border-left-color:var(--crit); background:var(--crit-bg)}
+.note b{font-family:Archivo,sans-serif}
+
+.tbl-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:9px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:14.5px; min-width:520px}
+th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); vertical-align:top}
+thead th{background:var(--surface-2); font-family:"JetBrains Mono",monospace; font-weight:500;
+  font-size:11.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-2); white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td code, th code{font-size:13px}
+td.num{font-variant-numeric:tabular-nums; white-space:nowrap}
+code{background:var(--surface-2); border:1px solid var(--line); padding:.08em .34em;
+  border-radius:4px; font-size:.88em}
+pre{margin:0; background:var(--code-bg); color:var(--code-ink); border-radius:9px;
+  padding:16px 18px; overflow-x:auto; font-size:13.2px; line-height:1.62; border:1px solid var(--line)}
+pre code{background:none; border:0; padding:0; font-size:inherit; color:inherit}
+pre .c{color:var(--code-dim); font-style:italic}
+.filename{font-family:"JetBrains Mono",monospace; font-size:12px; color:var(--ink-2);
+  background:var(--surface-2); border:1px solid var(--line); border-bottom:0;
+  padding:7px 14px; border-radius:9px 9px 0 0; display:inline-block}
+.filename + pre{border-radius:0 9px 9px 9px}
+
+.tag{display:inline-block; font-family:"JetBrains Mono",monospace; font-size:11.5px;
+  letter-spacing:.05em; padding:2px 8px; border-radius:20px; border:1px solid var(--line-2);
+  color:var(--ink-2); background:var(--surface-2); white-space:nowrap}
+.tag.ok{color:var(--ok); border-color:var(--ok); background:var(--ok-bg)}
+.tag.warn{color:var(--warn); border-color:var(--warn); background:var(--warn-bg)}
+.tag.crit{color:var(--crit); border-color:var(--crit); background:var(--crit-bg)}
+.tag.ac{color:var(--accent); border-color:var(--accent); background:var(--accent-soft)}
+
+.steps{list-style:none; padding:0; counter-reset:step; display:grid; gap:14px; max-width:78ch}
+.steps > li{counter-increment:step; display:grid; grid-template-columns:30px 1fr; gap:14px;
+  padding-left:0; align-items:start}
+.steps > li::before{content:counter(step); font-family:"JetBrains Mono",monospace; font-size:13px;
+  width:30px; height:30px; border-radius:50%; display:grid; place-items:center;
+  background:var(--accent); color:var(--surface); font-weight:500}
+.steps > li > div{display:grid; gap:5px; padding-top:3px}
+.steps b{font-family:Archivo,sans-serif; font-size:15.5px}
+
+figure{margin:0; display:grid; gap:10px}
+figure svg{width:100%; height:auto; display:block}
+figcaption{font-size:13.5px; color:var(--ink-3); max-width:74ch}
+.fig-box{background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  padding:20px; box-shadow:var(--shadow); overflow-x:auto}
+
+.dg-fill{fill:var(--surface-2)}
+.dg-fill-2{fill:var(--surface-3)}
+.dg-acc{fill:var(--accent-soft)}
+.dg-stroke{stroke:var(--line-2); fill:none; stroke-width:1.4}
+.dg-stroke-acc{stroke:var(--accent); fill:none; stroke-width:1.6}
+.dg-line{stroke:var(--ink-3); fill:none; stroke-width:1.4}
+.dg-arrow{fill:var(--ink-3); stroke:none}
+.dg-arrow-acc{fill:var(--accent); stroke:none}
+.dg-dash{stroke:var(--ink-3); fill:none; stroke-width:1.2; stroke-dasharray:4 4}
+.dg-t{fill:var(--ink); font-family:"Manrope",sans-serif; font-size:12.5px}
+.dg-t-b{fill:var(--ink); font-family:Archivo,sans-serif; font-size:13px; font-weight:600}
+.dg-t-s{fill:var(--ink-3); font-family:"JetBrains Mono",monospace; font-size:10.5px; letter-spacing:.04em}
+.dg-t-acc{fill:var(--accent); font-family:"JetBrains Mono",monospace; font-size:11px}
+.dg-ok{fill:var(--ok)} .dg-crit{fill:var(--crit)} .dg-warn{fill:var(--warn)}
+.dg-ok-s{stroke:var(--ok)} .dg-crit-s{stroke:var(--crit)}
+
+hr{border:0; border-top:1px solid var(--line); margin:6px 0}
+.kv{display:grid; gap:8px; font-size:14.5px}
+.kv > div{display:grid; grid-template-columns:1fr auto; gap:12px; padding-bottom:7px;
+  border-bottom:1px dashed var(--line)}
+.kv > div:last-child{border-bottom:0; padding-bottom:0}
+.kv span{color:var(--ink-2)}
+.kv b{font-family:"JetBrains Mono",monospace; font-weight:500}
+footer{border-top:1px solid var(--line); background:var(--surface);
+  padding:28px 24px; font-size:13.5px; color:var(--ink-3)}
+footer div{max-width:1180px; margin:0 auto; display:grid; gap:6px}
+@media(prefers-reduced-motion:no-preference){ html{scroll-behavior:smooth} }
+
+/* ---------- impresión ---------- */
+@media print{
+  :root, :root:not([data-theme="light"]), :root[data-theme="dark"]{
+    --paper:#FFFFFF; --surface:#FFFFFF; --surface-2:#F2F4F6; --surface-3:#E6E9ED;
+    --ink:#0D0F13; --ink-2:#3F4750; --ink-3:#5B6470;
+    --line:#C9CFD6; --line-2:#A6AEB8;
+    --accent:#1E52C0; --accent-soft:#F3F6FE; --accent-ink:#1E52C0;
+    --ok:#0E8F5E; --warn:#8A5606; --crit:#A62B30;
+    --ok-bg:#EDF7F2; --warn-bg:#FBF3E2; --crit-bg:#FBEDED;
+    --code-bg:#F2F4F6; --code-ink:#14171C; --code-dim:#5B6470;
+    --shadow:none;
+  }
+  @page{ margin:16mm 14mm }
+  body{font-size:10.5pt; line-height:1.5}
+  nav.toc{display:none}
+  .wrap{grid-template-columns:1fr; padding:0; max-width:none; gap:0}
+  .cover{background:#FFFFFF; border-bottom:2px solid #14171C}
+  .cover-in{padding:0 0 18px}
+  .cover h1{color:#0D0F13}
+  .cover p.lead{color:#3F4750}
+  .cover-meta{color:#3F4750; border-top-color:#C9CFD6}
+  .cover-meta b{color:#0D0F13}
+  .eyebrow{color:#1E52C0}
+  main{gap:26px; padding:14px 0 0}
+  section > h2{break-after:avoid; page-break-after:avoid}
+  h3,h4{break-after:avoid; page-break-after:avoid}
+  .card,.note,figure,.tbl-wrap,pre,.steps > li{break-inside:avoid; page-break-inside:avoid}
+  .tbl-wrap{overflow:visible}
+  table{min-width:0}
+  pre{white-space:pre-wrap; word-break:break-word; border:1px solid #C9CFD6}
+  a{color:inherit; text-decoration:none}
+  footer{border-top:1px solid #C9CFD6}
+}
+</style>
+
+</head>
+<body>
+<header class="cover">
+  <div class="cover-in">
+    <p class="eyebrow">Documentación técnica y de operación</p>
+    <h1>Sensor de accidentes vehiculares SDA</h1>
+    <p class="lead">
+      Equipo de detección automática de choque y volcadura, con aviso por Internet móvil,
+      respaldo por SMS, canal satelital Iridium cuando el celular no confirma el incidente,
+      y registro local en microSD. Este documento describe el funcionamiento interno, la
+      integración del servidor del cliente con el broker MQTT y con Firebase, el canal
+      RockBLOCK, el procedimiento de calibración, las pruebas de aceptación y el manual de
+      la interfaz web.
+    </p>
+    <div class="cover-meta">
+      <span>Firmware <b>1.0.0</b></span>
+      <span>Plataforma <b>LilyGo T-SIM7600G-H · ESP32-WROVER-E</b></span>
+      <span>Transporte <b>MQTT 3.1.1 sobre TLS · Iridium SBD</b></span>
+      <span>Documento <b>SDA-DOC-01</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+<nav class="toc">
+  <h2>Contenido</h2>
+  <ol>
+    <li><a href="#s1"><span class="n">01</span><span>Resumen del sistema</span></a></li>
+    <li><a href="#s2"><span class="n">02</span><span>Arquitectura</span></a></li>
+    <li><a href="#s3"><span class="n">03</span><span>Hardware del equipo</span></a></li>
+    <li><a href="#s4"><span class="n">04</span><span>Detección de accidentes</span></a></li>
+    <li><a href="#s5"><span class="n">05</span><span>Ciclo de alerta y botones</span></a></li>
+    <li><a href="#s6"><span class="n">06</span><span>Señalización local</span></a></li>
+    <li><a href="#s7"><span class="n">07</span><span>Integración MQTT</span></a></li>
+    <li><a href="#s8"><span class="n">08</span><span>Integración con Firebase</span></a></li>
+    <li><a href="#s9"><span class="n">09</span><span>Calibración de montaje</span></a></li>
+    <li><a href="#s10"><span class="n">10</span><span>Pruebas de aceptación</span></a></li>
+    <li><a href="#s11"><span class="n">11</span><span>Manual de la interfaz web</span></a></li>
+    <li><a href="#s12"><span class="n">12</span><span>Parámetros de configuración</span></a></li>
+    <li><a href="#s13"><span class="n">13</span><span>Operación y mantenimiento</span></a></li>
+    <li><a href="#s14"><span class="n">14</span><span>Canal satelital RockBLOCK</span></a></li>
+    <li><a href="#s15"><span class="n">15</span><span>Anexos</span></a></li>
+  </ol>
+</nav>
+
+<main>
+<!-- =============== 1 =============== -->
+<section id="s1">
+  <h2><span class="n">Sección 01</span>Resumen del sistema</h2>
+
+  <p>
+    El SDA es un equipo autónomo que se instala en el vehículo y vigila de forma permanente la
+    aceleración y la orientación. Cuando reconoce un choque o una volcadura genera un evento,
+    espera un plazo de gracia para que el ocupante pueda anularlo y luego publica la alerta con
+    la posición GNSS al servidor del cliente. No requiere ninguna acción del conductor.
+  </p>
+
+  <div class="grid3">
+    <div class="card">
+      <h3>Detecta</h3>
+      <p>Choque por pico de aceleración y por cambio de velocidad. Volcadura por inclinación
+         sostenida y por velocidad angular. Pedido manual de auxilio con el botón SOS.</p>
+    </div>
+    <div class="card">
+      <h3>Avisa</h3>
+      <p>Publicación MQTT sobre TLS con QoS 1 hacia el broker del cliente. Respaldo por SMS a
+         hasta tres números cuando el canal de datos no está disponible. Si un choque o una
+         volcadura no se confirma por celular, el mismo incidente sale por Iridium en 39 bytes.</p>
+    </div>
+    <div class="card">
+      <h3>Registra</h3>
+      <p>Evento en microSD antes de intentar el envío, cola de reenvío persistente y grabación
+         de la aceleración cruda desde 5 s antes hasta 10 s después del impacto.</p>
+    </div>
+  </div>
+
+  <h3>Comportamiento garantizado por diseño</h3>
+  <ul>
+    <li><b>Ningún evento se pierde por falta de cobertura.</b> El evento se escribe en la microSD
+        antes de publicarlo y solo se borra de la cola cuando el broker confirma la recepción
+        (PUBACK de QoS 1). Al recuperar señal, los pendientes se publican en orden con su marca
+        de tiempo original y el campo <code>queued</code> en <code>true</code>.</li>
+    <li><b>Toda alerta es anulable.</b> El plazo de gracia previo al envío es de 10 s de fábrica,
+        y después del envío queda una ventana de anulación de 120 s. Ambos son configurables.</li>
+    <li><b>El canal está cifrado.</b> TLS con verificación del certificado del servidor contra la
+        raíz ISRG Root X1 cargada en el almacén del módem.</li>
+    <li><b>La configuración es local.</b> Los únicos comandos que el equipo acepta por MQTT son de
+        consulta. No existe comando remoto que cambie parámetros, reinicie el equipo ni desactive
+        la detección.</li>
+  </ul>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Componente</th><th>Modelo</th><th>Función en el sistema</th></tr></thead>
+      <tbody>
+        <tr><td>Procesador</td><td>ESP32-WROVER-E, 4 MB flash, 8 MB PSRAM</td><td>Detección, máquina de estados, servidor web, almacenamiento</td></tr>
+        <tr><td>Acelerómetro de alto rango</td><td>ADXL375, ±200 g</td><td>Pico de impacto e integración de delta-V</td></tr>
+        <tr><td>Unidad inercial</td><td>LSM6DS3TR-C, ±16 g y ±2000 °/s</td><td>Orientación, volcadura, velocidad angular, reposo</td></tr>
+        <tr><td>Expansor de puertos</td><td>PCF8574 en 0x20</td><td>Botones SOS y CANCELAR, dos LED y buzzer</td></tr>
+        <tr><td>Módem celular</td><td>SIM7600G-H R2, LTE Cat-4</td><td>Datos, SMS y GNSS</td></tr>
+        <tr><td>Módulo satelital</td><td>RockBLOCK 9603 / 9603N</td><td>Iridium SBD. Un crédito por choque o volcadura no confirmados por celular</td></tr>
+        <tr><td>Almacenamiento</td><td>microSD</td><td>Eventos, telemetría, cola de reenvío y caja negra</td></tr>
+        <tr><td>Alimentación</td><td>USB-C 5 V, entrada solar, batería LiPo</td><td>Operación continua y respaldo ante corte</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- =============== 2 =============== -->
+<section id="s2">
+  <h2><span class="n">Sección 02</span>Arquitectura</h2>
+
+  <p>
+    La cadena completa va del sensor a la aplicación del cliente. El equipo publica en el broker
+    MQTT, un servicio puente consume esos mensajes y los escribe en Firebase, y la aplicación lee
+    de Firebase. Cada tramo es independiente: una caída del puente no detiene al equipo, porque
+    el broker retiene los mensajes de la sesión persistente.
+  </p>
+
+  <figure>
+    <div class="fig-box">
+      <svg viewBox="0 0 940 352" role="img" aria-label="Diagrama de arquitectura del sistema">
+        <text class="dg-t-s" x="8" y="26">FLUJO DE UNA ALERTA</text>
+        <path class="dg-stroke" d="M8 36 H932" stroke-dasharray="2 5"/>
+        <text class="dg-t-acc" x="8" y="62">Impacto → detección → plazo de gracia → publicación → confirmación del broker → Firestore → notificación</text>
+
+        <text class="dg-t-s" x="182" y="100" text-anchor="middle">I2C · 400 kHz</text>
+        <text class="dg-t-s" x="374" y="100" text-anchor="middle">UART · AT</text>
+        <text class="dg-t-s" x="566" y="100" text-anchor="middle">LTE · TLS</text>
+        <text class="dg-t-s" x="758" y="100" text-anchor="middle">MQTT · QoS 1</text>
+
+        <rect class="dg-fill" x="8" y="110" width="156" height="120" rx="8"/>
+        <rect class="dg-stroke" x="8" y="110" width="156" height="120" rx="8"/>
+        <text class="dg-t-b" x="24" y="136">Sensores y botones</text>
+        <text class="dg-t" x="24" y="162">ADXL375 · ±200 g</text>
+        <text class="dg-t" x="24" y="184">LSM6DS3TR-C</text>
+        <text class="dg-t" x="24" y="206">SOS · CANCELAR</text>
+
+        <rect class="dg-acc" x="200" y="110" width="156" height="120" rx="8"/>
+        <rect class="dg-stroke-acc" x="200" y="110" width="156" height="120" rx="8"/>
+        <text class="dg-t-b" x="216" y="136">ESP32-WROVER-E</text>
+        <text class="dg-t" x="216" y="162">Detección</text>
+        <text class="dg-t" x="216" y="184">Máquina de alerta</text>
+        <text class="dg-t" x="216" y="206">Cola de reenvío</text>
+
+        <rect class="dg-fill" x="392" y="110" width="156" height="120" rx="8"/>
+        <rect class="dg-stroke" x="392" y="110" width="156" height="120" rx="8"/>
+        <text class="dg-t-b" x="408" y="136">SIM7600G-H</text>
+        <text class="dg-t" x="408" y="162">LTE Cat-4 · GNSS</text>
+        <text class="dg-t" x="408" y="184">Cliente MQTT</text>
+        <text class="dg-t" x="408" y="206">SMS</text>
+
+        <rect class="dg-fill" x="584" y="110" width="156" height="120" rx="8"/>
+        <rect class="dg-stroke" x="584" y="110" width="156" height="120" rx="8"/>
+        <text class="dg-t-b" x="600" y="136">HiveMQ Cloud</text>
+        <text class="dg-t" x="600" y="162">Broker MQTT</text>
+        <text class="dg-t" x="600" y="184">TLS 8883</text>
+        <text class="dg-t" x="600" y="206">Sesión persistente</text>
+
+        <rect class="dg-acc" x="776" y="110" width="156" height="120" rx="8"/>
+        <rect class="dg-stroke-acc" x="776" y="110" width="156" height="120" rx="8"/>
+        <text class="dg-t-b" x="792" y="136">Firebase</text>
+        <text class="dg-t" x="792" y="162">Puente MQTT</text>
+        <text class="dg-t" x="792" y="184">Firestore</text>
+        <text class="dg-t" x="792" y="206">App del cliente</text>
+
+        <path class="dg-line" d="M166 170 H190"/><path class="dg-arrow" d="M188 165 L197 170 L188 175 Z"/>
+        <path class="dg-line" d="M358 170 H382"/><path class="dg-arrow" d="M380 165 L389 170 L380 175 Z"/>
+        <path class="dg-line" d="M550 170 H574"/><path class="dg-arrow" d="M572 165 L581 170 L572 175 Z"/>
+        <path class="dg-line" d="M742 170 H766"/><path class="dg-arrow" d="M764 165 L773 170 L764 175 Z"/>
+
+        <path class="dg-dash" d="M86 230 V272"/>
+        <path class="dg-dash" d="M278 230 V272"/>
+        <path class="dg-dash" d="M470 230 V272"/>
+
+        <rect class="dg-fill-2" x="8" y="272" width="156" height="68" rx="8"/>
+        <rect class="dg-stroke" x="8" y="272" width="156" height="68" rx="8"/>
+        <text class="dg-t-b" x="24" y="298">Interfaz web local</text>
+        <text class="dg-t" x="24" y="322">WiFi · 192.168.4.1</text>
+
+        <rect class="dg-fill-2" x="200" y="272" width="156" height="68" rx="8"/>
+        <rect class="dg-stroke" x="200" y="272" width="156" height="68" rx="8"/>
+        <text class="dg-t-b" x="216" y="298">microSD</text>
+        <text class="dg-t" x="216" y="322">Eventos · cola · registro</text>
+
+        <rect class="dg-fill-2" x="392" y="272" width="156" height="68" rx="8"/>
+        <rect class="dg-stroke" x="392" y="272" width="156" height="68" rx="8"/>
+        <text class="dg-t-b" x="408" y="298">SMS de respaldo</text>
+        <text class="dg-t" x="408" y="322">Hasta 3 destinatarios</text>
+
+        <path class="dg-dash" d="M662 230 V272"/>
+        <rect class="dg-fill-2" x="584" y="272" width="156" height="68" rx="8"/>
+        <rect class="dg-stroke" x="584" y="272" width="156" height="68" rx="8"/>
+        <text class="dg-t-b" x="600" y="298">RockBLOCK 9603</text>
+        <text class="dg-t" x="600" y="322">Iridium SBD · 39 B</text>
+      </svg>
+    </div>
+    <figcaption>
+      Ruta de datos completa. Las líneas continuas son el camino de la alerta en operación normal.
+      Las líneas punteadas son las funciones locales del equipo y el canal satelital, que no pasan
+      por el broker. El RockBLOCK cuelga de UART0 del ESP32, no del SIM7600. El detalle está en la
+      <a href="#s14">sección 14</a>.
+    </figcaption>
+  </figure>
+
+  <h3>Reparto de tareas dentro del firmware</h3>
+  <p>
+    El firmware corre sobre FreeRTOS con tareas separadas. La detección tiene prioridad sobre la
+    comunicación, de modo que una publicación lenta o una reconexión del módem no retrasa el
+    muestreo de los sensores.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Tarea</th><th>Periodo</th><th>Responsabilidad</th></tr></thead>
+      <tbody>
+        <tr><td><code>t_core</code></td><td class="num">20 ms</td><td>Lectura de las FIFO de los sensores, detección, botones, máquina de alerta, LED y buzzer</td></tr>
+        <tr><td><code>t_modem</code></td><td class="num">100 ms</td><td>Registro celular, GNSS, conexión MQTT, publicación, cola de reenvío y SMS</td></tr>
+        <tr><td><code>t_storage</code></td><td class="num">Bajo demanda</td><td>Escritura de eventos, telemetría, caja negra y rotación de archivos</td></tr>
+        <tr><td><code>t_satellite</code></td><td class="num">Bajo demanda</td><td>Bandeja de un incidente Iridium, sesiones SBD y reintentos. No se registra en el perro guardián: una sesión correcta puede durar 20 a 30 s</td></tr>
+        <tr><td><code>t_web</code></td><td class="num">Bajo demanda</td><td>Punto de acceso WiFi, servidor HTTP y API local</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Un perro guardián de 30 s supervisa las tareas. Si se producen cinco reinicios inesperados en
+    10 minutos, el equipo entra en modo seguro: mantiene la interfaz web y el diagnóstico activos
+    para permitir la revisión.
+  </p>
+</section>
+
+<!-- =============== 3 =============== -->
+<section id="s3">
+  <h2><span class="n">Sección 03</span>Hardware del equipo</h2>
+
+  <p>
+    Todo lo que el equipo mide y todo lo que el usuario toca pasa por un único bus de comunicación
+    de dos hilos. Esta sección describe cada componente, qué aporta al sistema y qué ocurre cuando
+    alguno no está disponible.
+  </p>
+
+  <figure>
+    <div class="fig-box">
+      <svg viewBox="0 0 940 300" role="img" aria-label="Bus de sensores del equipo">
+        <rect class="dg-acc" x="16" y="96" width="164" height="90" rx="8"/>
+        <rect class="dg-stroke-acc" x="16" y="96" width="164" height="90" rx="8"/>
+        <text class="dg-t-b" x="32" y="126">ESP32-WROVER-E</text>
+        <text class="dg-t" x="32" y="148">GPIO21 · SDA</text>
+        <text class="dg-t" x="32" y="168">GPIO22 · SCL</text>
+
+        <path class="dg-stroke-acc" d="M180 132 H904"/>
+        <path class="dg-stroke-acc" d="M180 158 H904"/>
+        <text class="dg-t-s" x="856" y="124">SDA</text>
+        <text class="dg-t-s" x="856" y="182">SCL</text>
+        <text class="dg-t-s" x="240" y="70">BUS I2C ÚNICO · 400 kHz</text>
+        <path class="dg-stroke" d="M16 80 H924" stroke-dasharray="2 5"/>
+
+        <g>
+          <path class="dg-stroke" d="M280 158 V212"/>
+          <path class="dg-stroke" d="M300 132 V212"/>
+          <rect class="dg-fill" x="216" y="212" width="188" height="74" rx="8"/>
+          <rect class="dg-stroke" x="216" y="212" width="188" height="74" rx="8"/>
+          <text class="dg-t-b" x="232" y="238">PCF8574</text>
+          <text class="dg-t-acc" x="344" y="238">0x20</text>
+          <text class="dg-t" x="232" y="260">Botones, LED y buzzer</text>
+          <text class="dg-t-s" x="232" y="278">2 ENTRADAS · 3 SALIDAS</text>
+        </g>
+        <g>
+          <path class="dg-stroke" d="M500 158 V212"/>
+          <path class="dg-stroke" d="M520 132 V212"/>
+          <rect class="dg-fill" x="436" y="212" width="188" height="74" rx="8"/>
+          <rect class="dg-stroke" x="436" y="212" width="188" height="74" rx="8"/>
+          <text class="dg-t-b" x="452" y="238">ADXL375</text>
+          <text class="dg-t-acc" x="564" y="238">0x53</text>
+          <text class="dg-t" x="452" y="260">Pico de impacto</text>
+          <text class="dg-t-s" x="452" y="278">±200 G · 400 HZ</text>
+        </g>
+        <g>
+          <path class="dg-stroke" d="M720 158 V212"/>
+          <path class="dg-stroke" d="M740 132 V212"/>
+          <rect class="dg-fill" x="656" y="212" width="200" height="74" rx="8"/>
+          <rect class="dg-stroke" x="656" y="212" width="200" height="74" rx="8"/>
+          <text class="dg-t-b" x="672" y="238">LSM6DS3TR-C</text>
+          <text class="dg-t-acc" x="796" y="238">0x6A</text>
+          <text class="dg-t" x="672" y="260">Orientación y giro</text>
+          <text class="dg-t-s" x="672" y="278">±16 G · ±2000 °/S · 208 HZ</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>
+      Los tres dispositivos comparten el mismo par de líneas y se distinguen por su dirección. El
+      equipo barre el bus al arrancar y muestra las direcciones encontradas en la interfaz web.
+    </figcaption>
+  </figure>
+
+  <h3>3.1 Acelerómetro de impacto ADXL375</h3>
+  <p>
+    Mide hasta ±200 g. Es el sensor que entrega la magnitud verdadera de un choque: un impacto real
+    supera con facilidad los 16 g y cualquier acelerómetro de rango convencional se satura, con lo
+    que informaría un valor recortado en lugar del pico real.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Característica</th><th>Valor</th><th>Consecuencia en el sistema</th></tr></thead>
+      <tbody>
+        <tr><td>Rango</td><td>±200 g</td><td>Mide el pico completo de un choque sin recorte</td></tr>
+        <tr><td>Frecuencia de muestreo</td><td class="num">400 Hz</td><td>Resuelve impulsos de pocos milisegundos</td></tr>
+        <tr><td>Memoria interna</td><td>32 muestras</td><td>Guarda 80 ms de historia, cuatro veces el periodo de lectura</td></tr>
+        <tr><td>Verificación de identidad</td><td>Registro <code>DEVID</code>, valor 0xE5</td><td>Distingue un sensor incorrecto de un sensor ausente</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Aporta dos magnitudes al evento publicado: el pico en g y el delta-V, que resulta de integrar la
+    aceleración en la ventana configurada.
+  </p>
+
+  <h3>3.2 Unidad inercial LSM6DS3TR-C</h3>
+  <p>
+    Combina acelerómetro de ±16 g y giroscopio de ±2000 °/s. Su resolución es la adecuada para medir
+    ángulos, que es justamente lo que el ADXL375 no puede hacer con precisión por su rango amplio.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Magnitud</th><th>Uso</th></tr></thead>
+      <tbody>
+        <tr><td>Alabeo y cabeceo</td><td>Detección de volcadura por inclinación sostenida</td></tr>
+        <tr><td>Velocidad angular</td><td>Vía rápida de volcadura: adelanta la alerta cuando el vehículo está girando</td></tr>
+        <tr><td>Aceleración de rango medio</td><td>Confirma el cambio de velocidad en impactos moderados</td></tr>
+        <tr><td>Condición de reposo</td><td>Habilita la verificación previa de la calibración y el filtro de vehículo detenido</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Verificación de identidad por el registro <code>WHO_AM_I</code>, con valor esperado 0x6A. Los dos
+    sensores se leen por bloques cada 20 ms desde su memoria interna.
+  </p>
+
+  <div class="note">
+    <b>Operación con un sensor no disponible.</b> Si el ADXL375 deja de responder, la detección de
+    impacto continúa con el acelerómetro del LSM6DS3TR-C, limitada a ±16 g, y el evento se publica
+    con <code>degraded: true</code>. Si es el LSM6DS3TR-C el que no responde, la detección de impacto
+    se mantiene y la vía de volcadura queda en pausa. El equipo informa la condición con tres
+    destellos del LED rojo y en el campo <code>sensors</code> del estado publicado.
+  </div>
+
+  <h3>3.3 Expansor de puertos PCF8574</h3>
+  <p>
+    La placa base reserva casi todos sus pines para el módem, la tarjeta de memoria y las medidas de
+    alimentación. Quedan libres únicamente los dos del bus I2C. El expansor resuelve esa limitación:
+    con un solo dispositivo en el bus, el equipo gana ocho líneas de entrada y salida.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Pin</th><th>Señal</th><th>Tipo</th><th>Detalle eléctrico</th></tr></thead>
+      <tbody>
+        <tr><td><code>P0</code></td><td>Botón CANCELAR</td><td>Entrada</td><td>Resistencia a positivo, se activa al conectar a masa</td></tr>
+        <tr><td><code>P1</code></td><td>Botón SOS</td><td>Entrada</td><td>Resistencia a positivo, se activa al conectar a masa</td></tr>
+        <tr><td><code>P2</code> · <code>P3</code></td><td>Reservados</td><td>—</td><td>Disponibles para ampliaciones</td></tr>
+        <tr><td><code>P4</code></td><td>Buzzer</td><td>Salida</td><td>Gobierna un transistor. El buzzer tiene oscilador propio</td></tr>
+        <tr><td><code>P5</code></td><td>LED verde</td><td>Salida</td><td>Conexión en drenaje con resistencia de 330 Ω</td></tr>
+        <tr><td><code>P6</code></td><td>LED rojo</td><td>Salida</td><td>Conexión en drenaje con resistencia de 330 Ω</td></tr>
+        <tr><td><code>P7</code></td><td>Reservado</td><td>—</td><td>Disponible para ampliaciones</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Los LED se conectan de forma que el expansor absorbe la corriente en lugar de entregarla, porque
+    esa es la configuración que el integrado soporta con holgura. El firmware escribe el estado
+    seguro de las tres salidas en su primera operación sobre el bus, antes de cualquier otra
+    inicialización, de modo que el buzzer no queda sonando durante el arranque.
+  </p>
+  <div class="note warn">
+    <b>El expansor es un componente crítico.</b> Sin él no hay botones, LED ni buzzer. Si deja de
+    responder, el equipo lo señala como falla crítica y mantiene activos la detección, la
+    publicación y la interfaz web. La dirección de fábrica es 0x20; el equipo también acepta 0x38,
+    que es la que corresponde a la variante A del integrado.
+  </div>
+
+  <h3>3.4 Botones</h3>
+  <p>
+    Dos pulsadores, ambos de contacto momentáneo. Se leen 50 veces por segundo con antirrebote de
+    50 ms, lo que da una latencia máxima de 70 ms entre la pulsación y su reconocimiento.
+  </p>
+  <div class="grid2">
+    <div class="card">
+      <h4>SOS</h4>
+      <p>Pide auxilio de forma manual. Una pulsación abre la cuenta regresiva de 10 segundos.
+         Mantenerlo 3 segundos envía de inmediato, sin cuenta regresiva.</p>
+      <p class="mono" style="font-size:13px; color:var(--ink-3)">Pin P1 del expansor</p>
+    </div>
+    <div class="card">
+      <h4>CANCELAR</h4>
+      <p>Detiene el envío durante la cuenta regresiva. Después del envío, y dentro de la ventana de
+         anulación, publica la anulación. En operación normal silencia el buzzer.</p>
+      <p class="mono" style="font-size:13px; color:var(--ink-3)">Pin P0 del expansor</p>
+    </div>
+  </div>
+  <p>
+    La combinación de ambos botones durante 5 segundos ejecuta la prueba de sistema. El detalle
+    completo de las pulsaciones está en la <a href="#s5">sección 05</a>.
+  </p>
+
+  <h3>3.5 LED y buzzer</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Indicador</th><th>Función</th><th>Cuándo mirarlo</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>LED verde</td>
+          <td>Confirma que el equipo está operando y señala los momentos en que se puede cancelar una alerta. También da un destello de un segundo cada vez que un evento llega al servidor</td>
+          <td>Al subir al vehículo, para confirmar que el equipo trabaja</td>
+        </tr>
+        <tr>
+          <td>LED rojo</td>
+          <td>Informa condiciones que conviene revisar, con un código de conteo de destellos. Apagado significa que no hay ninguna</td>
+          <td>En la revisión mensual, y ante cualquier duda</td>
+        </tr>
+        <tr>
+          <td>Buzzer</td>
+          <td>Avisa por sonido la cuenta regresiva y el envío de la alerta. Usa pitidos cortos, nunca un tono continuo, para no dificultar la comunicación dentro de un vehículo accidentado</td>
+          <td>Durante una alerta. Se silencia solo a los 5 minutos</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Los patrones completos de ambos LED y del buzzer están en la <a href="#s6">sección 06</a>.
+  </p>
+
+  <h3>3.6 Tarjeta microSD</h3>
+  <p>
+    La tarjeta es la memoria del equipo. Cumple cuatro funciones distintas y cada una tiene su
+    propio directorio.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Función</th><th>Directorio</th><th>Para qué sirve</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Evidencia de eventos</td><td><code>/EVT</code></td>
+          <td>Guarda cada alerta con el mismo contenido que se publica, más la confirmación de si el servidor la recibió. Es el respaldo que permite auditar después qué ocurrió y qué llegó</td>
+        </tr>
+        <tr>
+          <td>Cola de reenvío</td><td><code>/QUEUE</code></td>
+          <td>Retiene los eventos generados sin cobertura. El equipo los publica al recuperar señal y recién entonces los borra de la cola</td>
+        </tr>
+        <tr>
+          <td>Caja negra</td><td><code>/CRASH</code></td>
+          <td>Graba la aceleración cruda desde 5 s antes hasta 10 s después del impacto. Sirve como evidencia técnica y para ajustar los umbrales con la forma de onda real</td>
+        </tr>
+        <tr>
+          <td>Telemetría</td><td><code>/LOG</code></td>
+          <td>Registro periódico de posición, velocidad, inclinación, señal y batería. Permite reconstruir el recorrido y el comportamiento del equipo</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Los directorios <code>/SYS</code> y <code>/CONFIG</code> completan el conjunto con el historial de
+    arranques y el respaldo de la configuración.
+  </p>
+
+  <h4>Cuándo retirar la tarjeta</h4>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Situación</th><th>Procedimiento</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Para copiar los archivos a una computadora</td>
+          <td>No hace falta retirarla. La descarga se hace desde la interfaz web, pestaña Sistema, con el equipo operando</td>
+        </tr>
+        <tr>
+          <td>Antes de grabar firmware por cable USB</td>
+          <td>Retirar la tarjeta. La línea de datos de la tarjeta comparte un pin que el procesador consulta al arrancar, y con la tarjeta insertada el arranque en modo de grabación no se produce. La actualización por la interfaz web no tiene esta condición y no requiere retirarla</td>
+        </tr>
+        <tr>
+          <td>Para reemplazarla por una de mayor capacidad</td>
+          <td>Descargar antes los archivos que se quieran conservar, y hacer el cambio con el equipo sin alimentación</td>
+        </tr>
+        <tr>
+          <td>Ante un error de escritura persistente</td>
+          <td>Retirar, verificar en una computadora con el sistema de archivos FAT32 y volver a insertarla</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <b>Cómo retirarla e insertarla.</b> El equipo detecta la extracción y la inserción en menos de
+    10 segundos, sin necesidad de reiniciar. Aun así, conviene hacerlo con el vehículo detenido y con
+    el equipo en vigilancia, nunca durante una alerta en curso. Al reinsertarla, verifique en la
+    pestaña Estado que la tarjeta figure como presente.
+  </div>
+
+  <div class="note warn">
+    <b>Operación sin tarjeta.</b> El equipo sigue detectando, publicando alertas y sirviendo la
+    interfaz web. Lo que cambia es que la cola de reenvío pasa a memoria volátil, con capacidad para
+    64 eventos que no sobreviven a un reinicio, y se pierde el registro histórico. La condición se
+    señala con cuatro destellos del LED rojo y en el campo <code>sd</code> del estado publicado.
+  </div>
+
+  <p>
+    Tarjeta recomendada: clase 10 de 8 a 32 GB, formateada en FAT32. Los eventos nunca se borran de
+    forma automática; cuando el espacio escasea, el equipo elimina primero la telemetría más antigua.
+  </p>
+
+  <h3>3.7 Alimentación</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Entrada</th><th>Función</th></tr></thead>
+      <tbody>
+        <tr><td>USB-C 5 V</td><td>Alimentación principal y carga de la batería</td></tr>
+        <tr><td>Entrada solar 5 a 6 V</td><td>Alimentación alternativa para instalaciones sin toma permanente</td></tr>
+        <tr><td>Batería de litio</td><td>Respaldo. Sostiene la operación ante un corte y absorbe los picos de consumo del módem</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    El equipo mide el voltaje de la batería y el de la entrada externa, y publica ambos en el estado.
+    La pérdida de alimentación externa durante la marcha puede generar un evento propio, que es un
+    dato relevante en sí mismo. Para alimentar desde la instalación del vehículo se requiere un
+    convertidor de 12 V a 5 V capaz de entregar 3 A.
+  </p>
+
+  <h3>3.8 Canal satelital RockBLOCK</h3>
+  <p>
+    El módulo Iridium no va en el bus I2C. Comparte el UART0 del ESP32 (los pines de la consola
+    USB) y se alimenta desde su propia fuente de 5 V. En esta instalación queda siempre encendido:
+    no se gobierna el pin <code>OnOff</code> desde el expansor. El detalle de cuándo transmite, qué
+    cuesta y cómo se prueba está en la <a href="#s14">sección 14</a>.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Hilo</th><th>ESP32</th><th>RockBLOCK 9603</th><th>Nota</th></tr></thead>
+      <tbody>
+        <tr><td>TX del ESP32</td><td>GPIO1</td><td>TXD, pin 6</td><td>Entrada del módulo. Ground Control llama TXD a la línea que recibe del anfitrión</td></tr>
+        <tr><td>RX del ESP32</td><td>GPIO3</td><td>RXD, pin 1</td><td>Salida del módulo. Resistencia serie de 1 kΩ junto al conector</td></tr>
+        <tr><td>Masa</td><td>GND</td><td>GND, pin 10</td><td>Masa común con la fuente del módulo</td></tr>
+        <tr><td>Alimentación</td><td>—</td><td>5 V propia</td><td>Picos de al menos 500 mA. En reposo activo consume 40 a 50 mA</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note warn">
+    <b>UART0 es compartido.</b> Con el canal satelital habilitado la consola USB se silencia: los
+    registros siguen en la interfaz web y en la microSD, no en el puerto serie. No lance una prueba
+    Iridium con el cable USB conectado. El CP2104 y el RockBLOCK no pueden hablar a la vez por
+    GPIO3.
+  </div>
+</section>
+
+<!-- =============== 3 =============== -->
+<section id="s4">
+  <h2><span class="n">Sección 04</span>Detección de accidentes</h2>
+
+  <p>
+    Los dos acelerómetros trabajan juntos porque cubren rangos distintos. Un choque real satura
+    cualquier sensor de ±16 g, por lo que la magnitud verdadera la entrega el ADXL375. La
+    inclinación y la velocidad angular las entrega el LSM6DS3TR-C, cuya resolución es la adecuada
+    para medir orientación.
+  </p>
+
+  <p>
+    Las características de cada sensor están en la <a href="#s3">sección 03</a>.
+  </p>
+  <p>
+    La adquisición se hace leyendo las FIFO internas por bloques cada 20 ms. La FIFO del ADXL375
+    a 400 Hz almacena 80 ms de historia, cuatro veces el periodo de lectura, de modo que ningún
+    pico queda fuera de la ventana analizada.
+  </p>
+
+  <h3>Cadena de decisión</h3>
+  <figure>
+    <div class="fig-box">
+      <svg viewBox="0 0 940 296" role="img" aria-label="Cadena de decisión de la detección">
+        <text class="dg-t-s" x="6" y="24">EVALUACIÓN CONTINUA · UN CICLO CADA 20 MS</text>
+        <path class="dg-stroke" d="M6 34 H934" stroke-dasharray="2 5"/>
+
+        <rect class="dg-fill" x="6" y="124" width="140" height="72" rx="8"/>
+        <rect class="dg-stroke" x="6" y="124" width="140" height="72" rx="8"/>
+        <text class="dg-t-b" x="22" y="152">Muestras</text>
+        <text class="dg-t" x="22" y="176">400 Hz · 208 Hz</text>
+
+        <rect class="dg-fill" x="178" y="124" width="150" height="72" rx="8"/>
+        <rect class="dg-stroke" x="178" y="124" width="150" height="72" rx="8"/>
+        <text class="dg-t-b" x="194" y="152">Filtro pasa altos</text>
+        <text class="dg-t" x="194" y="176">Corte 0.5 Hz</text>
+
+        <rect class="dg-acc" x="360" y="68" width="190" height="84" rx="8"/>
+        <rect class="dg-stroke-acc" x="360" y="68" width="190" height="84" rx="8"/>
+        <text class="dg-t-b" x="376" y="96">Criterio 1 · Pico</text>
+        <text class="dg-t" x="376" y="120">Magnitud sobre 15 g</text>
+        <text class="dg-t-s" x="376" y="140">CONFIGURABLE 5 A 100 G</text>
+
+        <rect class="dg-acc" x="360" y="168" width="190" height="84" rx="8"/>
+        <rect class="dg-stroke-acc" x="360" y="168" width="190" height="84" rx="8"/>
+        <text class="dg-t-b" x="376" y="196">Criterio 2 · Delta-V</text>
+        <text class="dg-t" x="376" y="220">Sobre 8 km/h en 100 ms</text>
+        <text class="dg-t-s" x="376" y="240">CONFIGURABLE 2 A 40 KM/H</text>
+
+        <rect class="dg-fill" x="582" y="124" width="150" height="72" rx="8"/>
+        <rect class="dg-stroke" x="582" y="124" width="150" height="72" rx="8"/>
+        <text class="dg-t-b" x="598" y="152">Filtros de rechazo</text>
+        <text class="dg-t" x="598" y="176">5 criterios</text>
+
+        <rect class="dg-fill" x="764" y="68" width="170" height="84" rx="8"/>
+        <rect class="dg-stroke dg-ok-s" x="764" y="68" width="170" height="84" rx="8"/>
+        <text class="dg-t-b dg-ok" x="780" y="96">Evento generado</text>
+        <text class="dg-t" x="780" y="120">Con severidad</text>
+        <text class="dg-t-s" x="780" y="140">LEVE · MODERADO · GRAVE</text>
+
+        <rect class="dg-fill" x="764" y="168" width="170" height="84" rx="8"/>
+        <rect class="dg-stroke" x="764" y="168" width="170" height="84" rx="8"/>
+        <text class="dg-t-b" x="780" y="196">Rechazo anotado</text>
+        <text class="dg-t" x="780" y="220">Motivo en microSD</text>
+        <text class="dg-t-s" x="780" y="240">SIN ALERTA</text>
+
+        <path class="dg-line" d="M148 160 H166"/><path class="dg-arrow" d="M164 155 L173 160 L164 165 Z"/>
+
+        <path class="dg-line" d="M330 160 H344"/>
+        <path class="dg-line" d="M344 110 V210"/>
+        <path class="dg-line" d="M344 110 H350"/><path class="dg-arrow" d="M348 105 L357 110 L348 115 Z"/>
+        <path class="dg-line" d="M344 210 H350"/><path class="dg-arrow" d="M348 205 L357 210 L348 215 Z"/>
+        <circle class="dg-acc" cx="344" cy="160" r="12"/>
+        <circle class="dg-stroke-acc" cx="344" cy="160" r="12"/>
+        <text class="dg-t-acc" x="344" y="164" text-anchor="middle">O</text>
+
+        <path class="dg-line" d="M552 110 H566"/>
+        <path class="dg-line" d="M552 210 H566"/>
+        <path class="dg-line" d="M566 110 V210"/>
+        <path class="dg-line" d="M566 160 H572"/><path class="dg-arrow" d="M570 155 L579 160 L570 165 Z"/>
+
+        <path class="dg-line" d="M734 160 H748"/>
+        <path class="dg-line" d="M748 110 V210"/>
+        <path class="dg-line" d="M748 110 H754"/><path class="dg-arrow" d="M752 105 L761 110 L752 115 Z"/>
+        <path class="dg-line" d="M748 210 H754"/><path class="dg-arrow" d="M752 205 L761 210 L752 215 Z"/>
+
+        <text class="dg-t-s dg-ok" x="764" y="58">PASA LOS FILTROS</text>
+        <text class="dg-t-s" x="764" y="272">DESCARTADO</text>
+      </svg>
+    </div>
+    <figcaption>
+      La detección se dispara con el criterio de pico o con el de delta-V. El criterio de delta-V
+      es el que distingue un choque real de un golpe seco que no cambia la velocidad del vehículo.
+    </figcaption>
+  </figure>
+
+  <h3>Clasificación de severidad</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Severidad</th><th>Criterio</th><th>Campo publicado</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag">leve</span></td><td>Pico entre 15 g y 25 g, sin cambio de orientación</td><td><code>"severity": "leve"</code></td></tr>
+        <tr><td><span class="tag warn">moderado</span></td><td>Pico entre 25 g y 40 g, o delta-V entre 8 y 20 km/h</td><td><code>"severity": "moderado"</code></td></tr>
+        <tr><td><span class="tag crit">grave</span></td><td>Pico mayor a 40 g, o delta-V mayor a 20 km/h, o volcadura confirmada</td><td><code>"severity": "grave"</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Detección de volcadura</h3>
+  <p>
+    Un filtro complementario con constante de tiempo de 0.5 s fusiona acelerómetro y giroscopio
+    para estimar alabeo y cabeceo. La volcadura se confirma cuando el ángulo supera 60° y se
+    mantiene más de 1500 ms. Existe una vía rápida por velocidad angular: más de 250 °/s en el eje
+    longitudinal o transversal acompañado de un cambio efectivo de orientación adelanta la alerta
+    antes de que el vehículo termine de girar.
+  </p>
+  <div class="note">
+    <b>Condición previa.</b> La detección de volcadura utiliza la matriz de calibración de montaje.
+    Mientras esa matriz no esté cargada, la vía de volcadura permanece inactiva. El procedimiento
+    está en la <a href="#s9">sección 09</a> y toma menos de un minuto.
+  </div>
+
+  <h3>Rechazo de falsos positivos</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Situación</th><th>Criterio de rechazo</th><th>Motivo registrado</th></tr></thead>
+      <tbody>
+        <tr><td>Bache o resalto</td><td>Pico de duración menor a 15 ms en un solo eje, sin delta-V</td><td><code>short_duration</code></td></tr>
+        <tr><td>Pico sin cambio de velocidad</td><td>Se supera el umbral de g pero la integración no da delta-V</td><td><code>no_delta_v</code></td></tr>
+        <tr><td>Portazo o golpe en la carrocería</td><td>Componente de alta frecuencia sin componente de baja frecuencia</td><td><code>high_freq_only</code></td></tr>
+        <tr><td>Vehículo detenido</td><td>Con velocidad GNSS bajo 5 km/h el umbral de pico se duplica</td><td><code>stationary</code></td></tr>
+        <tr><td>Pendiente pronunciada</td><td>La inclinación no se sostiene el tiempo configurado</td><td><code>tilt_too_brief</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Cada rechazo se anota en la microSD con su motivo. Ese registro es la base para ajustar los
+    umbrales con datos del vehículo real en lugar de por tanteo.
+  </p>
+
+  <h3>Registrador de impacto</h3>
+  <p>
+    Un buffer circular en PSRAM graba la aceleración cruda a 100 Hz de forma continua. Al
+    dispararse una detección, el firmware congela los 5 s previos, sigue grabando 10 s más y
+    vuelca el conjunto a <code>/CRASH/aaaammdd-hhmmss.csv</code>. Cada archivo pesa entre 60 y
+    120 kB y permite reconstruir la forma de onda del impacto.
+  </p>
+</section>
+
+<!-- =============== 4 =============== -->
+<section id="s5">
+  <h2><span class="n">Sección 05</span>Ciclo de alerta y botones</h2>
+
+  <p>
+    Entre la detección y el envío existe un plazo de gracia. Entre el envío y el cierre del
+    incidente existe una ventana de anulación. Los dos plazos son configurables y su valor de
+    fábrica está pensado para dar margen de reacción sin retrasar un aviso real.
+  </p>
+  <p>
+    Un choque o una volcadura que supera ese ciclo también entra en la bandeja satelital, si el
+    canal está habilitado. El equipo espera 20 s a que MQTT o el SMS confirmen el mismo
+    <code>seq</code>. Si alguno lo hace, Iridium no transmite. El SOS, la anulación y los avisos
+    técnicos no usan satélite. Ver la <a href="#s14">sección 14</a>.
+  </p>
+
+  <figure>
+    <div class="fig-box">
+      <svg viewBox="0 0 940 292" role="img" aria-label="Línea de tiempo de una alerta">
+        <text class="dg-t-s" x="8" y="26">SECUENCIA COMPLETA CON LOS VALORES DE FÁBRICA</text>
+        <path class="dg-stroke" d="M8 36 H932" stroke-dasharray="2 5"/>
+        <text class="dg-t" x="8" y="62">El buzzer acelera su cadencia en el último tercio del plazo de gracia. El LED verde parpadea rápido mientras la alerta puede cancelarse.</text>
+
+        <text class="dg-t-b" x="90" y="102" text-anchor="middle">Impacto</text>
+        <text class="dg-t-b" x="350" y="102" text-anchor="middle">Publicación</text>
+        <text class="dg-t-b" x="770" y="102" text-anchor="middle">Cierre</text>
+
+        <rect class="dg-acc" x="90" y="116" width="260" height="30" rx="4"/>
+        <rect class="dg-stroke-acc" x="90" y="116" width="260" height="30" rx="4"/>
+        <text class="dg-t" x="220" y="136" text-anchor="middle">PRE_ALARM · 10 s</text>
+
+        <rect class="dg-fill-2" x="350" y="116" width="420" height="30" rx="4"/>
+        <rect class="dg-stroke" x="350" y="116" width="420" height="30" rx="4"/>
+        <text class="dg-t" x="560" y="136" text-anchor="middle">ALERT_ACTIVE · ventana de anulación · 120 s</text>
+
+        <rect class="dg-fill" x="800" y="116" width="110" height="30" rx="4"/>
+        <rect class="dg-stroke" x="800" y="116" width="110" height="30" rx="4"/>
+        <text class="dg-t" x="855" y="136" text-anchor="middle">IDLE</text>
+
+        <circle class="dg-crit" cx="90" cy="131" r="7"/>
+        <circle class="dg-warn" cx="350" cy="131" r="7"/>
+        <circle class="dg-ok" cx="770" cy="131" r="7"/>
+
+        <text class="dg-t-s" x="90" y="168" text-anchor="middle">t = 0</text>
+        <text class="dg-t-s" x="350" y="168" text-anchor="middle">t = 10 s</text>
+        <text class="dg-t-s" x="770" y="168" text-anchor="middle">t = 130 s</text>
+
+        <path class="dg-dash" d="M100 146 V206"/>
+        <text class="dg-t-b" x="100" y="228">CANCELAR · pulsación corta</text>
+        <text class="dg-t" x="100" y="250">No se envía nada. El evento queda</text>
+        <text class="dg-t" x="100" y="270">anotado como cancelado.</text>
+
+        <path class="dg-dash" d="M470 146 V206"/>
+        <text class="dg-t-b" x="470" y="228">CANCELAR · pulsación corta</text>
+        <text class="dg-t" x="470" y="250">Publica el evento <tspan class="dg-t-acc">cancel</tspan> con <tspan class="dg-t-acc">cancels_seq</tspan></text>
+        <text class="dg-t" x="470" y="270">y envía el SMS de anulación.</text>
+      </svg>
+    </div>
+    <figcaption>
+      Con el plazo de gracia en 0 s la publicación es inmediata y la ventana de anulación sigue
+      disponible: el servidor recibe primero la alerta y después la anulación.
+    </figcaption>
+  </figure>
+
+  <h3>Estados del equipo</h3>
+  <p>El estado actual se publica en el campo <code>state</code> del mensaje de estado y se muestra
+     en la interfaz web con su texto en español.</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Valor</th><th>Texto en la interfaz</th><th>Significado</th></tr></thead>
+      <tbody>
+        <tr><td><code>boot</code></td><td>Iniciando</td><td>Arranque del sistema</td></tr>
+        <tr><td><code>selftest</code></td><td>Autodiagnóstico</td><td>Verificación de sensores, expansor y almacenamiento</td></tr>
+        <tr><td><code>idle</code></td><td>En vigilancia</td><td>Operación normal</td></tr>
+        <tr><td><code>pre_alarm</code></td><td>Prealarma. Se puede cancelar</td><td>Cuenta regresiva antes del envío</td></tr>
+        <tr><td><code>sending</code></td><td>Enviando alerta</td><td>Publicación en curso</td></tr>
+        <tr><td><code>alert_active</code></td><td>Alerta enviada</td><td>Ventana de anulación abierta</td></tr>
+        <tr><td><code>cancelled</code></td><td>Alerta cancelada</td><td>Anulación registrada</td></tr>
+        <tr><td><code>safe_mode</code></td><td>Modo seguro por reinicios repetidos</td><td>Diagnóstico e interfaz web disponibles</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Botones</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Acción</th><th>Condición</th><th>Efecto</th></tr></thead>
+      <tbody>
+        <tr><td>SOS, pulsación corta</td><td>En vigilancia</td><td>Entra en prealarma con el plazo de SOS (10 s de fábrica)</td></tr>
+        <tr><td>SOS, mantenido 3 s</td><td>Cualquier momento</td><td>Envío inmediato, sin cuenta regresiva</td></tr>
+        <tr><td>CANCELAR, pulsación corta</td><td>Durante la prealarma</td><td>Aborta el envío y silencia el buzzer</td></tr>
+        <tr><td>CANCELAR, pulsación corta</td><td>Dentro de la ventana de anulación</td><td>Publica el evento <code>cancel</code> y envía el SMS de anulación</td></tr>
+        <tr><td>CANCELAR, pulsación corta</td><td>En vigilancia</td><td>Silencia el buzzer</td></tr>
+        <tr><td>SOS + CANCELAR, 5 s</td><td>En vigilancia</td><td>Prueba de sistema: pitido, secuencia de LED y evento <code>test</code></td></tr>
+        <tr><td>CANCELAR mantenido en el arranque</td><td>Durante el encendido</td><td>Restablece la configuración de fábrica</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Los botones se leen por sondeo cada 20 ms con antirrebote de 50 ms. La latencia máxima entre
+    la pulsación y su reconocimiento es de 70 ms.
+  </p>
+</section>
+
+<!-- =============== 5 =============== -->
+<section id="s6">
+  <h2><span class="n">Sección 06</span>Señalización local</h2>
+
+  <p>
+    El LED verde indica actividad y el LED rojo indica condición del sistema. El código es de
+    conteo: se cuentan los destellos dentro de un ciclo de 3 s. Cuando coexisten varias
+    condiciones se muestra la de mayor prioridad.
+  </p>
+
+  <figure>
+    <div class="fig-box">
+      <svg viewBox="0 0 940 300" role="img" aria-label="Patrones de los LED">
+        <text class="dg-t-s" x="16" y="26">LED VERDE · ACTIVIDAD</text>
+        <path class="dg-stroke" d="M16 36 H924" stroke-dasharray="2 5"/>
+
+        <text class="dg-t" x="16" y="68">Latido</text>
+        <rect class="dg-fill" x="216" y="54" width="424" height="18" rx="4"/>
+        <rect class="dg-ok" x="216" y="54" width="22" height="18" rx="3"/>
+        <rect class="dg-ok" x="352" y="54" width="22" height="18" rx="3"/>
+        <rect class="dg-ok" x="488" y="54" width="22" height="18" rx="3"/>
+        <rect class="dg-ok" x="618" y="54" width="22" height="18" rx="3"/>
+        <text class="dg-t" x="668" y="68">Operación normal</text>
+
+        <text class="dg-t" x="16" y="106">Encendido fijo</text>
+        <rect class="dg-ok" x="216" y="92" width="424" height="18" rx="4"/>
+        <text class="dg-t" x="668" y="106">GNSS y MQTT activos</text>
+
+        <text class="dg-t" x="16" y="144">Parpadeo rápido</text>
+        <rect class="dg-fill" x="216" y="130" width="424" height="18" rx="4"/>
+        <rect class="dg-ok" x="216" y="130" width="26" height="18" rx="3"/>
+        <rect class="dg-ok" x="268" y="130" width="26" height="18" rx="3"/>
+        <rect class="dg-ok" x="320" y="130" width="26" height="18" rx="3"/>
+        <rect class="dg-ok" x="372" y="130" width="26" height="18" rx="3"/>
+        <rect class="dg-ok" x="424" y="130" width="26" height="18" rx="3"/>
+        <rect class="dg-ok" x="476" y="130" width="26" height="18" rx="3"/>
+        <rect class="dg-ok" x="528" y="130" width="26" height="18" rx="3"/>
+        <rect class="dg-ok" x="580" y="130" width="26" height="18" rx="3"/>
+        <text class="dg-t" x="668" y="144">Cuenta regresiva</text>
+
+        <text class="dg-t-s" x="16" y="190">LED ROJO · CONDICIÓN DEL SISTEMA</text>
+        <path class="dg-stroke" d="M16 200 H924" stroke-dasharray="2 5"/>
+
+        <text class="dg-t" x="16" y="232">1 destello cada 3 s</text>
+        <rect class="dg-fill" x="216" y="218" width="424" height="18" rx="4"/>
+        <rect class="dg-crit" x="216" y="218" width="26" height="18" rx="3"/>
+        <text class="dg-t" x="668" y="232">Sin red celular</text>
+
+        <text class="dg-t" x="16" y="270">2 destellos cada 3 s</text>
+        <rect class="dg-fill" x="216" y="256" width="424" height="18" rx="4"/>
+        <rect class="dg-crit" x="216" y="256" width="26" height="18" rx="3"/>
+        <rect class="dg-crit" x="262" y="256" width="26" height="18" rx="3"/>
+        <text class="dg-t" x="668" y="270">Sin conexión al broker</text>
+      </svg>
+    </div>
+    <figcaption>
+      El rojo apagado significa que no hay condiciones pendientes. Un rojo con uno o dos destellos
+      en zona sin cobertura se apaga solo al recuperar señal.
+    </figcaption>
+  </figure>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>LED rojo, tabla completa</h3>
+      <div class="kv">
+        <div><span>Apagado</span><b>Sin condiciones</b></div>
+        <div><span>1 destello / 3 s</span><b>Sin red celular</b></div>
+        <div><span>2 destellos / 3 s</span><b>Sin MQTT</b></div>
+        <div><span>3 destellos / 3 s</span><b>Sensor sin respuesta</b></div>
+        <div><span>4 destellos / 3 s</span><b>microSD ausente</b></div>
+        <div><span>Fijo</span><b>Modo seguro</b></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Buzzer</h3>
+      <div class="kv">
+        <div><span>Encendido</span><b>1 pitido de 200 ms</b></div>
+        <div><span>Prueba del sistema</span><b>2 pitidos cortos, una sola vez</b></div>
+        <div><span>Cuenta regresiva, nivel leve</span><b>1 pitido cada 2 s</b></div>
+        <div><span>Cuenta regresiva, nivel moderado</span><b>2 pitidos cada 1 s</b></div>
+        <div><span>Cuenta regresiva, nivel grave</span><b>3 pitidos cada 1 s</b></div>
+        <div><span>SOS, últimos 3 s</span><b>3 pitidos cada 0,5 s</b></div>
+        <div><span>Alerta enviada</span><b>3 pitidos, luego 1 cada 15 s</b></div>
+        <div><span>Alerta esperando señal</span><b>2 pitidos largos cada 10 s</b></div>
+        <div><span>Cancelación</span><b>1 pitido largo de 700 ms</b></div>
+        <div><span>Falla técnica</span><b>2 pitidos cada 60 s</b></div>
+      </div>
+    </div>
+  </div>
+  <p>
+    La cantidad de pitidos de la cuenta regresiva indica qué tan fuerte fue el golpe. Una volcadura
+    suena siempre como nivel grave, aunque el vuelco haya sido lento, y el SOS también. Mantener SOS
+    durante 3 segundos envía el aviso de inmediato: no hay cuenta regresiva y se oyen los tres
+    pitidos de confirmación en el acto.
+  </p>
+  <p>
+    Los dos pitidos largos cada 10 segundos avisan que el equipo no tiene cobertura. El aviso no se
+    pierde: queda guardado en la tarjeta, o en memoria si no hay tarjeta, y sale solo en cuanto
+    recupera señal. Ahí el sonido cambia al recordatorio de 15 segundos.
+  </p>
+  <p>
+    El buzzer se silencia solo a los 5 minutos, y también con el botón CANCELAR o desde la interfaz
+    web. Silenciar detiene el sonido sin cancelar la alerta ni borrar nada. Desactivarlo por completo
+    no afecta el envío de alertas.
+  </p>
+
+  <figure>
+    <div class="fig-box">
+      <svg viewBox="0 0 960 356" role="img" aria-label="Ritmo de cada aviso sonoro">
+        <text class="dg-t-s" x="16" y="26">CUENTA REGRESIVA · EL RITMO INDICA LA GRAVEDAD</text>
+        <path class="dg-stroke" d="M16 36 H944" stroke-dasharray="2 5"/>
+
+        <text class="dg-t" x="16" y="68">Leve</text>
+        <rect class="dg-fill" x="216" y="54" width="560" height="18" rx="4"/>
+        <rect class="dg-warn" x="216" y="54" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="356" y="54" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="496" y="54" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="636" y="54" width="10" height="18" rx="2"/>
+        <text class="dg-t" x="796" y="68">1 pitido cada 2 s</text>
+
+        <text class="dg-t" x="16" y="106">Moderado</text>
+        <rect class="dg-fill" x="216" y="92" width="560" height="18" rx="4"/>
+        <rect class="dg-warn" x="216" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="234" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="286" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="304" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="356" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="374" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="426" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="444" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="496" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="514" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="566" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="584" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="636" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="654" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="706" y="92" width="10" height="18" rx="2"/>
+        <rect class="dg-warn" x="724" y="92" width="10" height="18" rx="2"/>
+        <text class="dg-t" x="796" y="106">2 pitidos cada 1 s</text>
+
+        <text class="dg-t" x="16" y="144">Grave</text>
+        <rect class="dg-fill" x="216" y="130" width="560" height="18" rx="4"/>
+        <rect class="dg-warn" x="216" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="230" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="244" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="286" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="300" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="314" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="356" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="370" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="384" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="426" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="440" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="454" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="496" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="510" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="524" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="566" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="580" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="594" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="636" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="650" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="664" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="706" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="720" y="130" width="8" height="18" rx="2"/>
+        <rect class="dg-warn" x="734" y="130" width="8" height="18" rx="2"/>
+        <text class="dg-t" x="796" y="144">3 pitidos cada 1 s</text>
+
+        <text class="dg-t" x="16" y="182">SOS, últimos 3 s</text>
+        <rect class="dg-fill" x="216" y="168" width="560" height="18" rx="4"/>
+        <rect class="dg-crit" x="216" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="228" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="240" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="286" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="298" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="310" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="356" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="368" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="380" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="426" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="438" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="450" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="496" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="508" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="520" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="566" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="578" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="590" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="636" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="648" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="660" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="706" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="718" y="168" width="7" height="18" rx="2"/>
+        <rect class="dg-crit" x="730" y="168" width="7" height="18" rx="2"/>
+        <text class="dg-t" x="796" y="182">3 pitidos cada 0,5 s</text>
+
+        <text class="dg-t-s" x="16" y="228">DESPUÉS DEL ENVÍO</text>
+        <path class="dg-stroke" d="M16 238 H944" stroke-dasharray="2 5"/>
+
+        <text class="dg-t" x="16" y="270">Alerta enviada</text>
+        <rect class="dg-fill" x="216" y="256" width="560" height="18" rx="4"/>
+        <rect class="dg-ok" x="216" y="256" width="10" height="18" rx="2"/>
+        <rect class="dg-ok" x="234" y="256" width="10" height="18" rx="2"/>
+        <rect class="dg-ok" x="252" y="256" width="10" height="18" rx="2"/>
+        <rect class="dg-ok" x="496" y="256" width="10" height="18" rx="2"/>
+        <rect class="dg-ok" x="740" y="256" width="10" height="18" rx="2"/>
+        <text class="dg-t" x="796" y="270">3 pitidos, luego 1 cada 15 s</text>
+
+        <text class="dg-t" x="16" y="308">Esperando señal</text>
+        <rect class="dg-fill" x="216" y="294" width="560" height="18" rx="4"/>
+        <rect class="dg-crit" x="216" y="294" width="34" height="18" rx="3"/>
+        <rect class="dg-crit" x="266" y="294" width="34" height="18" rx="3"/>
+        <rect class="dg-crit" x="496" y="294" width="34" height="18" rx="3"/>
+        <rect class="dg-crit" x="546" y="294" width="34" height="18" rx="3"/>
+        <text class="dg-t" x="796" y="308">2 pitidos largos cada 10 s</text>
+
+        <text class="dg-t" x="16" y="346">Cancelación</text>
+        <rect class="dg-fill" x="216" y="332" width="560" height="18" rx="4"/>
+        <rect class="dg-ok" x="216" y="332" width="58" height="18" rx="3"/>
+        <text class="dg-t" x="796" y="346">1 pitido largo</text>
+      </svg>
+    </div>
+    <figcaption>
+      Cada bloque es un pitido y el espacio entre bloques es silencio. Las cuatro primeras filas
+      cubren los mismos 8 segundos de cuenta regresiva, así que se pueden comparar entre sí.
+    </figcaption>
+  </figure>
+
+  <h3>Qué hacer al oír cada aviso</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Lo que oye</th><th>Qué está pasando</th><th>Qué hacer</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Pitidos repetidos, de 1 a 3 por vez</td>
+          <td>El equipo detectó un golpe y está contando antes de avisar. La cantidad de pitidos indica la gravedad</td>
+          <td>Si fue una falsa alarma, pulsar CANCELAR antes de que termine la cuenta. No se envía nada</td>
+        </tr>
+        <tr>
+          <td>Los pitidos se aceleran</td>
+          <td>Quedan menos de 3 segundos de la cuenta de un SOS</td>
+          <td>Última oportunidad de cancelar</td>
+        </tr>
+        <tr>
+          <td>3 pitidos seguidos y luego 1 cada 15 s</td>
+          <td>El aviso llegó al servidor</td>
+          <td>Nada. Si fue falsa alarma, CANCELAR dentro de la ventana de anulación publica el aviso de que no era real</td>
+        </tr>
+        <tr>
+          <td>2 pitidos largos cada 10 s</td>
+          <td>El aviso quedó guardado pero no ha salido: no hay cobertura</td>
+          <td>Nada. Sale solo en cuanto vuelve la señal, y ahí el sonido cambia al de una alerta enviada</td>
+        </tr>
+        <tr>
+          <td>1 pitido largo y silencio</td>
+          <td>La alerta se anuló</td>
+          <td>Nada</td>
+        </tr>
+        <tr>
+          <td>2 pitidos cortos, una sola vez</td>
+          <td>Prueba del sistema, pedida con los dos botones</td>
+          <td>Nada. Confirma que el equipo funciona</td>
+        </tr>
+        <tr>
+          <td>2 pitidos cada minuto, sin urgencia</td>
+          <td>Una avería del equipo: un sensor no responde, o falla la tarjeta de memoria</td>
+          <td>Avisar al servicio técnico. La falta de cobertura no produce este aviso</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <b>Cómo distinguir dos pitidos de dos pitidos.</b> El nivel moderado y la prueba del sistema
+    suenan igual, dos pitidos cortos. La diferencia es la repetición: la prueba suena una sola vez
+    y el nivel moderado se repite cada segundo mientras dura la cuenta regresiva.
+  </div>
+</section>
+<!-- =============== 6 =============== -->
+<section id="s7">
+  <h2><span class="n">Sección 07</span>Integración MQTT</h2>
+
+  <p>
+    El equipo es un cliente MQTT 3.1.1 que se conecta al broker con TLS y sesión persistente.
+    Todo lo que el servidor del cliente necesita está en los tópicos de publicación. La suscripción
+    a comandos es opcional y se puede desactivar desde la interfaz web si se prefiere que el equipo
+    solo publique.
+  </p>
+  <p>
+    El canal satelital no publica en estos tópicos. Lleva un binario de 39 bytes por Iridium y el
+    servidor lo recibe por el webhook de Ground Control, descrito en la
+    <a href="#s14">sección 14</a>. Si después llega el JSON de MQTT con el mismo <code>seq</code>,
+    el incidente ya abierto se enriquece y no se notifica otra vez.
+  </p>
+
+  <h3>7.1 Parámetros de conexión</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Parámetro</th><th>Valor</th><th>Nota</th></tr></thead>
+      <tbody>
+        <tr><td>Host</td><td><code>3da4c64f2d3841abaa515824b7592e7c.s1.eu.hivemq.cloud</code></td><td>HiveMQ Cloud</td></tr>
+        <tr><td>Puerto MQTT sobre TLS</td><td class="num">8883</td><td>El que usa el equipo</td></tr>
+        <tr><td>Puerto WebSocket sobre TLS</td><td class="num">8884</td><td>Ruta <code>/mqtt</code>. Para clientes de navegador</td></tr>
+        <tr><td>Usuario</td><td><code>lilygo</code></td><td>Credencial de acceso al broker</td></tr>
+        <tr><td>Contraseña</td><td>La configurada en el equipo</td><td>Se entrega con la unidad y no se muestra una vez guardada</td></tr>
+        <tr><td>TLS</td><td>Obligatorio, con verificación del certificado</td><td>Raíz ISRG Root X1 en el almacén del módem</td></tr>
+        <tr><td>Client ID del equipo</td><td><code>sda-{device_id}</code></td><td>Ejemplo: <code>sda-SDA-A4C138</code></td></tr>
+        <tr><td>Keep-alive</td><td class="num">60 s</td><td>Configurable entre 15 y 3600</td></tr>
+        <tr><td>Clean session</td><td><code>false</code></td><td>Conserva la suscripción entre reconexiones</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <b>Identificador del equipo.</b> El <code>device_id</code> se deriva de los últimos tres bytes de
+    la MAC y tiene el formato <code>SDA-XXXXXX</code>. Aparece en la portada de la interfaz web, en
+    todos los mensajes publicados y en el nombre de la red WiFi del equipo.
+  </div>
+
+  <h3>7.2 Árbol de tópicos</h3>
+  <figure>
+    <div class="fig-box">
+      <svg viewBox="0 0 940 330" role="img" aria-label="Árbol de tópicos MQTT">
+        <rect class="dg-acc" x="16" y="140" width="190" height="46" rx="8"/>
+        <rect class="dg-stroke-acc" x="16" y="140" width="190" height="46" rx="8"/>
+        <text class="dg-t-b" x="32" y="169">sda/{device_id}</text>
+
+        <path class="dg-stroke" d="M206 163 H250"/>
+        <path class="dg-stroke" d="M250 40 V300"/>
+
+        <g>
+          <path class="dg-stroke" d="M250 44 H290"/>
+          <rect class="dg-fill" x="290" y="24" width="230" height="40" rx="6"/>
+          <rect class="dg-stroke" x="290" y="24" width="230" height="40" rx="6"/>
+          <text class="dg-t-b" x="304" y="49">availability</text>
+          <text class="dg-t" x="540" y="42">QoS 1 · retenido · LWT</text>
+          <text class="dg-t-s" x="540" y="59">ONLINE U OFFLINE, TEXTO PLANO</text>
+        </g>
+        <g>
+          <path class="dg-stroke" d="M250 96 H290"/>
+          <rect class="dg-fill" x="290" y="76" width="230" height="40" rx="6"/>
+          <rect class="dg-stroke" x="290" y="76" width="230" height="40" rx="6"/>
+          <text class="dg-t-b" x="304" y="101">status</text>
+          <text class="dg-t" x="540" y="94">QoS 0 · retenido · cada 60 s</text>
+          <text class="dg-t-s" x="540" y="111">ESTADO COMPLETO DEL EQUIPO</text>
+        </g>
+        <g>
+          <path class="dg-stroke" d="M250 148 H290"/>
+          <rect class="dg-acc" x="290" y="128" width="230" height="40" rx="6"/>
+          <rect class="dg-stroke-acc" x="290" y="128" width="230" height="40" rx="6"/>
+          <text class="dg-t-b" x="304" y="153">event</text>
+          <text class="dg-t" x="540" y="146">QoS 1 · no retenido</text>
+          <text class="dg-t-s" x="540" y="163">CHOQUE, VOLCADURA, SOS, ANULACIÓN</text>
+        </g>
+        <g>
+          <path class="dg-stroke" d="M250 200 H290"/>
+          <rect class="dg-fill" x="290" y="180" width="230" height="40" rx="6"/>
+          <rect class="dg-stroke" x="290" y="180" width="230" height="40" rx="6"/>
+          <text class="dg-t-b" x="304" y="205">position</text>
+          <text class="dg-t" x="540" y="198">QoS 0 · 30 s en marcha, 300 s detenido</text>
+          <text class="dg-t-s" x="540" y="215">POSICIÓN GNSS</text>
+        </g>
+        <g>
+          <path class="dg-stroke" d="M250 252 H290"/>
+          <rect class="dg-fill" x="290" y="232" width="230" height="40" rx="6"/>
+          <rect class="dg-stroke" x="290" y="232" width="230" height="40" rx="6"/>
+          <text class="dg-t-b" x="304" y="257">diag</text>
+          <text class="dg-t" x="540" y="250">QoS 0 · cada hora y bajo demanda</text>
+          <text class="dg-t-s" x="540" y="267">DIAGNÓSTICO AMPLIADO</text>
+        </g>
+        <g>
+          <path class="dg-stroke" d="M250 300 H290"/>
+          <rect class="dg-fill-2" x="290" y="282" width="230" height="40" rx="6"/>
+          <rect class="dg-stroke" x="290" y="282" width="230" height="40" rx="6"/>
+          <text class="dg-t-b" x="304" y="307">cmd  ·  cmd/resp</text>
+          <text class="dg-t" x="540" y="300">QoS 1 · el equipo se suscribe a cmd</text>
+          <text class="dg-t-s" x="540" y="317">SOLO COMANDOS DE CONSULTA</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>
+      El prefijo <code>sda</code> es configurable. Cambiarlo en el equipo obliga a cambiarlo también
+      en las suscripciones del servidor.
+    </figcaption>
+  </figure>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Tópico</th><th>Dirección</th><th>QoS</th><th>Retenido</th><th>Cadencia</th></tr></thead>
+      <tbody>
+        <tr><td><code>sda/{id}/availability</code></td><td>Publica</td><td class="num">1</td><td>Sí</td><td>Al conectar, al desconectar y por LWT</td></tr>
+        <tr><td><code>sda/{id}/status</code></td><td>Publica</td><td class="num">0</td><td>Sí</td><td>60 s, configurable de 10 a 3600</td></tr>
+        <tr><td><code>sda/{id}/event</code></td><td>Publica</td><td class="num">1</td><td>No</td><td>Ante cada evento</td></tr>
+        <tr><td><code>sda/{id}/position</code></td><td>Publica</td><td class="num">0</td><td>No</td><td>30 s sobre 5 km/h, 300 s detenido</td></tr>
+        <tr><td><code>sda/{id}/diag</code></td><td>Publica</td><td class="num">0</td><td>No</td><td>3600 s y por comando</td></tr>
+        <tr><td><code>sda/{id}/cmd</code></td><td>Suscribe</td><td class="num">1</td><td>No</td><td>Entrante</td></tr>
+        <tr><td><code>sda/{id}/cmd/resp</code></td><td>Publica</td><td class="num">1</td><td>No</td><td>Una respuesta por comando</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Los eventos van con QoS 1 porque una alerta perdida invalida el producto. El estado va con
+    QoS 0 y retenido, de modo que un cliente que se suscribe recibe de inmediato el último estado
+    conocido sin esperar al siguiente ciclo.
+  </p>
+
+  <h3>7.3 Mensaje de evento</h3>
+  <p>
+    Es el mensaje central de la integración. Se publica en <code>sda/{id}/event</code> con QoS 1.
+    Cada evento lleva un número de secuencia que no se reinicia con los arranques del equipo.
+  </p>
+
+  <div class="filename">sda/SDA-A4C138/event · choque grave</div>
+<pre><code>{
+  "id": "SDA-A4C138",
+  "type": "crash",
+  "seq": 143,
+  "ts": "2026-08-19T14:32:07Z",
+  "time_src": "gnss",
+  "uptime_s": 48213,
+  "vehicle_label": "Camioneta 04",
+  "contact_phone": "+51987654321",
+  "severity": "grave",
+  "detection": {
+    "peak_g": 38.40,
+    "delta_v_kmh": 24.10,
+    "duration_ms": 62,
+    "axis_peak": "y",
+    "rollover": false,
+    "tilt_deg": 12.5,
+    "gyro_max_dps": 145.0
+  },
+  "position": {
+    "fix": true,
+    "lat": -9.930833,
+    "lon": -76.241944,
+    "alt_m": 1894.0,
+    "speed_kmh": 0.0,
+    "heading": 218.0,
+    "hdop": 1.1,
+    "sats": 9,
+    "fix_age_s": 3
+  },
+  "device": {
+    "battery_v": 4.02,
+    "rssi_dbm": -73,
+    "operator": "Claro PE",
+    "uptime_s": 48213,
+    "sd": true,
+    "degraded": false
+  },
+  "queued": false
+}</code></pre>
+
+  <h4>Campos del evento</h4>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>id</code></td><td>texto</td><td>Identificador del equipo</td></tr>
+        <tr><td><code>type</code></td><td>texto</td><td><code>crash</code>, <code>rollover</code>, <code>sos</code>, <code>cancel</code>, <code>test</code>, <code>power_loss</code>, <code>low_battery</code>, <code>booted</code></td></tr>
+        <tr><td><code>seq</code></td><td>entero</td><td>Número de secuencia del evento. Es la clave de deduplicación junto con <code>id</code></td></tr>
+        <tr><td><code>ts</code></td><td>texto o nulo</td><td>Marca de tiempo UTC en ISO 8601. Es <code>null</code> mientras el equipo no ha obtenido hora</td></tr>
+        <tr><td><code>time_src</code></td><td>texto</td><td>Origen de la hora: <code>gnss</code>, <code>network</code>, <code>ntp</code>, <code>uptime</code>, <code>none</code></td></tr>
+        <tr><td><code>uptime_s</code></td><td>entero</td><td>Segundos desde el último arranque</td></tr>
+        <tr><td><code>vehicle_label</code></td><td>texto</td><td>Presente solo si está configurado</td></tr>
+        <tr><td><code>contact_phone</code></td><td>texto</td><td>Presente solo si está configurado</td></tr>
+        <tr><td><code>severity</code></td><td>texto</td><td><code>leve</code>, <code>moderado</code>, <code>grave</code> o <code>none</code></td></tr>
+        <tr><td><code>detection</code></td><td>objeto</td><td>Presente solo en <code>crash</code> y <code>rollover</code></td></tr>
+        <tr><td><code>detection.peak_g</code></td><td>decimal</td><td>Magnitud máxima del vector de aceleración, en g</td></tr>
+        <tr><td><code>detection.delta_v_kmh</code></td><td>decimal</td><td>Cambio de velocidad integrado en la ventana</td></tr>
+        <tr><td><code>detection.duration_ms</code></td><td>entero</td><td>Duración del impulso</td></tr>
+        <tr><td><code>detection.axis_peak</code></td><td>texto</td><td>Eje del pico: <code>x</code>, <code>y</code> o <code>z</code></td></tr>
+        <tr><td><code>detection.rollover</code></td><td>booleano</td><td>Volcadura confirmada</td></tr>
+        <tr><td><code>position</code></td><td>objeto</td><td>Se omite si el equipo nunca obtuvo posición</td></tr>
+        <tr><td><code>position.fix</code></td><td>booleano</td><td><code>false</code> indica que las coordenadas son la última fijación válida</td></tr>
+        <tr><td><code>position.fix_age_s</code></td><td>entero</td><td>Antigüedad de la fijación en segundos</td></tr>
+        <tr><td><code>device.degraded</code></td><td>booleano</td><td>El evento se generó con algún sensor no disponible</td></tr>
+        <tr><td><code>queued</code></td><td>booleano</td><td><code>true</code> cuando el mensaje es un reenvío desde la cola</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Evento de anulación</h4>
+  <p>
+    Cuando el ocupante anula una alerta ya publicada, sale un segundo evento con el número de
+    secuencia del evento anulado. El servidor debe cerrar el incidente referenciado, no crear uno
+    nuevo.
+  </p>
+  <div class="filename">sda/SDA-A4C138/event · anulación</div>
+<pre><code>{
+  "id": "SDA-A4C138",
+  "type": "cancel",
+  "seq": 144,
+  "ts": "2026-08-19T14:33:11Z",
+  "time_src": "gnss",
+  "uptime_s": 48277,
+  "cancels_seq": 143,
+  "reason": "button",
+  "elapsed_s": 64,
+  "position": { "fix": true, "lat": -9.930833, "lon": -76.241944, "alt_m": 1894.0,
+                "speed_kmh": 0.0, "heading": 218.0, "hdop": 1.1, "sats": 9, "fix_age_s": 2 },
+  "device": { "battery_v": 4.02, "rssi_dbm": -73, "operator": "Claro PE",
+              "uptime_s": 48277, "sd": true, "degraded": false },
+  "queued": false
+}</code></pre>
+
+  <h4>Evento de SOS</h4>
+  <p>Mismo formato que el de choque, con <code>"type": "sos"</code> y sin el bloque
+     <code>detection</code>.</p>
+
+  <h3>7.4 Mensaje de estado</h3>
+  <p>
+    Se publica retenido, de modo que cualquier cliente que se suscriba recibe el último estado sin
+    esperar. Un solo mensaje entrega lo necesario para un tablero de flota.
+  </p>
+  <div class="filename">sda/SDA-A4C138/status</div>
+<pre><code>{
+  "id": "SDA-A4C138",
+  "ts": "2026-08-19T14:30:00Z",
+  "state": "idle",
+  "fw": "1.0.0",
+  "sensors": {
+    "adxl375":   { "ok": true, "addr": "0x53", "peak_g_60s": 1.40 },
+    "lsm6ds3tr": { "ok": true, "addr": "0x6A", "tilt_deg": 3.1, "gyro_max_dps": 12.0 },
+    "pcf8574":   { "ok": true, "addr": "0x20" }
+  },
+  "inputs":  { "sos": false, "cancel": false },
+  "outputs": { "led_red": false, "led_green": true, "buzzer": false },
+  "sd":      { "present": true, "total_mb": 15200, "free_mb": 14980, "queued_events": 0 },
+  "modem":   { "registered": true, "rssi_dbm": -73, "tech": "LTE", "operator": "Claro PE" },
+  "gnss":    { "fix": true, "lat": -9.930833, "lon": -76.241944, "alt_m": 1894.0,
+               "speed_kmh": 42.3, "heading": 218.0, "hdop": 1.1, "sats": 9, "fix_age_s": 2 },
+  "power":   { "battery_v": 4.02, "charging": true, "vin_ok": true },
+  "system":  { "uptime_s": 48213, "heap_free": 148320, "reset_reason": "POWERON",
+               "wifi_ap_clients": 0 }
+}</code></pre>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Campo</th><th>Uso recomendado en el tablero</th></tr></thead>
+      <tbody>
+        <tr><td><code>state</code></td><td>Estado operativo. Ver la tabla de la sección 05</td></tr>
+        <tr><td><code>sd.queued_events</code></td><td>Eventos pendientes de publicar. Mayor que cero indica que el equipo estuvo sin enlace</td></tr>
+        <tr><td><code>modem.rssi_dbm</code></td><td>Calidad de señal. Sobre -85 dBm es buena, bajo -105 dBm es marginal</td></tr>
+        <tr><td><code>gnss.fix</code></td><td>Validez de la posición mostrada en el mapa</td></tr>
+        <tr><td><code>power.vin_ok</code></td><td><code>false</code> indica que el equipo opera con batería</td></tr>
+        <tr><td><code>sensors.*.ok</code></td><td>Disponibilidad de cada sensor del bus I2C</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>7.5 Posición y diagnóstico</h3>
+  <div class="grid2">
+    <div class="card">
+      <h4>sda/{id}/position</h4>
+<pre><code>{
+  "id": "SDA-A4C138",
+  "ts": "2026-08-19T14:31:00Z",
+  "position": {
+    "fix": true,
+    "lat": -9.930833,
+    "lon": -76.241944,
+    "alt_m": 1894.0,
+    "speed_kmh": 42.3,
+    "heading": 218.0,
+    "hdop": 1.1,
+    "sats": 9,
+    "fix_age_s": 2
+  }
+}</code></pre>
+    </div>
+    <div class="card">
+      <h4>sda/{id}/diag</h4>
+<pre><code>{
+  "id": "SDA-A4C138",
+  "ts": "2026-08-19T15:00:00Z",
+  "modem": {
+    "present": true, "model": "SIMCOM_SIM7600G-H",
+    "fw": "LE20B04SIM7600G22",
+    "imei": "860123456789012",
+    "iccid": "8951101234567890123",
+    "imsi": "716100123456789",
+    "sim": "ready", "reg": "registered_home",
+    "roaming": false, "operator": "Claro PE",
+    "tech": "LTE", "rssi_dbm": -73, "rsrp_dbm": -95,
+    "rsrq_db": -11, "sinr_db": 14, "band": 4,
+    "cell_id": 12345678, "pdp": true, "ip": "10.24.31.7",
+    "mqtt_reconnects": 0, "last_error": 0, "last_error_es": ""
+  },
+  "sensors": { "adxl_fails": 0, "lsm_fails": 0,
+               "pcf_fails": 0, "calibrated": true },
+  "storage": { "present": true, "write_error": false,
+               "queue_in_ram": false, "queued": 0 },
+  "system":  { "uptime_s": 50013, "heap_free": 148320,
+               "psram_free": 8210000, "core_cycle_us": 4820,
+               "reset_reason": "POWERON" }
+}</code></pre>
+    </div>
+  </div>
+
+  <h3>7.6 Disponibilidad</h3>
+  <p>
+    El tópico <code>availability</code> lleva el texto plano <code>online</code> u
+    <code>offline</code>, retenido y con QoS 1. Está declarado como Last Will and Testament: si el
+    equipo pierde el enlace sin desconectarse de forma ordenada, es el propio broker el que publica
+    <code>offline</code> al vencer el keep-alive. El servidor detecta así un equipo fuera de línea
+    sin temporizadores propios.
+  </p>
+  <div class="note warn">
+    <b>Interpretación correcta.</b> <code>offline</code> significa que el enlace de datos cayó, no que
+    el equipo dejó de vigilar. Sin enlace, el equipo sigue detectando, registra los eventos en la
+    microSD y los publica cuando recupera cobertura, y el respaldo por SMS actúa en el intervalo.
+  </div>
+
+  <h3>7.7 Comandos de consulta</h3>
+  <p>
+    Se publican en <code>sda/{id}/cmd</code> con QoS 1 y el equipo responde en
+    <code>sda/{id}/cmd/resp</code> con el mismo <code>req_id</code>. Ninguno de estos comandos
+    modifica el comportamiento del equipo.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Comando</th><th>Efecto</th><th>Contenido de <code>data</code></th></tr></thead>
+      <tbody>
+        <tr><td><code>ping</code></td><td>Responde con el estado completo</td><td>El mismo cuerpo del tópico <code>status</code></td></tr>
+        <tr><td><code>position</code></td><td>Publica la posición en <code>position</code> y la devuelve</td><td>El mismo cuerpo del tópico <code>position</code></td></tr>
+        <tr><td><code>diag</code></td><td>Responde con el diagnóstico ampliado</td><td>El mismo cuerpo del tópico <code>diag</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Petición</h4>
+<pre><code>{
+  "cmd": "ping",
+  "req_id": "a7f3c1"
+}</code></pre>
+      <p>Los dos campos son obligatorios. El <code>req_id</code> lo elige el servidor y debe ser
+         único por petición.</p>
+    </div>
+    <div class="card">
+      <h4>Respuesta</h4>
+<pre><code>{
+  "req_id": "a7f3c1",
+  "cmd": "ping",
+  "ok": true,
+  "data": { "id": "SDA-A4C138", "state": "idle" }
+}</code></pre>
+      <p>Ante un comando no reconocido o un cuerpo mal formado, la respuesta trae
+         <code>"ok": false</code> y un campo <code>detail</code> con el motivo.</p>
+    </div>
+  </div>
+
+  <h3>7.8 Reglas de consumo</h3>
+  <p>Cinco reglas que el servidor del cliente debe implementar para que la integración sea correcta
+     ante reenvíos, reconexiones y anulaciones.</p>
+  <ol class="steps">
+    <li><div>
+      <b>Deduplicar por <code>id</code> y <code>seq</code></b>
+      <p>Un evento puede llegar más de una vez: QoS 1 garantiza al menos una entrega, y la cola de
+         reenvío republica lo pendiente. Use <code>{id}-{seq}</code> como identificador del
+         documento para que una reentrega sobrescriba en lugar de duplicar.</p>
+    </div></li>
+    <li><div>
+      <b>Tratar <code>queued: true</code> como aviso diferido</b>
+      <p>Ese evento ocurrió en el instante de su campo <code>ts</code>, no en el de recepción. Al
+         mostrarlo, use siempre <code>ts</code> como hora del hecho.</p>
+    </div></li>
+    <li><div>
+      <b>Cerrar el incidente con <code>cancels_seq</code></b>
+      <p>Un evento <code>cancel</code> anula al evento cuyo <code>seq</code> coincide con
+         <code>cancels_seq</code>. Sin esa referencia no es posible saber cuál de varias alertas se
+         está anulando.</p>
+    </div></li>
+    <li><div>
+      <b>Aceptar <code>ts</code> nulo</b>
+      <p>Si el equipo aún no obtuvo hora, <code>ts</code> llega como <code>null</code> y
+         <code>time_src</code> como <code>uptime</code>. En ese caso, registre la hora de recepción
+         del servidor y marque el dato como estimado.</p>
+    </div></li>
+    <li><div>
+      <b>Suscribirse con sesión persistente</b>
+      <p>El consumidor debe usar un <code>clientId</code> fijo y <code>clean session</code> en
+         <code>false</code>. Así el broker retiene los mensajes QoS 1 publicados mientras el
+         consumidor estuvo caído y los entrega al reconectar.</p>
+    </div></li>
+  </ol>
+
+  <h3>7.9 Suscripción de flota</h3>
+  <p>Un solo consumidor cubre todos los equipos con comodines de un nivel.</p>
+<pre><code>sda/+/event          <span class="c">// alertas de todos los equipos</span>
+sda/+/status         <span class="c">// estado de todos los equipos</span>
+sda/+/position       <span class="c">// posición de todos los equipos</span>
+sda/+/availability   <span class="c">// conexión y desconexión</span>
+sda/+/cmd/resp       <span class="c">// respuestas a los comandos enviados</span></code></pre>
+  <p>
+    El identificador del equipo es el segundo nivel del tópico. Al recibir un mensaje, divida el
+    tópico por <code>/</code>: la posición 0 es el prefijo, la 1 es el <code>device_id</code> y el
+    resto es la hoja.
+  </p>
+
+  <h3>7.10 Verificación desde línea de comandos</h3>
+  <p>
+    Antes de escribir código conviene confirmar que las credenciales funcionan y ver los mensajes
+    reales. Con <code>mosquitto_sub</code> instalado:
+  </p>
+<pre><code>mosquitto_sub -h 3da4c64f2d3841abaa515824b7592e7c.s1.eu.hivemq.cloud \
+  -p 8883 --capath /etc/ssl/certs \
+  -u lilygo -P "$MQTT_PASS" \
+  -t 'sda/+/event' -t 'sda/+/status' -t 'sda/+/availability' \
+  -q 1 -v</code></pre>
+  <p>
+    Al suscribirse llegan de inmediato los mensajes retenidos de <code>status</code> y
+    <code>availability</code> de cada equipo conectado. Para provocar un evento sin golpear el
+    equipo, use el botón <b>Generar evento de prueba</b> de la interfaz web: recorre exactamente el
+    mismo camino que una alerta real y publica <code>"type": "test"</code>.
+  </p>
+</section>
+<!-- =============== 7 =============== -->
+<section id="s8">
+  <h2><span class="n">Sección 08</span>Integración con Firebase</h2>
+
+  <p>
+    MQTT es un protocolo de sesión permanente y Firebase no se conecta a un broker por sí mismo.
+    La integración se resuelve con un servicio puente que mantiene una única conexión MQTT, escribe
+    en Firestore lo que recibe y publica en el tópico de comandos lo que la aplicación solicita.
+    La aplicación del cliente nunca habla MQTT: lee y escribe en Firestore.
+  </p>
+
+  <figure>
+    <div class="fig-box">
+      <svg viewBox="0 0 940 300" role="img" aria-label="Arquitectura del puente MQTT hacia Firebase">
+        <rect class="dg-fill" x="16" y="110" width="150" height="80" rx="8"/>
+        <rect class="dg-stroke" x="16" y="110" width="150" height="80" rx="8"/>
+        <text class="dg-t-b" x="30" y="140">Equipos SDA</text>
+        <text class="dg-t" x="30" y="162">Publican y reciben</text>
+
+        <rect class="dg-fill" x="212" y="110" width="160" height="80" rx="8"/>
+        <rect class="dg-stroke" x="212" y="110" width="160" height="80" rx="8"/>
+        <text class="dg-t-b" x="226" y="140">HiveMQ Cloud</text>
+        <text class="dg-t" x="226" y="162">TLS 8883</text>
+
+        <rect class="dg-acc" x="418" y="88" width="180" height="124" rx="8"/>
+        <rect class="dg-stroke-acc" x="418" y="88" width="180" height="124" rx="8"/>
+        <text class="dg-t-b" x="432" y="114">Puente MQTT</text>
+        <text class="dg-t" x="432" y="136">Cloud Run</text>
+        <text class="dg-t" x="432" y="155">Sesión persistente</text>
+        <text class="dg-t" x="432" y="174">Deduplica por seq</text>
+        <text class="dg-t" x="432" y="193">Publica comandos</text>
+
+        <rect class="dg-fill" x="644" y="60" width="150" height="70" rx="8"/>
+        <rect class="dg-stroke" x="644" y="60" width="150" height="70" rx="8"/>
+        <text class="dg-t-b" x="658" y="88">Firestore</text>
+        <text class="dg-t" x="658" y="110">Equipos y eventos</text>
+
+        <rect class="dg-fill" x="644" y="168" width="150" height="70" rx="8"/>
+        <rect class="dg-stroke" x="644" y="168" width="150" height="70" rx="8"/>
+        <text class="dg-t-b" x="658" y="196">Cloud Functions</text>
+        <text class="dg-t" x="658" y="218">Notificación FCM</text>
+
+        <rect class="dg-fill-2" x="838" y="110" width="90" height="80" rx="8"/>
+        <rect class="dg-stroke" x="838" y="110" width="90" height="80" rx="8"/>
+        <text class="dg-t-b" x="852" y="140">App</text>
+        <text class="dg-t" x="852" y="162">del cliente</text>
+
+        <path class="dg-line" d="M166 150 H206"/><path d="M200 145 l8 5 -8 5 z" class="dg-arrow"/>
+        <path class="dg-line" d="M372 150 H412"/><path d="M406 145 l8 5 -8 5 z" class="dg-arrow"/>
+        <path class="dg-line" d="M598 130 H620 V95 H638"/><path d="M632 90 l8 5 -8 5 z" class="dg-arrow"/>
+        <path class="dg-line" d="M794 95 H812 V150 H832"/><path d="M826 145 l8 5 -8 5 z" class="dg-arrow"/>
+        <path class="dg-line" d="M718 130 V168"/><path d="M713 162 l5 8 5 -8 z" class="dg-arrow"/>
+        <path class="dg-line" d="M794 203 H812"/>
+        <path class="dg-dash" d="M883 190 V262 H508 V212"/>
+        <path d="M503 218 l5 -8 5 8 z" class="dg-arrow"/>
+        <text class="dg-t-s" x="694" y="282" text-anchor="middle">COMANDOS: LA APP ESCRIBE EN FIRESTORE Y EL PUENTE LOS PUBLICA</text>
+
+        <text class="dg-t-s" x="16" y="40">UNA SOLA CONEXIÓN MQTT PARA TODA LA FLOTA</text>
+        <path class="dg-stroke" d="M16 52 H924" stroke-dasharray="2 5"/>
+      </svg>
+    </div>
+    <figcaption>
+      El puente debe correr con una instancia siempre activa. Un entorno que suspende el proceso
+      entre peticiones corta la conexión MQTT y con ella la recepción en tiempo real.
+    </figcaption>
+  </figure>
+
+  <h3>8.1 Modelo de datos en Firestore</h3>
+  <p>Tres colecciones cubren la operación completa.</p>
+<pre><code>dispositivos/{deviceId}
+    enLinea        booleano, desde el tópico availability
+    visto          marca de tiempo del último mensaje recibido
+    estado         objeto, último mensaje de status
+    posicion       objeto, última posición conocida
+    etiqueta       texto libre administrado por el cliente
+
+dispositivos/{deviceId}/eventos/{seq}
+    ...campos del mensaje de evento tal como llegan
+    ocurrido       marca de tiempo derivada de ts
+    recibido       marca de tiempo del servidor
+    diferido       booleano, copia de queued
+    anulado        booleano, lo activa el evento cancel
+    atendido       booleano, lo marca la aplicación
+
+dispositivos/{deviceId}/comandos/{reqId}
+    cmd            ping, position o diag
+    estado         pendiente, enviado, respondido
+    creado         marca de tiempo
+    respuesta      objeto, el cuerpo recibido en cmd/resp</code></pre>
+
+  <div class="note">
+    <b>Clave de deduplicación.</b> El identificador del documento de evento es el número de secuencia
+    con relleno a seis dígitos, por ejemplo <code>000143</code>. Un reenvío desde la cola escribe el
+    mismo documento y no genera un duplicado. Ordenar por el identificador del documento equivale a
+    ordenar por orden de ocurrencia.
+  </div>
+
+  <h3>8.2 Servicio puente</h3>
+  <p>
+    Node.js 20 con los paquetes <code>mqtt</code> y <code>firebase-admin</code>. El servicio recibe
+    las credenciales del broker por variables de entorno y las de Firebase por la cuenta de servicio
+    del propio entorno de ejecución.
+  </p>
+
+  <div class="filename">puente/package.json</div>
+<pre><code>{
+  "name": "puente-sda",
+  "type": "module",
+  "engines": { "node": "20" },
+  "dependencies": {
+    "mqtt": "^5.10.1",
+    "firebase-admin": "^12.7.0"
+  },
+  "scripts": { "start": "node index.js" }
+}</code></pre>
+
+  <div class="filename">puente/index.js</div>
+<pre><code>import mqtt from 'mqtt';
+import { initializeApp, applicationDefault } from 'firebase-admin/app';
+import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
+
+initializeApp({ credential: applicationDefault() });
+const db = getFirestore();
+
+const PREFIJO = process.env.MQTT_PREFIX ?? 'sda';
+const HOST    = process.env.MQTT_HOST;
+
+<span class="c">// clean: false y clientId fijo. El broker guarda los eventos QoS 1</span>
+<span class="c">// publicados mientras el puente estuvo caído y los entrega al reconectar.</span>
+const cliente = mqtt.connect(`mqtts://${HOST}:8883`, {
+  clientId: 'puente-firebase-1',
+  username: process.env.MQTT_USER,
+  password: process.env.MQTT_PASS,
+  clean: false,
+  keepalive: 60,
+  reconnectPeriod: 5000,
+  rejectUnauthorized: true
+});
+
+cliente.on('connect', () =&gt; {
+  cliente.subscribe([
+    `${PREFIJO}/+/event`,
+    `${PREFIJO}/+/status`,
+    `${PREFIJO}/+/position`,
+    `${PREFIJO}/+/availability`,
+    `${PREFIJO}/+/cmd/resp`
+  ], { qos: 1 });
+  console.log('puente conectado al broker');
+});
+
+cliente.on('error', (e) =&gt; console.error('mqtt', e.message));
+
+cliente.on('message', async (topico, cuerpo) =&gt; {
+  const partes = topico.split('/');
+  const deviceId = partes[1];
+  const hoja = partes.slice(2).join('/');
+  const equipo = db.collection('dispositivos').doc(deviceId);
+
+  try {
+    if (hoja === 'availability') {
+      await equipo.set({
+        enLinea: cuerpo.toString() === 'online',
+        visto: FieldValue.serverTimestamp()
+      }, { merge: true });
+      return;
+    }
+
+    const datos = JSON.parse(cuerpo.toString());
+
+    if (hoja === 'status') {
+      await equipo.set({ estado: datos, visto: FieldValue.serverTimestamp() }, { merge: true });
+    } else if (hoja === 'position') {
+      await equipo.set({ posicion: datos.position, visto: FieldValue.serverTimestamp() },
+                       { merge: true });
+    } else if (hoja === 'event') {
+      await guardarEvento(equipo, datos);
+    } else if (hoja === 'cmd/resp') {
+      await equipo.collection('comandos').doc(datos.req_id).set({
+        estado: 'respondido', respuesta: datos,
+        respondido: FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+  } catch (e) {
+    console.error('mensaje descartado', topico, e.message);
+  }
+});
+
+async function guardarEvento(equipo, ev) {
+  const idDoc = String(ev.seq).padStart(6, '0');
+
+  await equipo.collection('eventos').doc(idDoc).set({
+    ...ev,
+    ocurrido: ev.ts ? Timestamp.fromDate(new Date(ev.ts)) : FieldValue.serverTimestamp(),
+    recibido: FieldValue.serverTimestamp(),
+    diferido: ev.queued === true
+  }, { merge: true });
+
+  <span class="c">// Una anulación cierra el evento al que hace referencia.</span>
+  if (ev.type === 'cancel' && typeof ev.cancels_seq === 'number') {
+    await equipo.collection('eventos').doc(String(ev.cancels_seq).padStart(6, '0')).set({
+      anulado: true,
+      anuladoPor: ev.seq,
+      anuladoEn: FieldValue.serverTimestamp()
+    }, { merge: true });
+  }
+}
+
+<span class="c">// Comandos: la app crea el documento, el puente lo publica.</span>
+db.collectionGroup('comandos').where('estado', '==', 'pendiente')
+  .onSnapshot((consulta) =&gt; {
+    consulta.docChanges().forEach(async (cambio) =&gt; {
+      if (cambio.type !== 'added') return;
+      const doc = cambio.doc;
+      const deviceId = doc.ref.parent.parent.id;
+      const cuerpo = JSON.stringify({ cmd: doc.data().cmd, req_id: doc.id });
+      cliente.publish(`${PREFIJO}/${deviceId}/cmd`, cuerpo, { qos: 1 }, (err) =&gt; {
+        doc.ref.update({
+          estado: err ? 'pendiente' : 'enviado',
+          enviado: FieldValue.serverTimestamp()
+        });
+      });
+    });
+  });
+
+<span class="c">// Sonda de salud para el entorno de ejecución.</span>
+import http from 'node:http';
+http.createServer((req, res) =&gt; {
+  res.writeHead(cliente.connected ? 200 : 503).end();
+}).listen(process.env.PORT ?? 8080);</code></pre>
+
+  <h4>Despliegue en Cloud Run</h4>
+<pre><code>gcloud run deploy puente-sda \
+  --source ./puente \
+  --region southamerica-west1 \
+  --min-instances 1 \
+  --max-instances 1 \
+  --no-cpu-throttling \
+  --no-allow-unauthenticated \
+  --set-env-vars MQTT_HOST=3da4c64f2d3841abaa515824b7592e7c.s1.eu.hivemq.cloud,MQTT_USER=lilygo \
+  --set-secrets MQTT_PASS=mqtt-pass:latest</code></pre>
+  <p>
+    <code>--min-instances 1</code> y <code>--no-cpu-throttling</code> mantienen el proceso vivo entre
+    peticiones, que es lo que la conexión MQTT necesita. <code>--max-instances 1</code> evita que dos
+    instancias compartan el mismo <code>clientId</code>: el broker desconecta a la anterior cada vez
+    que entra una nueva con el mismo identificador.
+  </p>
+  <p>
+    El escucha de comandos consulta por grupo de colecciones. Firestore necesita para eso un índice
+    de grupo de colecciones sobre el campo <code>estado</code> de <code>comandos</code>. Se crea una
+    sola vez desde la consola de Firebase, en la sección Índices.
+  </p>
+
+  <h3>8.3 Notificación al teléfono</h3>
+  <p>
+    Una función que se dispara al crear un documento de evento envía la notificación por FCM. Filtra
+    por tipo, de modo que la telemetría y los eventos de prueba no despiertan al usuario.
+  </p>
+  <div class="filename">functions/index.js</div>
+<pre><code>import { onDocumentCreated } from 'firebase-functions/v2/firestore';
+import { initializeApp } from 'firebase-admin/app';
+import { getMessaging } from 'firebase-admin/messaging';
+
+initializeApp();
+
+const TITULOS = {
+  crash:    'Choque detectado',
+  rollover: 'Volcadura detectada',
+  sos:      'SOS activado por el ocupante'
+};
+
+export const avisarEvento = onDocumentCreated(
+  { document: 'dispositivos/{deviceId}/eventos/{seq}', region: 'southamerica-west1' },
+  async (evento) =&gt; {
+    const ev = evento.data?.data();
+    if (!ev || !TITULOS[ev.type]) return;
+
+    const deviceId = evento.params.deviceId;
+    const p = ev.position;
+    const lugar = p ? `${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}` : 'sin posición GNSS';
+    const equipo = ev.vehicle_label || deviceId;
+
+    await getMessaging().send({
+      topic: 'alertas',
+      notification: {
+        title: TITULOS[ev.type],
+        body: `${equipo} · severidad ${ev.severity ?? 'no clasificada'} · ${lugar}`
+      },
+      data: {
+        deviceId,
+        seq: String(ev.seq),
+        tipo: ev.type,
+        lat: p ? String(p.lat) : '',
+        lon: p ? String(p.lon) : ''
+      },
+      android: { priority: 'high', notification: { channelId: 'alertas', sound: 'default' } },
+      apns: { payload: { aps: { sound: 'default', 'interruption-level': 'time-sensitive' } } }
+    });
+  }
+);</code></pre>
+  <div class="note warn">
+    <b>Eventos diferidos.</b> Un evento con <code>diferido: true</code> llega cuando el equipo recupera
+    cobertura, posiblemente horas después del hecho. Si la aplicación notifica de todos modos,
+    conviene incluir la hora de ocurrencia en el texto para que no se confunda con una emergencia
+    en curso.
+  </div>
+
+  <h3>8.4 Reglas de seguridad</h3>
+  <p>
+    Los datos los escribe el puente con credenciales de administrador, que no pasan por estas
+    reglas. La aplicación solo lee, marca eventos como atendidos y crea comandos.
+  </p>
+<pre><code>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /dispositivos/{deviceId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+
+      match /eventos/{seq} {
+        allow read: if request.auth != null;
+        allow update: if request.auth != null
+                      && request.resource.data.diff(resource.data)
+                           .affectedKeys().hasOnly(['atendido', 'atendidoPor']);
+        allow create, delete: if false;
+      }
+
+      match /comandos/{reqId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+                      && request.resource.data.estado == 'pendiente'
+                      && request.resource.data.cmd in ['ping', 'position', 'diag'];
+        allow update, delete: if false;
+      }
+    }
+  }
+}</code></pre>
+
+  <h3>8.5 Consumo desde la aplicación</h3>
+  <p>
+    La aplicación escucha la colección de eventos. Como el puente escribe en cuanto el mensaje llega,
+    la latencia entre el impacto y la pantalla es la del enlace celular más una fracción de segundo.
+  </p>
+
+  <div class="filename">app/alertas.js · JavaScript</div>
+<pre><code>import { getFirestore, collectionGroup, query, where, orderBy, limit, onSnapshot }
+  from 'firebase/firestore';
+
+const db = getFirestore();
+
+<span class="c">// Últimas alertas de toda la flota, en vivo.</span>
+const consulta = query(
+  collectionGroup(db, 'eventos'),
+  where('type', 'in', ['crash', 'rollover', 'sos']),
+  orderBy('ocurrido', 'desc'),
+  limit(50)
+);
+
+onSnapshot(consulta, (instantanea) =&gt; {
+  instantanea.docChanges().forEach((cambio) =&gt; {
+    const ev = cambio.doc.data();
+    const equipo = cambio.doc.ref.parent.parent.id;
+    if (ev.anulado) { cerrarIncidente(equipo, ev.seq); return; }
+    mostrarAlerta({
+      equipo,
+      tipo: ev.type,
+      severidad: ev.severity,
+      cuando: ev.ocurrido.toDate(),
+      diferido: ev.diferido === true,
+      mapa: ev.position
+        ? `https://maps.google.com/?q=${ev.position.lat},${ev.position.lon}`
+        : null
+    });
+  });
+});</code></pre>
+
+  <div class="filename">app/alertas.dart · Flutter</div>
+<pre><code>FirebaseFirestore.instance
+    .collectionGroup('eventos')
+    .where('type', whereIn: ['crash', 'rollover', 'sos'])
+    .orderBy('ocurrido', descending: true)
+    .limit(50)
+    .snapshots()
+    .listen((instantanea) {
+  for (final doc in instantanea.docs) {
+    final ev = doc.data();
+    if (ev['anulado'] == true) continue;
+    mostrarAlerta(
+      equipo: doc.reference.parent.parent!.id,
+      tipo: ev['type'] as String,
+      severidad: ev['severity'] as String?,
+      cuando: (ev['ocurrido'] as Timestamp).toDate(),
+      posicion: ev['position'] as Map&lt;String, dynamic&gt;?,
+    );
+  }
+});</code></pre>
+
+  <div class="note">
+    <b>Índice necesario.</b> La consulta por grupo de colecciones con filtro por <code>type</code> y
+    orden por <code>ocurrido</code> requiere un índice compuesto. La consola de Firebase entrega el
+    enlace de creación la primera vez que la consulta se ejecuta.
+  </div>
+
+  <h3>8.6 Enviar un comando desde la aplicación</h3>
+  <p>
+    La aplicación crea el documento de comando y observa el mismo documento hasta que el puente
+    escribe la respuesta. El identificador del documento es el <code>req_id</code> que viaja por MQTT.
+  </p>
+<pre><code>import { doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+
+export async function pedirPosicion(deviceId) {
+  const reqId = crypto.randomUUID().slice(0, 12);
+  const ref = doc(db, 'dispositivos', deviceId, 'comandos', reqId);
+
+  await setDoc(ref, { cmd: 'position', estado: 'pendiente', creado: serverTimestamp() });
+
+  return new Promise((resolver, rechazar) =&gt; {
+    const plazo = setTimeout(() =&gt; { cancelar(); rechazar(new Error('sin respuesta')); }, 30000);
+    const cancelar = onSnapshot(ref, (d) =&gt; {
+      const datos = d.data();
+      if (datos?.estado === 'respondido') {
+        clearTimeout(plazo); cancelar(); resolver(datos.respuesta.data);
+      }
+    });
+  });
+}</code></pre>
+  <p>
+    Un plazo de 30 s es adecuado: el equipo atiende los comandos en el mismo ciclo que la
+    publicación, y una respuesta puede esperar a que el módem libere el puerto que comparte con el
+    GNSS.
+  </p>
+
+  <h3>8.7 Suscripción directa desde un navegador</h3>
+  <p>
+    Para un tablero web que no necesite persistencia, es posible suscribirse al broker desde el
+    navegador por WebSocket seguro, sin pasar por Firebase.
+  </p>
+<pre><code>import mqtt from 'mqtt';
+
+const cliente = mqtt.connect(
+  'wss://3da4c64f2d3841abaa515824b7592e7c.s1.eu.hivemq.cloud:8884/mqtt',
+  { username: 'lilygo', password: CLAVE, clientId: `tablero-${Date.now()}`, clean: true }
+);
+
+cliente.on('connect', () =&gt; cliente.subscribe('sda/+/status', { qos: 0 }));
+cliente.on('message', (topico, cuerpo) =&gt; {
+  const equipo = topico.split('/')[1];
+  pintarTarjeta(equipo, JSON.parse(cuerpo.toString()));
+});</code></pre>
+  <div class="note warn">
+    <b>Alcance de esta variante.</b> Un cliente de navegador expone la credencial del broker en el
+    código que descarga el usuario. Es apropiada para un tablero interno y para verificación durante
+    la puesta en marcha. Para la aplicación de usuario final, el camino es el puente con Firebase, que
+    mantiene la credencial del lado del servidor y conserva el histórico.
+  </div>
+</section>
+<!-- =============== 8 =============== -->
+<section id="s9">
+  <h2><span class="n">Sección 09</span>Calibración de montaje</h2>
+
+  <p>
+    El equipo no exige una orientación de instalación determinada. La calibración mide el vector de
+    gravedad con el vehículo en reposo y guarda la matriz de rotación que lleva los ejes del sensor
+    a los ejes del vehículo. Todos los cálculos de inclinación posteriores usan esa matriz.
+  </p>
+
+  <figure>
+    <div class="fig-box">
+      <svg viewBox="0 0 940 292" role="img" aria-label="Ejes del equipo respecto al vehículo">
+        <text class="dg-t-s" x="16" y="26">MARCO DE REFERENCIA QUE LA CALIBRACIÓN ESTABLECE</text>
+        <path class="dg-stroke" d="M16 36 H924" stroke-dasharray="2 5"/>
+
+        <path class="dg-dash" d="M498 58 V262"/>
+
+        <path class="dg-fill-2" d="M58 192 L58 156 C58 146 66 140 88 138 L148 132 L180 98 L298 96 L332 134 L396 138 C412 140 418 148 418 158 L418 192 L380 192 A28 28 0 0 0 324 192 L180 192 A28 28 0 0 0 124 192 Z"/>
+        <path class="dg-stroke" d="M58 192 L58 156 C58 146 66 140 88 138 L148 132 L180 98 L298 96 L332 134 L396 138 C412 140 418 148 418 158 L418 192 L380 192 A28 28 0 0 0 324 192 L180 192 A28 28 0 0 0 124 192 Z"/>
+
+        <path class="dg-acc" d="M186 104 L222 104 L222 128 L170 128 Z"/>
+        <path class="dg-stroke" d="M186 104 L222 104 L222 128 L170 128 Z"/>
+        <rect class="dg-acc" x="232" y="104" width="60" height="24" rx="2"/>
+        <rect class="dg-stroke" x="232" y="104" width="60" height="24" rx="2"/>
+        <path class="dg-acc" d="M302 104 L320 104 L330 128 L302 128 Z"/>
+        <path class="dg-stroke" d="M302 104 L320 104 L330 128 L302 128 Z"/>
+
+        <circle class="dg-fill" cx="152" cy="192" r="23"/><circle class="dg-stroke" cx="152" cy="192" r="23"/>
+        <circle class="dg-fill-2" cx="152" cy="192" r="9"/><circle class="dg-stroke" cx="152" cy="192" r="9"/>
+        <circle class="dg-fill" cx="352" cy="192" r="23"/><circle class="dg-stroke" cx="352" cy="192" r="23"/>
+        <circle class="dg-fill-2" cx="352" cy="192" r="9"/><circle class="dg-stroke" cx="352" cy="192" r="9"/>
+
+        <path class="dg-stroke" d="M20 215 H460" stroke-dasharray="3 4"/>
+
+        <rect class="dg-acc" x="240" y="136" width="46" height="16" rx="3"/>
+        <rect class="dg-stroke-acc" x="240" y="136" width="46" height="16" rx="3"/>
+        <path class="dg-dash" d="M263 152 V238"/>
+        <text class="dg-t-b" x="263" y="258" text-anchor="middle">Equipo SDA</text>
+
+        <path class="dg-line" d="M40 238 H118"/><path class="dg-arrow" d="M116 233 L125 238 L116 243 Z"/>
+        <text class="dg-t-s" x="40" y="258">SENTIDO DE MARCHA</text>
+
+        <rect class="dg-acc" x="672" y="146" width="52" height="28" rx="4"/>
+        <rect class="dg-stroke-acc" x="672" y="146" width="52" height="28" rx="4"/>
+
+        <path class="dg-stroke-acc" d="M698 160 H846"/><path class="dg-arrow-acc" d="M844 155 L855 160 L844 165 Z"/>
+        <text class="dg-t-b" x="864" y="164">X · frente</text>
+
+        <path class="dg-stroke-acc" d="M698 160 V92"/><path class="dg-arrow-acc" d="M693 94 L698 83 L703 94 Z"/>
+        <text class="dg-t-b" x="698" y="70" text-anchor="middle">Z · arriba</text>
+
+        <path class="dg-stroke-acc" d="M698 160 L614 208"/><path class="dg-arrow-acc" d="M619 199 L607 212 L624 209 Z"/>
+        <text class="dg-t-b" x="600" y="228" text-anchor="end">Y · izquierda</text>
+      </svg>
+    </div>
+    <figcaption>
+      Después de calibrar, el alabeo y el cabeceo se miden respecto al plano del vehículo, sea cual
+      sea la inclinación con la que quedó fijado el equipo.
+    </figcaption>
+  </figure>
+
+  <h3>Procedimiento</h3>
+  <ol class="steps">
+    <li><div>
+      <b>Fijar el equipo en su posición definitiva</b>
+      <p>La calibración deja de ser válida si el equipo se mueve después. Sujételo antes de empezar.</p>
+    </div></li>
+    <li><div>
+      <b>Estacionar en terreno plano</b>
+      <p>Motor apagado, sin personas subiendo o bajando y sin viento fuerte contra la carrocería.
+         Cualquier movimiento durante la medición la invalida.</p>
+    </div></li>
+    <li><div>
+      <b>Abrir el asistente</b>
+      <p>Interfaz web, pestaña <b>Sistema</b>, tarjeta <b>Calibración de montaje</b>, botón
+         <b>Iniciar asistente</b>. Las dos primeras pantallas explican los ejes y las condiciones.</p>
+    </div></li>
+    <li><div>
+      <b>Verificación de reposo, 3 segundos</b>
+      <p>El equipo mide la desviación estándar de la aceleración. Si supera 0.05 g, la secuencia
+         termina con el mensaje de movimiento detectado y se puede reintentar de inmediato.</p>
+    </div></li>
+    <li><div>
+      <b>Promedio del vector de gravedad, 5 segundos</b>
+      <p>La barra de progreso avanza hasta el 100 %. El alabeo y el cabeceo medidos se muestran en
+         vivo durante el proceso.</p>
+    </div></li>
+    <li><div>
+      <b>Confirmar el resultado</b>
+      <p>Vuelva a la pestaña <b>Estado</b>, tarjeta <b>Orientación</b>. El campo <b>Calibrado</b> debe
+         mostrar <b>Sí</b>, y la inclinación debe quedar cerca de cero con el vehículo en el mismo
+         lugar.</p>
+    </div></li>
+  </ol>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Estado de la secuencia</th><th>Mensaje en pantalla</th><th>Duración</th></tr></thead>
+      <tbody>
+        <tr><td><code>checking_rest</code></td><td>Verificando reposo. No mover el equipo</td><td class="num">3 s</td></tr>
+        <tr><td><code>averaging</code></td><td>Promediando el vector de gravedad</td><td class="num">5 s</td></tr>
+        <tr><td><code>done</code></td><td>Calibración guardada</td><td>—</td></tr>
+        <tr><td><code>failed_motion</code></td><td>Se detectó movimiento durante la medición</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <b>Cuándo repetirla.</b> Al cambiar el equipo de vehículo, al modificar su posición o su ángulo de
+    montaje, y después de un restablecimiento de fábrica. La matriz se guarda en memoria no volátil
+    y sobrevive a los reinicios y a las actualizaciones de firmware.
+  </div>
+
+  <h3>Ajuste de umbrales después de calibrar</h3>
+  <p>
+    Los valores de fábrica (15 g de pico, 8 km/h de delta-V, 60° durante 1500 ms) son el punto de
+    partida. El ajuste fino se hace con datos del vehículo concreto, siguiendo este orden:
+  </p>
+  <ol>
+    <li>Con el vehículo detenido y el motor encendido, observe el gráfico de aceleración de 60 s en
+        la pestaña Estado. El pico en reposo indica el piso de ruido de la instalación.</li>
+    <li>Circule por el recorrido habitual y revise el archivo de eventos rechazados en
+        <code>/EVT</code>. Cada rechazo trae el motivo y el pico que lo produjo.</li>
+    <li>Suba el umbral de pico si aparecen rechazos con valores cercanos al umbral. Bájelo si el
+        recorrido no produce ningún pico por encima de un tercio del umbral configurado.</li>
+    <li>Deje activada la guardia de vehículo detenido. Es la que evita alertas al cerrar la puerta
+        con el vehículo estacionado.</li>
+  </ol>
+</section>
+
+<!-- =============== 9 =============== -->
+<section id="s10">
+  <h2><span class="n">Sección 10</span>Pruebas de aceptación</h2>
+
+  <p>
+    Cuatro bloques de pruebas: el equipo sobre la mesa, las alertas sonoras, el equipo instalado
+    en el vehículo y la integración con el servidor del cliente. Cada prueba tiene un criterio
+    observable.
+  </p>
+
+  <h3>10.1 Pruebas sobre la mesa</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Prueba</th><th>Procedimiento</th><th>Criterio de aceptación</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Autodiagnóstico</td>
+          <td>Energizar el equipo y observar la señalización</td>
+          <td>Chasquido breve del buzzer al energizar, que cesa en cuanto el firmware toma el control, y LED verde con latido cada 2 s</td>
+        </tr>
+        <tr>
+          <td>Barrido I2C</td>
+          <td>Pestaña Sistema, botón Actualizar diagnóstico</td>
+          <td>Las tres direcciones presentes: 0x20, 0x53 y 0x6A</td>
+        </tr>
+        <tr>
+          <td>Botones</td>
+          <td>Pulsar SOS y CANCELAR observando la tarjeta Entradas y salidas</td>
+          <td>Cada pulsación se refleja en pantalla en menos de 100 ms, sin pulsaciones fantasma</td>
+        </tr>
+        <tr>
+          <td>Impacto</td>
+          <td>Golpe seco sobre la mesa junto al equipo, o caída controlada sobre espuma desde 20 cm</td>
+          <td>Entra en prealarma, con pico y severidad acordes en el evento</td>
+        </tr>
+        <tr>
+          <td>Sensibilidad</td>
+          <td>Repetir el golpe con el umbral en 5 g y luego en 40 g</td>
+          <td>El umbral configurado cambia el comportamiento de forma consistente</td>
+        </tr>
+        <tr>
+          <td>Volcadura</td>
+          <td>Inclinar la placa más de 60° y sostener la posición</td>
+          <td>Dispara al cumplirse el tiempo configurado, no antes</td>
+        </tr>
+        <tr>
+          <td>Rechazo por inclinación breve</td>
+          <td>Inclinar más de 60° y volver a plano en menos de 1 s</td>
+          <td>Sin disparo. Rechazo <code>tilt_too_brief</code> anotado en la microSD</td>
+        </tr>
+        <tr>
+          <td>Rechazo por golpe corto</td>
+          <td>Golpe leve sobre la mesa</td>
+          <td>Sin disparo con el umbral de fábrica</td>
+        </tr>
+        <tr>
+          <td>SOS y anulación</td>
+          <td>Pulsar SOS, cancelar antes del plazo y repetir cancelando después del envío</td>
+          <td>Primer caso sin publicación. Segundo caso con evento <code>cancel</code> publicado</td>
+        </tr>
+        <tr>
+          <td>Cola de reenvío</td>
+          <td>Extraer la SIM, generar tres eventos de prueba, reinsertar la SIM y energizar de nuevo</td>
+          <td>Los tres eventos llegan en orden, con <code>queued: true</code> y su hora original</td>
+        </tr>
+        <tr>
+          <td>Corte de alimentación</td>
+          <td>Desconectar el USB con la batería conectada</td>
+          <td>El equipo sigue operando. La interfaz muestra alimentación externa en No</td>
+        </tr>
+        <tr>
+          <td>microSD en caliente</td>
+          <td>Extraer e insertar la tarjeta con el equipo encendido</td>
+          <td>El cambio se refleja en menos de 10 s. Los eventos previos se conservan</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+    <h3>10.2 Prueba de las alertas sonoras</h3>
+  <p>
+    Doce comprobaciones, una por cada aviso. Se hacen con el equipo alimentado y el buzzer activado
+    en Configuración. Tienen dos reglas que ahorran confusión:
+  </p>
+  <ul>
+    <li>La cuenta regresiva solo arranca con el equipo en reposo. Mientras haya una alerta activa,
+      la pulsación corta de SOS se descarta. Hay que esperar a que se cierre la ventana de anulación
+      o cancelar antes.</li>
+    <li>Cancelar durante la cuenta devuelve el equipo a reposo en menos de un segundo, así que es la
+      forma rápida de encadenar una prueba tras otra.</li>
+  </ul>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Prueba</th><th>Procedimiento</th><th>Criterio de aceptación</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Nivel leve</td>
+          <td>Golpe suave sobre el equipo o sobre la mesa junto a él</td>
+          <td>Arranca la cuenta con 1 pitido cada 2 s y el LED verde en parpadeo rápido</td>
+        </tr>
+        <tr>
+          <td>Nivel moderado</td>
+          <td>Golpe de fuerza intermedia</td>
+          <td>2 pitidos cada segundo</td>
+        </tr>
+        <tr>
+          <td>Nivel grave</td>
+          <td>Golpe fuerte</td>
+          <td>3 pitidos cada segundo</td>
+        </tr>
+        <tr>
+          <td>Volcadura</td>
+          <td>Inclinar el equipo más de 60 grados y sostenerlo 2 s, girando despacio a propósito</td>
+          <td>3 pitidos cada segundo, el mismo patrón que un golpe grave, aunque el giro sea lento</td>
+        </tr>
+        <tr>
+          <td>Cuenta de SOS</td>
+          <td>Pulsación corta de SOS, sin tocar nada durante 12 s</td>
+          <td>3 pitidos por segundo y, desde el segundo 7, el doble de rápido. A los 10 s se envía</td>
+        </tr>
+        <tr>
+          <td>SOS inmediato</td>
+          <td>Mantener SOS 3 s</td>
+          <td>Sin cuenta regresiva. Los 3 pitidos de confirmación suenan en el acto</td>
+        </tr>
+        <tr>
+          <td>Alerta enviada</td>
+          <td>Lo anterior, con cobertura</td>
+          <td>3 pitidos, silencio, y 1 pitido a los 15 s que se repite hasta los 5 minutos</td>
+        </tr>
+        <tr>
+          <td>Alerta sin cobertura</td>
+          <td>Extraer la SIM o poner el módem en modo avión, y mantener SOS 3 s</td>
+          <td>3 pitidos y, un segundo después, 2 pitidos largos cada 10 s. El evento aparece en la cola</td>
+        </tr>
+        <tr>
+          <td>Cancelación</td>
+          <td>Pulsar CANCELAR durante una cuenta regresiva</td>
+          <td>1 pitido largo y silencio. No se publica ningún evento</td>
+        </tr>
+        <tr>
+          <td>Silenciar</td>
+          <td>Con una alerta sonando, botón Silenciar buzzer de la interfaz web</td>
+          <td>El sonido se corta. El estado sigue en alerta y el evento sigue en la lista</td>
+        </tr>
+        <tr>
+          <td>Prueba del sistema</td>
+          <td>Mantener SOS y CANCELAR a la vez durante 5 s</td>
+          <td>2 pitidos cortos, una sola vez, y un evento de tipo <code>test</code>. No debe salir una alerta real</td>
+        </tr>
+        <tr>
+          <td>Falla técnica</td>
+          <td>Desconectar un sensor del bus I2C con el equipo encendido</td>
+          <td>2 pitidos, y después 2 pitidos cada 60 s. El LED rojo pasa a 3 destellos cada 3 s</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note warn">
+    <b>La falta de cobertura no debe sonar.</b> Quedarse sin red celular o sin conexión al servidor
+    es normal en carretera y no produce ningún aviso sonoro. Solo se señaliza en el LED rojo, con
+    uno o dos destellos cada 3 s. Si el buzzer suena cada minuto, es una avería del equipo.
+  </div>
+
+  <div class="note">
+    <b>El aviso dura 5 minutos, no 2.</b> La ventana de anulación se cierra a los 30 s y el equipo
+    vuelve a reposo, pero el recordatorio de la alerta se mide desde el momento del accidente y
+    sigue sonando. Es el comportamiento esperado.
+  </div>
+
+  <h3>10.3 Verificación con el puerto serie</h3>
+  <p>
+    Para un acta de aceptación, el puerto serie a 115200 baudios da la medida exacta de cada patrón
+    sin depender del oído. Cada cambio de aviso deja una línea con el número de patrón, y las
+    primeras activaciones registran el byte enviado al expansor y si la escritura fue correcta.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Número</th><th>Aviso</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>Prueba del sistema</td></tr>
+        <tr><td>3</td><td>Cuenta regresiva, nivel leve</td></tr>
+        <tr><td>4</td><td>Cuenta regresiva, nivel moderado</td></tr>
+        <tr><td>5</td><td>Cuenta regresiva, nivel grave, volcadura y SOS</td></tr>
+        <tr><td>6</td><td>SOS, últimos 3 segundos</td></tr>
+        <tr><td>7</td><td>Confirmación de alerta emitida</td></tr>
+        <tr><td>8</td><td>Recordatorio de alerta enviada</td></tr>
+        <tr><td>9</td><td>Alerta esperando señal</td></tr>
+        <tr><td>10</td><td>Cancelación</td></tr>
+        <tr><td>11</td><td>Falla técnica</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Una cuenta regresiva de SOS completa se lee así, con los tiempos medidos sobre el equipo:
+  </p>
+  <pre><code>SOS pulsacion corta
+patron de buzzer 5      nivel grave, arranca la cuenta
+patron de buzzer 6      a los 7,00 s pasa al tramo acelerado
+patron de buzzer 7      a los 10,00 s se envia: 3 pitidos
+Evento generado
+patron de buzzer 0      silencio a los 0,76 s
+patron de buzzer 8      recordatorio a los 15,00 s</code></pre>
+  <p>
+    El autodiagnóstico de arranque imprime además los parámetros que deciden qué se oye y durante
+    cuánto tiempo, que es lo primero a revisar si el equipo está mudo:
+  </p>
+  <pre><code>Senalizacion: buzzer activo, autosilencio 5 min, LED normales
+Tiempos: gracia choque 10 s, gracia SOS 10 s, ventana de anulacion 30 s</code></pre>
+
+  <h3>10.4 Pruebas en el vehículo</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Prueba</th><th>Procedimiento</th><th>Criterio de aceptación</th></tr></thead>
+      <tbody>
+        <tr><td>Calibración</td><td>Asistente con el vehículo estacionado en plano</td><td>Calibrado en Sí, inclinación cerca de cero</td></tr>
+        <tr><td>Conducción mixta</td><td>Recorrido urbano de 20 minutos</td><td>Ninguna alerta generada</td></tr>
+        <tr><td>Frenada de emergencia</td><td>Frenada firme desde 40 km/h en zona despejada</td><td>Sin disparo</td></tr>
+        <tr><td>Resalto y bache</td><td>Pasar por un resalto a velocidad moderada</td><td>Sin disparo. Rechazo anotado con su motivo</td></tr>
+        <tr><td>Portazo</td><td>Cerrar la puerta con fuerza, vehículo detenido</td><td>Sin disparo</td></tr>
+        <tr><td>Posición en marcha</td><td>Observar el tópico <code>position</code> durante el recorrido</td><td>Un mensaje cada 30 s sobre 5 km/h, cada 300 s detenido</td></tr>
+        <tr><td>Zona sin cobertura</td><td>Recorrido por zona sin señal generando un evento de prueba</td><td>El evento llega al recuperar cobertura, con su hora original</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>10.5 Pruebas de integración</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Prueba</th><th>Procedimiento</th><th>Criterio de aceptación</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Enlace con el broker</td>
+          <td>Pestaña Módem, tarjeta Datos</td>
+          <td>Contexto PDP en Sí, dirección IP asignada, MQTT en Conectado</td>
+        </tr>
+        <tr>
+          <td>Estado retenido</td>
+          <td>Suscribirse a <code>sda/+/status</code> con un cliente nuevo</td>
+          <td>Llega el último estado de inmediato, sin esperar al siguiente ciclo</td>
+        </tr>
+        <tr>
+          <td>Disponibilidad</td>
+          <td>Cortar la alimentación del equipo y observar <code>availability</code></td>
+          <td>El broker publica <code>offline</code> al vencer el keep-alive</td>
+        </tr>
+        <tr>
+          <td>Evento de extremo a extremo</td>
+          <td>Botón Generar evento de prueba en la pestaña Estado</td>
+          <td>El evento aparece en Firestore y llega la notificación al teléfono</td>
+        </tr>
+        <tr>
+          <td>Deduplicación</td>
+          <td>Repetir la publicación de un evento ya recibido</td>
+          <td>El documento se actualiza. No aparece un segundo registro</td>
+        </tr>
+        <tr>
+          <td>Anulación</td>
+          <td>Generar una alerta y cancelarla dentro de la ventana</td>
+          <td>El incidente original queda marcado como anulado en la aplicación</td>
+        </tr>
+        <tr>
+          <td>Comando de consulta</td>
+          <td>Crear un comando <code>position</code> desde la aplicación</td>
+          <td>Respuesta en <code>cmd/resp</code> con el mismo <code>req_id</code> en menos de 30 s</td>
+        </tr>
+        <tr>
+          <td>Reconexión del puente</td>
+          <td>Detener el puente, generar un evento y volver a iniciarlo</td>
+          <td>El evento llega al reconectar, entregado por la sesión persistente del broker</td>
+        </tr>
+        <tr>
+          <td>SMS de respaldo</td>
+          <td>Configurar un destinatario y generar un evento sin canal de datos</td>
+          <td>El SMS llega con coordenadas y enlace de mapa</td>
+        </tr>
+        <tr>
+          <td>Diagnóstico RockBLOCK</td>
+          <td>Pestaña Módem, <b>Diagnóstico sin costo</b>, sin cable USB</td>
+          <td>Módulo presente, IMEI leído y señal con origen CSQF. El registro de la operación no menciona SBDIX</td>
+        </tr>
+        <tr>
+          <td>Prueba Iridium (pagada)</td>
+          <td>Vista al cielo, canal habilitado, <b>Enviar prueba Iridium</b> y confirmar el crédito</td>
+          <td>Incidente en Finalizado, motivo Confirmado por Iridium, 39 bytes y un crédito en el portal de Ground Control</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>10.6 Secuencia corta de demostración</h3>
+    <p>Siete pasos que muestran el producto completo en unos diez minutos.</p>
+  <ol class="steps">
+    <li><div><b>Estado del equipo</b><p>Abrir la interfaz web y mostrar la pestaña Estado con
+      señal, posición GNSS, batería y sensores en verde.</p></div></li>
+    <li><div><b>Enlace celular</b><p>Pestaña Módem: los cinco niveles del diagnóstico en verde, con
+      operador, banda y nivel de señal.</p></div></li>
+    <li><div><b>Alerta real</b><p>Golpe controlado o botón SOS. El LED verde parpadea rápido, el
+      buzzer acelera y la pantalla muestra la cuenta regresiva.</p></div></li>
+    <li><div><b>Llegada al servidor</b><p>El evento aparece en la aplicación con posición, severidad
+      y hora, y llega la notificación al teléfono.</p></div></li>
+    <li><div><b>Anulación</b><p>Pulsar CANCELAR dentro de la ventana. El incidente se cierra en la
+      aplicación y sale el SMS de anulación.</p></div></li>
+    <li><div><b>Operación sin cobertura</b><p>Extraer la SIM, generar un evento de prueba, mostrar
+      la cola en la interfaz y reponer la SIM para ver la publicación diferida.</p></div></li>
+    <li><div><b>Canal satelital</b><p>Pestaña Módem, tarjeta Satélite. Diagnóstico sin costo con el
+      módulo a la vista del cielo: IMEI leído y señal en caché CSQF. La prueba pagada es opcional y
+      consume un crédito si la sesión se completa. Ver la <a href="#s14">sección 14</a>.</p></div></li>
+  </ol>
+</section>
+<!-- =============== 10 =============== -->
+<section id="s11">
+  <h2><span class="n">Sección 11</span>Manual de la interfaz web</h2>
+
+  <p>
+    El equipo publica su propia red WiFi y sirve la interfaz desde ella. No requiere Internet ni
+    aplicación instalada: funciona con el navegador de un teléfono o de una computadora. La interfaz
+    tiene cuatro pestañas y todas se actualizan solas mientras están abiertas.
+  </p>
+
+  <h3>11.1 Acceso</h3>
+  <ol class="steps">
+    <li><div><b>Conectarse a la red del equipo</b>
+      <p>En la lista de redes WiFi aparece una que empieza con <code>SDA-</code> seguida del
+         identificador. La clave de fábrica es <code>sda12345</code>.</p></div></li>
+    <li><div><b>Abrir la dirección del equipo</b>
+      <p>En el navegador, <code>http://192.168.4.1</code>. Si el teléfono pregunta por mantener la
+         red sin Internet, acepte.</p></div></li>
+    <li><div><b>Ingresar las credenciales</b>
+      <p>Usuario y contraseña de fábrica: <code>admin</code> / <code>admin</code>. La sesión dura
+         30 minutos de inactividad.</p></div></li>
+    <li><div><b>Cambiar la contraseña</b>
+      <p>Pestaña Configuración, grupo Red local, campo Contraseña de acceso. Mientras siga siendo la
+         de fábrica, la interfaz muestra un aviso en todas las pantallas.</p></div></li>
+  </ol>
+
+  <h3>11.2 Elementos comunes</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Elemento</th><th>Ubicación</th><th>Qué indica</th></tr></thead>
+      <tbody>
+        <tr><td>Identificador</td><td>Arriba a la izquierda</td><td>El <code>device_id</code> del equipo, el mismo que viaja en los mensajes</td></tr>
+        <tr><td>Insignia de estado</td><td>Arriba a la derecha</td><td>Estado operativo en texto: En vigilancia, Prealarma, Alerta enviada</td></tr>
+        <tr><td>Aviso rojo</td><td>Bajo la cabecera</td><td>Sin conexión con el equipo, o alerta en curso</td></tr>
+        <tr><td>Aviso ámbar</td><td>Bajo la cabecera</td><td>La contraseña de acceso sigue siendo la de fábrica</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    La pantalla se refresca dos veces por segundo en operación normal. Durante una alerta la
+    cadencia baja a una vez cada dos segundos: la prioridad la tiene la cadena de detección, no la
+    pantalla.
+  </p>
+
+  <h3>11.3 Pestaña Estado</h3>
+  <p>Es la vista de operación. Muestra en vivo todo lo que el equipo está midiendo.</p>
+
+  <figure>
+    <div class="fig-box">
+      <svg viewBox="0 0 940 530" role="img" aria-label="Vista de la pestaña Estado">
+        <rect class="dg-fill" x="12" y="12" width="916" height="506" rx="10"/>
+        <rect class="dg-stroke" x="12" y="12" width="916" height="506" rx="10"/>
+
+        <!-- cabecera -->
+        <path class="dg-stroke" d="M12 66 H928"/>
+        <text class="dg-t-b" x="32" y="46" style="font-size:15px">SDA-A4C138</text>
+        <rect class="dg-acc" x="784" y="28" width="120" height="24" rx="12"/>
+        <rect class="dg-stroke-acc" x="784" y="28" width="120" height="24" rx="12"/>
+        <text class="dg-t" x="800" y="45" style="font-size:11.5px">En vigilancia</text>
+
+        <!-- pestanas -->
+        <path class="dg-stroke" d="M12 104 H928"/>
+        <text class="dg-t-b" x="32" y="92">Estado</text>
+        <path class="dg-stroke-acc" d="M32 100 H84" stroke-width="3"/>
+        <text class="dg-t" x="112" y="92">Módem</text>
+        <text class="dg-t" x="188" y="92">Configuración</text>
+        <text class="dg-t" x="304" y="92">Sistema</text>
+
+        <!-- fila 1 -->
+        <rect class="dg-fill-2" x="30" y="122" width="278" height="118" rx="8"/>
+        <rect class="dg-stroke" x="30" y="122" width="278" height="118" rx="8"/>
+        <circle class="dg-acc" cx="46" cy="138" r="11"/><circle class="dg-stroke-acc" cx="46" cy="138" r="11"/>
+        <text class="dg-t-acc" x="43" y="142">1</text>
+        <text class="dg-t-b" x="66" y="143">Situación</text>
+        <text class="dg-t" x="46" y="176" style="font-size:18px">En vigilancia</text>
+        <rect class="dg-fill" x="46" y="196" width="112" height="26" rx="5"/><rect class="dg-stroke" x="46" y="196" width="112" height="26" rx="5"/>
+        <text class="dg-t" x="58" y="213" style="font-size:11px">Silenciar buzzer</text>
+        <rect class="dg-fill" x="168" y="196" width="122" height="26" rx="5"/><rect class="dg-stroke" x="168" y="196" width="122" height="26" rx="5"/>
+        <text class="dg-t" x="178" y="213" style="font-size:11px">Evento de prueba</text>
+
+        <rect class="dg-fill-2" x="330" y="122" width="278" height="118" rx="8"/>
+        <rect class="dg-stroke" x="330" y="122" width="278" height="118" rx="8"/>
+        <circle class="dg-acc" cx="346" cy="138" r="11"/><circle class="dg-stroke-acc" cx="346" cy="138" r="11"/>
+        <text class="dg-t-acc" x="343" y="142">2</text>
+        <text class="dg-t-b" x="366" y="143">Aceleración 60 s</text>
+        <polyline class="dg-stroke-acc" points="346,215 376,208 396,212 416,196 436,214 466,205 486,210 516,168 536,212 566,206 586,209"/>
+        <path class="dg-stroke" d="M346 222 H590" stroke-dasharray="2 4"/>
+        <text class="dg-t-s" x="346" y="236">PICO 60 S · 1.41 G</text>
+
+        <rect class="dg-fill-2" x="630" y="122" width="278" height="118" rx="8"/>
+        <rect class="dg-stroke" x="630" y="122" width="278" height="118" rx="8"/>
+        <circle class="dg-acc" cx="646" cy="138" r="11"/><circle class="dg-stroke-acc" cx="646" cy="138" r="11"/>
+        <text class="dg-t-acc" x="643" y="142">3</text>
+        <text class="dg-t-b" x="666" y="143">Orientación</text>
+        <text class="dg-t" x="646" y="172">Inclinación</text><text class="dg-t" x="836" y="172">1.4°</text>
+        <text class="dg-t" x="646" y="196">Alabeo · Cabeceo</text><text class="dg-t" x="812" y="196">0.8 / -1.2</text>
+        <text class="dg-t" x="646" y="220">Calibrado</text><text class="dg-t dg-ok" x="856" y="220">Sí</text>
+
+        <!-- fila 2 -->
+        <rect class="dg-fill-2" x="30" y="256" width="278" height="118" rx="8"/>
+        <rect class="dg-stroke" x="30" y="256" width="278" height="118" rx="8"/>
+        <circle class="dg-acc" cx="46" cy="272" r="11"/><circle class="dg-stroke-acc" cx="46" cy="272" r="11"/>
+        <text class="dg-t-acc" x="43" y="276">4</text>
+        <text class="dg-t-b" x="66" y="277">Sensores</text>
+        <circle class="dg-ok" cx="52" cy="303" r="5"/><text class="dg-t" x="66" y="307">ADXL375</text><text class="dg-t" x="248" y="307">0x53</text>
+        <circle class="dg-ok" cx="52" cy="327" r="5"/><text class="dg-t" x="66" y="331">LSM6DS3TR-C</text><text class="dg-t" x="248" y="331">0x6A</text>
+        <circle class="dg-ok" cx="52" cy="351" r="5"/><text class="dg-t" x="66" y="355">PCF8574</text><text class="dg-t" x="248" y="355">0x20</text>
+
+        <rect class="dg-fill-2" x="330" y="256" width="278" height="118" rx="8"/>
+        <rect class="dg-stroke" x="330" y="256" width="278" height="118" rx="8"/>
+        <circle class="dg-acc" cx="346" cy="272" r="11"/><circle class="dg-stroke-acc" cx="346" cy="272" r="11"/>
+        <text class="dg-t-acc" x="343" y="276">5</text>
+        <text class="dg-t-b" x="366" y="277">Módem</text>
+        <text class="dg-t" x="346" y="307">Red</text><text class="dg-t" x="454" y="307">Registrado en red propia</text>
+        <text class="dg-t" x="346" y="331">Señal</text><text class="dg-t" x="530" y="331">-73 dBm</text>
+        <text class="dg-t" x="346" y="355">MQTT</text><text class="dg-t dg-ok" x="524" y="355">Conectado</text>
+
+        <rect class="dg-fill-2" x="630" y="256" width="278" height="118" rx="8"/>
+        <rect class="dg-stroke" x="630" y="256" width="278" height="118" rx="8"/>
+        <circle class="dg-acc" cx="646" cy="272" r="11"/><circle class="dg-stroke-acc" cx="646" cy="272" r="11"/>
+        <text class="dg-t-acc" x="643" y="276">6</text>
+        <text class="dg-t-b" x="666" y="277">GNSS</text>
+        <text class="dg-t" x="646" y="307">Fijación</text><text class="dg-t dg-ok" x="856" y="307">Sí</text>
+        <text class="dg-t" x="646" y="331">Satélites</text><text class="dg-t" x="864" y="331">9</text>
+        <rect class="dg-fill" x="646" y="342" width="106" height="24" rx="5"/><rect class="dg-stroke" x="646" y="342" width="106" height="24" rx="5"/>
+        <text class="dg-t" x="658" y="358" style="font-size:11px">Ver en el mapa</text>
+
+        <!-- fila 3 -->
+        <rect class="dg-fill-2" x="30" y="390" width="278" height="112" rx="8"/>
+        <rect class="dg-stroke" x="30" y="390" width="278" height="112" rx="8"/>
+        <circle class="dg-acc" cx="46" cy="406" r="11"/><circle class="dg-stroke-acc" cx="46" cy="406" r="11"/>
+        <text class="dg-t-acc" x="43" y="410">7</text>
+        <text class="dg-t-b" x="66" y="411">microSD</text>
+        <text class="dg-t" x="46" y="441">Libre</text><text class="dg-t" x="224" y="441">14 980 MB</text>
+        <text class="dg-t" x="46" y="465">En cola</text><text class="dg-t" x="286" y="465">0</text>
+
+        <rect class="dg-fill-2" x="330" y="390" width="278" height="112" rx="8"/>
+        <rect class="dg-stroke" x="330" y="390" width="278" height="112" rx="8"/>
+        <circle class="dg-acc" cx="346" cy="406" r="11"/><circle class="dg-stroke-acc" cx="346" cy="406" r="11"/>
+        <text class="dg-t-acc" x="343" y="410">8</text>
+        <text class="dg-t-b" x="366" y="411">Alimentación</text>
+        <text class="dg-t" x="346" y="441">Batería</text><text class="dg-t" x="520" y="441">4.02 V · 96 %</text>
+        <rect class="dg-fill" x="346" y="456" width="244" height="10" rx="5"/>
+        <rect class="dg-ok" x="346" y="456" width="234" height="10" rx="5"/>
+        <text class="dg-t-s" x="346" y="484">CARGANDO DESDE ALIMENTACIÓN EXTERNA</text>
+
+        <rect class="dg-fill-2" x="630" y="390" width="278" height="112" rx="8"/>
+        <rect class="dg-stroke" x="630" y="390" width="278" height="112" rx="8"/>
+        <circle class="dg-acc" cx="646" cy="406" r="11"/><circle class="dg-stroke-acc" cx="646" cy="406" r="11"/>
+        <text class="dg-t-acc" x="643" y="410">9</text>
+        <text class="dg-t-b" x="666" y="411">Sistema</text>
+        <text class="dg-t" x="646" y="441">Firmware</text><text class="dg-t" x="850" y="441">1.0.0</text>
+        <text class="dg-t" x="646" y="465">Encendido</text><text class="dg-t" x="808" y="465">13 h 23 m</text>
+      </svg>
+    </div>
+    <figcaption>Distribución de la pestaña Estado. Los números corresponden a la tabla siguiente.</figcaption>
+  </figure>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>N.º</th><th>Tarjeta</th><th>Para qué sirve</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Situación</td><td>Estado en texto y cuenta regresiva. <b>Silenciar buzzer</b> lo apaga sin tocar el estado. <b>Generar evento de prueba</b> produce un evento que recorre el mismo camino que una alerta real: se registra, se encola y se publica</td></tr>
+        <tr><td class="num">2</td><td>Aceleración 60 s</td><td>Gráfico del último minuto con el valor actual, el pico del periodo y el delta-V. Es la herramienta para ver el piso de ruido de la instalación</td></tr>
+        <tr><td class="num">3</td><td>Orientación</td><td>Inclinación, alabeo, cabeceo, velocidad angular, condición de reposo y estado de calibración</td></tr>
+        <tr><td class="num">4</td><td>Sensores</td><td>Punto verde por cada dispositivo del bus I2C con su dirección. Un punto apagado indica que el dispositivo no responde</td></tr>
+        <tr><td class="num">5</td><td>Módem</td><td>Registro en red, operador, tecnología, nivel de señal y estado de la conexión al broker</td></tr>
+        <tr><td class="num">6</td><td>GNSS</td><td>Fijación, coordenadas, velocidad, satélites y antigüedad de la medición. <b>Ver en el mapa</b> abre la posición en el navegador</td></tr>
+        <tr><td class="num">7</td><td>microSD</td><td>Presencia de la tarjeta, espacio libre y eventos en cola pendientes de publicar</td></tr>
+        <tr><td class="num">8</td><td>Alimentación</td><td>Voltaje y porcentaje de batería, entrada externa y estado de carga</td></tr>
+        <tr><td class="num">9</td><td>Sistema</td><td>Versión de firmware, tiempo encendido, tiempo de ciclo de la detección y memoria disponible</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>11.4 Pestaña Módem</h3>
+  <p>
+    Concentra todo lo relativo al enlace celular. El diagnóstico es una escalera de cinco niveles: el
+    mensaje describe el primer nivel que no se cumple, con su causa y la acción correspondiente.
+  </p>
+
+  <figure>
+    <div class="fig-box">
+      <svg viewBox="0 0 940 370" role="img" aria-label="Vista de la pestaña Módem">
+        <rect class="dg-fill" x="12" y="12" width="916" height="346" rx="10"/>
+        <rect class="dg-stroke" x="12" y="12" width="916" height="346" rx="10"/>
+        <path class="dg-stroke" d="M12 60 H928"/>
+        <text class="dg-t-b" x="32" y="42">Diagnóstico</text>
+
+        <circle class="dg-ok" cx="46" cy="92" r="6"/><text class="dg-t" x="66" y="97">1 · Responde a AT</text>
+        <circle class="dg-ok" cx="46" cy="122" r="6"/><text class="dg-t" x="66" y="127">2 · SIM lista</text>
+        <circle class="dg-ok" cx="46" cy="152" r="6"/><text class="dg-t" x="66" y="157">3 · Identificadores leídos</text>
+        <circle class="dg-ok" cx="46" cy="182" r="6"/><text class="dg-t" x="66" y="187">4 · Registrado en red</text>
+        <circle class="dg-ok" cx="46" cy="212" r="6"/><text class="dg-t" x="66" y="217">5 · Operador identificado</text>
+        <rect class="dg-acc" x="32" y="238" width="380" height="34" rx="6"/>
+        <rect class="dg-stroke-acc" x="32" y="238" width="380" height="34" rx="6"/>
+        <text class="dg-t" x="46" y="260">Registrado en Claro PE. LTE banda 4. RSSI -73 dBm</text>
+        <rect class="dg-fill-2" x="32" y="288" width="150" height="28" rx="5"/>
+        <rect class="dg-stroke" x="32" y="288" width="150" height="28" rx="5"/>
+        <text class="dg-t" x="46" y="307" style="font-size:11.5px">Reiniciar el módem</text>
+
+        <path class="dg-stroke" d="M448 60 V346"/>
+
+        <text class="dg-t-b" x="476" y="92">Señal y red</text>
+        <text class="dg-t" x="476" y="120">Operador</text><text class="dg-t" x="820" y="120">Claro PE</text>
+        <text class="dg-t" x="476" y="144">Tecnología · Banda</text><text class="dg-t" x="828" y="144">LTE · 4</text>
+        <text class="dg-t" x="476" y="168">RSSI · RSRP</text><text class="dg-t" x="784" y="168">-73 · -95 dBm</text>
+        <text class="dg-t" x="476" y="192">SINR</text><text class="dg-t" x="838" y="192">14 dB</text>
+
+        <text class="dg-t-b" x="476" y="228">Datos</text>
+        <text class="dg-t" x="476" y="252">Contexto PDP</text><text class="dg-t dg-ok" x="866" y="252">Sí</text>
+        <text class="dg-t" x="476" y="276">Dirección IP</text><text class="dg-t" x="806" y="276">10.24.31.7</text>
+        <text class="dg-t" x="476" y="300">MQTT</text><text class="dg-t dg-ok" x="812" y="300">Conectado</text>
+        <rect class="dg-fill-2" x="476" y="314" width="122" height="28" rx="5"/>
+        <rect class="dg-stroke" x="476" y="314" width="122" height="28" rx="5"/>
+        <text class="dg-t" x="492" y="333" style="font-size:11.5px">Probar datos</text>
+      </svg>
+    </div>
+    <figcaption>
+      Los cinco niveles se evalúan en orden. Un nivel en verde garantiza que los anteriores también
+      lo están.
+    </figcaption>
+  </figure>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Nivel</th><th>Verifica</th><th>Mensaje cuando no se cumple</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>El módem responde a los comandos AT</td><td>El módem no responde. Reiniciar el módem</td></tr>
+        <tr><td class="num">2</td><td>La SIM está presente y desbloqueada</td><td>SIM no detectada. Insertar la tarjeta con el equipo apagado</td></tr>
+        <tr><td class="num">3</td><td>IMEI, ICCID e IMSI leídos</td><td>Identificadores no disponibles</td></tr>
+        <tr><td class="num">4</td><td>Registro en la red del operador</td><td>Buscando red. Sin cobertura o banda no soportada</td></tr>
+        <tr><td class="num">5</td><td>Operador identificado y contexto de datos activo</td><td>Registrado sin contexto de datos. Verificar APN</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Herramientas de la pestaña</h4>
+  <ul>
+    <li><b>Probar datos.</b> Abre una petición a un servidor de verificación de conectividad. Confirma
+        que el contexto de datos funciona de extremo a extremo, sin depender del broker.</li>
+    <li><b>APN precargados.</b> El selector copia el APN del operador elegido al campo correspondiente.
+        El valor se guarda desde la pestaña Configuración.</li>
+    <li><b>Prueba de SMS.</b> Envía un mensaje al número indicado. Sirve para confirmar que la línea
+        tiene saldo y que el respaldo por SMS funcionará cuando haga falta.</li>
+    <li><b>Consola AT.</b> Ejecuta un comando y muestra la respuesta. La traza continua registra todo
+        el tráfico con el módem. La consola comparte el puerto con la publicación y con el GNSS, de
+        modo que un comando se ejecuta cuando el puerto queda libre.</li>
+    <li><b>Reiniciar el módem.</b> Hace un ciclo de energía del módem sin reiniciar el equipo. Es la
+        acción indicada cuando el registro en red no avanza.</li>
+  </ul>
+
+  <h4>Tarjeta Satélite · RockBLOCK</h4>
+  <p>
+    Debajo de la consola AT del módem celular. Muestra el canal Iridium y permite tres acciones.
+    El campo <b>Incidente</b> es la bandeja de un solo registro satelital, no el registro del módulo
+    en la red Iridium. <b>Sin incidente pendiente</b> significa que no hay ningún choque o volcadura
+    esperando transmisión. El detalle está en la <a href="#s14">sección 14</a>.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Acción</th><th>Qué hace</th><th>Costo</th></tr></thead>
+      <tbody>
+        <tr><td>Diagnóstico sin costo</td><td>Comprueba que el módulo responde, lee el IMEI, el caché de señal CSQF y el estado del búfer MO. No abre sesión SBD</td><td>Ninguno</td></tr>
+        <tr><td>Medir señal</td><td>Ejecuta CSQ. Puede tardar unos 20 s. Actualiza la tarjeta con origen «medida CSQ» y la antigüedad en ahora</td><td>Ninguno</td></tr>
+        <tr><td>Enviar prueba Iridium</td><td>Transmite 39 bytes de clase 127. Pide confirmación explícita. Un solo intento</td><td>1 crédito si la sesión se completa</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note warn">
+    <b>No hay consola AT satelital.</b> Un comando suelto puede iniciar un registro o retransmitir
+    el búfer MO y gastar un crédito. Las tres acciones de la tarjeta son el único camino previsto.
+    Con un incidente real pendiente los botones quedan bloqueados.
+  </div>
+
+  <h3>11.5 Pestaña Configuración</h3>
+  <p>
+    Todos los parámetros del equipo, agrupados por tema. Los cambios se aplican al pulsar
+    <b>Guardar configuración</b>. <b>Descartar cambios</b> recarga los valores vigentes.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Comportamiento</th><th>Detalle</th></tr></thead>
+      <tbody>
+        <tr><td>Valores fuera de rango</td><td>Se ajustan al límite más cercano y la interfaz informa qué campos se recortaron</td></tr>
+        <tr><td>Contraseñas</td><td>Nunca se muestran. Un campo vacío conserva la contraseña guardada</td></tr>
+        <tr><td>Cambios de red local</td><td>La interfaz indica cuándo el cambio requiere reiniciar el equipo</td></tr>
+        <tr><td>Umbrales de detección</td><td>Se aplican de inmediato, sin reiniciar</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>11.6 Pestaña Sistema</h3>
+  <div class="grid2">
+    <div class="card">
+      <h4>Calibración de montaje</h4>
+      <p>Asistente de cuatro pantallas descrito en la <a href="#s9">sección 09</a>.</p>
+    </div>
+    <div class="card">
+      <h4>Archivos de la microSD</h4>
+      <p>Navegación por los seis directorios del equipo, con descarga y borrado por archivo.</p>
+    </div>
+    <div class="card">
+      <h4>Últimos eventos</h4>
+      <p>Vista previa de los últimos 20 eventos sin descargar el archivo completo del día.</p>
+    </div>
+    <div class="card">
+      <h4>Diagnóstico</h4>
+      <p>Barrido del bus I2C, historial de reinicios y las últimas líneas del registro interno.</p>
+    </div>
+    <div class="card">
+      <h4>Actualización de firmware</h4>
+      <p>Carga del archivo <code>.bin</code> con barra de progreso. La configuración se conserva.</p>
+    </div>
+    <div class="card">
+      <h4>Configuración y equipo</h4>
+      <p>Exportar e importar la configuración en JSON, reiniciar y restablecer de fábrica.</p>
+    </div>
+  </div>
+
+  <h4>Actualización de firmware, paso a paso</h4>
+  <ol class="steps">
+    <li><div><b>Verificar que no hay alerta en curso</b><p>La insignia de estado debe mostrar
+      En vigilancia. Durante una alerta la actualización se rechaza a propósito.</p></div></li>
+    <li><div><b>Seleccionar el archivo</b><p>Pestaña Sistema, tarjeta Actualización de firmware,
+      botón de selección de archivo. Se acepta únicamente una imagen válida para el equipo.</p></div></li>
+    <li><div><b>Cargar</b><p>La barra muestra el avance. Mantenga la conexión WiFi y no corte la
+      alimentación mientras dure.</p></div></li>
+    <li><div><b>Reinicio automático</b><p>El equipo se reinicia solo unos segundos después. Vuelva a
+      conectarse a la red WiFi y confirme la versión en la tarjeta Sistema de la pestaña Estado.</p></div></li>
+  </ol>
+  <div class="note">
+    <b>Continuidad de la configuración.</b> Los parámetros viven en una partición independiente de la
+    aplicación. Una actualización de firmware no altera credenciales, umbrales, destinatarios de SMS
+    ni la calibración de montaje.
+  </div>
+</section>
+
+<!-- =============== 11 =============== -->
+<section id="s12">
+  <h2><span class="n">Sección 12</span>Parámetros de configuración</h2>
+
+  <p>Valores de fábrica y rangos admitidos, en el mismo orden en que aparecen en la interfaz.</p>
+
+  <h3>Identificación</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Parámetro</th><th>De fábrica</th><th>Nota</th></tr></thead>
+      <tbody>
+        <tr><td>Identificador</td><td><code>SDA-XXXXXX</code></td><td>Derivado de la MAC. No editable</td></tr>
+        <tr><td>Vehículo</td><td>Vacío</td><td>Aparece en el evento publicado y en el SMS</td></tr>
+        <tr><td>Teléfono de contacto</td><td>Vacío</td><td>Se incluye en el evento publicado</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>MQTT</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Parámetro</th><th>De fábrica</th><th>Rango</th></tr></thead>
+      <tbody>
+        <tr><td>Servidor</td><td>HiveMQ Cloud del proyecto</td><td>—</td></tr>
+        <tr><td>Puerto</td><td class="num">8883</td><td>1 a 65535</td></tr>
+        <tr><td>TLS · Verificar certificado</td><td>Activado · Activado</td><td>—</td></tr>
+        <tr><td>Usuario</td><td><code>lilygo</code></td><td>—</td></tr>
+        <tr><td>Prefijo de tópicos</td><td><code>sda</code></td><td>—</td></tr>
+        <tr><td>Keep-alive</td><td class="num">60 s</td><td>15 a 3600</td></tr>
+        <tr><td>Intervalo de estado</td><td class="num">60 s</td><td>10 a 3600</td></tr>
+        <tr><td>Posición detenido</td><td class="num">300 s</td><td>10 a 3600</td></tr>
+        <tr><td>Posición en marcha</td><td class="num">30 s</td><td>5 a 3600</td></tr>
+        <tr><td>Aceptar comandos</td><td>Activado</td><td>—</td></tr>
+        <tr><td>Plazo de publicación</td><td class="num">20 s</td><td>5 a 120</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    El intervalo de estado es también la cadencia de la telemetría que se guarda en la microSD.
+    Bajarlo aumenta el detalle del histórico y el consumo de datos de la línea.
+  </p>
+
+  <h3>Red celular</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Parámetro</th><th>De fábrica</th><th>Opciones</th></tr></thead>
+      <tbody>
+        <tr><td>APN</td><td><code>claro.pe</code></td><td>Precargados: Claro, Movistar, Entel y Bitel Perú</td></tr>
+        <tr><td>PIN de la SIM</td><td>Vacío</td><td>Requerido solo si la SIM lo tiene activo</td></tr>
+        <tr><td>Permitir roaming</td><td>Activado</td><td>—</td></tr>
+        <tr><td>Tecnología</td><td>Automática</td><td>Automática, solo LTE, solo WCDMA, solo GSM</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Detección</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Parámetro</th><th>De fábrica</th><th>Rango</th></tr></thead>
+      <tbody>
+        <tr><td>Detección activa</td><td>Activada</td><td>—</td></tr>
+        <tr><td>Umbral de impacto</td><td class="num">15 g</td><td>5 a 100 g</td></tr>
+        <tr><td>Umbral de delta-V</td><td class="num">8 km/h</td><td>2 a 40 km/h</td></tr>
+        <tr><td>Ventana de delta-V</td><td class="num">100 ms</td><td>50 a 300 ms</td></tr>
+        <tr><td>Ángulo de volcadura</td><td class="num">60°</td><td>30 a 85°</td></tr>
+        <tr><td>Tiempo sostenido</td><td class="num">1500 ms</td><td>500 a 5000 ms</td></tr>
+        <tr><td>Umbral de giro</td><td class="num">250 °/s</td><td>100 a 1000 °/s</td></tr>
+        <tr><td>Descartar picos con vehículo detenido</td><td>Activado</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Tiempos de alerta y SMS</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Parámetro</th><th>De fábrica</th><th>Rango</th></tr></thead>
+      <tbody>
+        <tr><td>Gracia tras choque</td><td class="num">10 s</td><td>0 a 120 s</td></tr>
+        <tr><td>Gracia tras SOS</td><td class="num">10 s</td><td>0 a 60 s</td></tr>
+        <tr><td>Ventana de anulación</td><td class="num">120 s</td><td>0 a 600 s</td></tr>
+        <tr><td>SMS activo</td><td>Activado</td><td>—</td></tr>
+        <tr><td>Destinatarios</td><td>Vacío</td><td>Hasta tres números en formato internacional</td></tr>
+        <tr><td>Avisar choque · SOS · anulación</td><td>Activados</td><td>—</td></tr>
+        <tr><td>Avisar corte de energía</td><td>Desactivado</td><td>—</td></tr>
+        <tr><td>Máximo de SMS por hora</td><td class="num">5</td><td>1 a 60</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Canal satelital</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Parámetro</th><th>De fábrica</th><th>Nota</th></tr></thead>
+      <tbody>
+        <tr><td>RockBLOCK activo</td><td>Desactivado</td><td>Al activarlo, UART0 queda reservado y la consola USB se silencia. Ver <a href="#s14">sección 14</a></td></tr>
+        <tr><td>IMEI esperado</td><td>Vacío</td><td>Vacío acepta el IMEI leído. Conviene fijarlo antes de instalar para detectar un módulo cambiado</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Señalización, almacenamiento y red local</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Parámetro</th><th>De fábrica</th><th>Rango u opciones</th></tr></thead>
+      <tbody>
+        <tr><td>Buzzer activo</td><td>Activado</td><td>—</td></tr>
+        <tr><td>Silencio automático</td><td class="num">5 min</td><td>1 a 30 min</td></tr>
+        <tr><td>Intercambiar LED</td><td>Desactivado</td><td>Para el caso de cableado invertido</td></tr>
+        <tr><td>Registrar en microSD</td><td>Activado</td><td>—</td></tr>
+        <tr><td>Registrador de impacto</td><td>Activado</td><td>—</td></tr>
+        <tr><td>Telemetría en CSV</td><td>Activada</td><td>—</td></tr>
+        <tr><td>Punto de acceso</td><td>Siempre activo</td><td>Siempre activo o bajo demanda</td></tr>
+        <tr><td>Nombre de la red</td><td><code>SDA-XXXXXX</code></td><td>—</td></tr>
+        <tr><td>Clave de la red</td><td><code>sda12345</code></td><td>Mínimo 8 caracteres</td></tr>
+        <tr><td>Usuario y contraseña de acceso</td><td><code>admin</code> / <code>admin</code></td><td>Cambiar en la puesta en marcha</td></tr>
+        <tr><td>Huso horario</td><td class="num">-300 min</td><td>Perú, UTC-5. Afecta solo a los textos</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<!-- =============== 12 =============== -->
+<section id="s13">
+  <h2><span class="n">Sección 13</span>Operación y mantenimiento</h2>
+
+  <h3>13.1 Operación diaria</h3>
+  <p>
+    El equipo no requiere ninguna acción del conductor. Queda vigilando desde que se energiza y el
+    LED verde con latido cada 2 segundos confirma que está operando. Después de un choque, el aviso
+    sale solo: no hay nada que pulsar.
+  </p>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Pedir auxilio a mano</h4>
+      <p>Pulse SOS. El equipo cuenta 10 segundos antes de enviar, con el LED verde parpadeando
+         rápido y el buzzer acelerando. Mantener SOS pulsado 3 segundos envía de inmediato.</p>
+    </div>
+    <div class="card">
+      <h4>Anular una alerta</h4>
+      <p>Durante la cuenta regresiva, una pulsación de CANCELAR detiene el envío. Después del envío,
+         una pulsación dentro de los 120 segundos siguientes envía la anulación a quienes recibieron
+         la alerta.</p>
+    </div>
+  </div>
+
+  <h3>13.2 Revisión periódica</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Frecuencia</th><th>Verificación</th><th>Valor esperado</th></tr></thead>
+      <tbody>
+        <tr><td>Mensual</td><td>LED verde</td><td>Latido cada 2 s, o encendido fijo con GNSS y MQTT activos</td></tr>
+        <tr><td>Mensual</td><td>Pestaña Estado, tarjeta microSD</td><td>Tarjeta presente y cola en cero</td></tr>
+        <tr><td>Mensual</td><td>Pestaña Estado, tarjeta Alimentación</td><td>Batería sobre 20 % y alimentación externa en Sí</td></tr>
+        <tr><td>Mensual</td><td>Pestaña Módem</td><td>Los cinco niveles en verde y MQTT en Conectado</td></tr>
+        <tr><td>Mensual</td><td>Pestaña Módem, tarjeta Satélite</td><td>Si el canal está habilitado: módulo presente, IMEI coincidente e incidente en Sin incidente pendiente</td></tr>
+        <tr><td>Semestral</td><td>Descarga del histórico</td><td>Archivos de <code>/EVT</code> guardados fuera del equipo si se necesitan conservar</td></tr>
+        <tr><td>Semestral</td><td>Prueba de extremo a extremo</td><td>Evento de prueba visible en la aplicación y notificación recibida</td></tr>
+        <tr><td>Al mover el equipo</td><td>Calibración</td><td>Calibrado en Sí, inclinación cerca de cero</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>13.3 Después de un accidente</h3>
+  <ol>
+    <li>El aviso ya salió. Si el vehículo quedó volcado o los ocupantes no pueden moverse, no hay
+        que pulsar nada.</li>
+    <li>Si el aviso salió por un golpe menor, pulse CANCELAR dentro de la ventana de anulación.
+        Quienes recibieron la alerta reciben el aviso de anulación.</li>
+    <li>El archivo del impacto queda en <code>/CRASH</code> con la aceleración cruda desde 5 s antes
+        hasta 10 s después. Descárguelo desde la pestaña Sistema si se necesita para el análisis.</li>
+    <li>Revise la sujeción del equipo antes de volver a operar. Si se movió, repita la calibración.</li>
+  </ol>
+
+  <h3>13.4 Rotación del almacenamiento</h3>
+  <p>
+    Los eventos nunca se borran de forma automática. Cuando el espacio libre baja del 10 % se
+    eliminan los archivos de telemetría más antiguos, y bajo el 3 % también los archivos de impacto
+    más antiguos. La condición se refleja en el estado publicado.
+  </p>
+
+  <h3>13.5 Ficha del equipo</h3>
+  <p>Complete estos datos en la puesta en marcha y consérvelos junto con la documentación.</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Dato</th><th>Valor</th></tr></thead>
+      <tbody>
+        <tr><td>Identificador del equipo</td><td>&nbsp;</td></tr>
+        <tr><td>Vehículo asignado</td><td>&nbsp;</td></tr>
+        <tr><td>Número de la línea SIM y operador</td><td>&nbsp;</td></tr>
+        <tr><td>Red WiFi del equipo y clave</td><td>&nbsp;</td></tr>
+        <tr><td>Usuario y contraseña de la interfaz</td><td>&nbsp;</td></tr>
+        <tr><td>Destinatarios de SMS</td><td>&nbsp;</td></tr>
+        <tr><td>IMEI del RockBLOCK</td><td>&nbsp;</td></tr>
+        <tr><td>Cuenta Ground Control y créditos</td><td>&nbsp;</td></tr>
+        <tr><td>Fecha de calibración</td><td>&nbsp;</td></tr>
+        <tr><td>Umbrales en uso (pico, delta-V, ángulo)</td><td>&nbsp;</td></tr>
+        <tr><td>Contacto de soporte</td><td>&nbsp;</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- =============== 14 =============== -->
+<section id="s14">
+  <h2><span class="n">Sección 14</span>Canal satelital RockBLOCK</h2>
+
+  <p>
+    El celular es el camino principal. Iridium entra cuando un choque o una volcadura no se
+    confirman por MQTT ni por SMS. El módulo es un RockBLOCK 9603 o 9603N, red Short Burst Data.
+    El reporte cabe en 39 bytes y, si la sesión termina bien, gasta un crédito.
+  </p>
+  <p>
+    No sustituye al JSON que viaja por el broker. Si el celular entrega después el mismo
+    <code>seq</code>, el servidor debe enriquecer el incidente ya abierto y no volver a notificar.
+  </p>
+
+  <h3>14.1 Qué sale por satélite y qué no</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Sale por Iridium</th><th>No sale por Iridium</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Choque, volcadura, o ambos si ocurren en la misma ventana de gracia (un solo mensaje, clase 3)</td>
+          <td>SOS, anulación, corte de energía, batería baja, arranque, posición periódica</td>
+        </tr>
+        <tr>
+          <td>La prueba pagada de la pestaña Módem (clase 127, un intento)</td>
+          <td>El botón <b>Generar evento de prueba</b> de la pestaña Estado, que recorre solo MQTT y SMS</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Solo hay sitio para un incidente satelital a la vez. Si llega otro choque mientras el anterior
+    sigue pendiente o transmitiendo, el nuevo evento se registra en microSD y en MQTT, y no abre un
+    segundo mensaje SBD.
+  </p>
+  <div class="note">
+    <b>El equipo no recibe por satélite.</b> Ring Alert está desactivado. No hay comandos remotos
+    por Iridium ni consultas al buzón. Una sesión SBD con el búfer vacío gasta crédito y no aporta
+    diagnóstico: para eso están los botones que no abren sesión.
+  </div>
+
+  <h3>14.2 Cuándo transmite</h3>
+  <figure>
+    <div class="fig-box">
+      <svg viewBox="0 0 940 220" role="img" aria-label="Decisión del canal satelital">
+        <text class="dg-t-s" x="8" y="24">DESPUÉS DE QUE LA ALERTA SUPERA EL PLAZO DE GRACIA</text>
+        <path class="dg-stroke" d="M8 34 H932" stroke-dasharray="2 5"/>
+
+        <rect class="dg-fill" x="8" y="78" width="200" height="72" rx="8"/>
+        <rect class="dg-stroke" x="8" y="78" width="200" height="72" rx="8"/>
+        <text class="dg-t-b" x="24" y="106">Choque o volcadura</text>
+        <text class="dg-t" x="24" y="130">Canal habilitado</text>
+
+        <rect class="dg-acc" x="260" y="78" width="220" height="72" rx="8"/>
+        <rect class="dg-stroke-acc" x="260" y="78" width="220" height="72" rx="8"/>
+        <text class="dg-t-b" x="276" y="106">Espera celular 20 s</text>
+        <text class="dg-t" x="276" y="130">MQTT o SMS</text>
+
+        <rect class="dg-fill" x="620" y="48" width="300" height="64" rx="8"/>
+        <rect class="dg-stroke" x="620" y="48" width="300" height="64" rx="8"/>
+        <text class="dg-t-b" x="636" y="74">Confirmado por celular</text>
+        <text class="dg-t" x="636" y="96">Iridium no transmite</text>
+
+        <rect class="dg-fill-2" x="620" y="128" width="300" height="64" rx="8"/>
+        <rect class="dg-stroke" x="620" y="128" width="300" height="64" rx="8"/>
+        <text class="dg-t-b" x="636" y="154">Sin confirmación</text>
+        <text class="dg-t" x="636" y="176">SBDIX y reintentos 24 h</text>
+
+        <path class="dg-line" d="M208 114 H250"/><path class="dg-arrow" d="M248 109 L257 114 L248 119 Z"/>
+        <path class="dg-line" d="M480 114 H560 V80 H610"/><path class="dg-arrow" d="M608 75 L617 80 L608 85 Z"/>
+        <path class="dg-dash" d="M560 114 V160 H610"/><path class="dg-arrow" d="M608 155 L617 160 L608 165 Z"/>
+      </svg>
+    </div>
+    <figcaption>
+      Un SMS aceptado por la red también cancela el satélite, igual que un PUBACK de MQTT. Es la
+      política de esta versión: evita gastar crédito cuando el aviso ya salió por otro canal.
+    </figcaption>
+  </figure>
+  <p>
+    Tras un reinicio, si la bandeja quedó a mitad de una sesión, el equipo pregunta el MOMSN al
+    módulo. Si avanzó, el mensaje ya había salido y se marca entregado. Si no avanzó, se reintenta
+    el mismo <code>seq</code>. El servidor deduplica por <code>(device_id, seq)</code> y por
+    <code>(imei, momsn)</code> por si llegaran dos copias.
+  </p>
+
+  <h3>14.3 Cómo leer la tarjeta</h3>
+  <p>
+    Pestaña Módem, tarjeta <b>Satélite · RockBLOCK</b>. La consulta de estado no habla con el
+    módulo: pinta lo último cacheado.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Campo</th><th>Qué indica</th></tr></thead>
+      <tbody>
+        <tr><td>Canal habilitado</td><td>El parámetro RockBLOCK activo de Configuración</td></tr>
+        <tr><td>Módulo</td><td>Presente si respondió al último diagnóstico</td></tr>
+        <tr><td>IMEI</td><td>El leído del 9603. Si se configuró un IMEI esperado y no coincide, el canal no transmite</td></tr>
+        <tr><td>Señal</td><td>Barras 0 a 5, origen y antigüedad. Ver 14.4</td></tr>
+        <tr><td>Incidente</td><td>Estado de la bandeja. No es el registro del módulo en Iridium</td></tr>
+        <tr><td>Motivo</td><td>Por qué se cerró o sigue abierto el incidente</td></tr>
+        <tr><td>Secuencia</td><td>El mismo <code>seq</code> del evento MQTT</td></tr>
+        <tr><td>Intentos · MOMSN · Próximo intento</td><td>Reintentos, número de mensaje saliente del 9603 y espera hasta el siguiente SBDIX</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Incidente, no registro en red</h4>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Texto en la interfaz</th><th>Significado</th></tr></thead>
+      <tbody>
+        <tr><td>Sin incidente pendiente</td><td>Bandeja vacía. No hay ningún mensaje SBD guardado</td></tr>
+        <tr><td>Pendiente de envío</td><td>Hay un choque o volcadura esperando el plazo celular o el siguiente reintento</td></tr>
+        <tr><td>Transmitiendo</td><td>Sesión SBDIX en curso. Al arrancar en este estado se considera sesión ambigua y se consulta el MOMSN</td></tr>
+        <tr><td>Finalizado</td><td>Confirmado por Iridium, o cancelado porque MQTT o SMS ya entregaron</td></tr>
+        <tr><td>Fallido</td><td>Código permanente del gateway, o vencidas las 24 horas</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <b>Sin incidente pendiente no quiere decir que el módulo esté fuera de la red Iridium.</b>
+    El registro en gateway ocurre dentro de SBDIX, en el momento de enviar. No se consulta
+    <code>SBDREG</code> en ciclo, porque una sesión de registro suelta puede gastar crédito.
+  </div>
+
+  <h3>14.4 Señal: caché CSQF y medición CSQ</h3>
+  <p>
+    Las barras van de 0 a 5. Cero es que no se distingue portadora. Uno es el mínimo con el que
+    Ground Control recomienda intentar una sesión. Cada barra suma unos 2 dB. La señal no bloquea
+    el envío: con obstáculos y satélites en movimiento, una lectura buena no garantiza la sesión
+    y una mala no impide intentarla.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Origen en la tarjeta</th><th>Comando</th><th>Cuándo se actualiza</th></tr></thead>
+      <tbody>
+        <tr><td>caché CSQF</td><td><code>AT+CSQF</code></td><td>Diagnóstico. Devuelve de inmediato la última medición del módulo, que puede tener unos 15 s de antigüedad en el propio 9603</td></tr>
+        <tr><td>medida CSQ</td><td><code>AT+CSQ</code></td><td>Botón Medir señal. Tarda hasta unos 20 s y no abre sesión SBD</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    La tarjeta muestra siempre la antigüedad de la lectura en el ESP32, por ejemplo
+    <code>5 / 5, caché CSQF, hace 12 s</code> o <code>5 / 5, medida CSQ, ahora</code>. Ground Control
+    recomienda no ejecutar CSQ antes de cada envío: se lanza la sesión y se reintenta si falla.
+  </p>
+
+  <h3>14.5 Acciones y costo</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Botón</th><th>Habla con el módulo</th><th>Sesión SBD</th><th>Créditos</th></tr></thead>
+      <tbody>
+        <tr><td>Diagnóstico sin costo</td><td>AT, CGSN, CSQF, SBDS</td><td>No</td><td>0</td></tr>
+        <tr><td>Medir señal</td><td>CSQ</td><td>No</td><td>0</td></tr>
+        <tr><td>Enviar prueba Iridium</td><td>SBDWB y SBDIX</td><td>Sí</td><td>1 si se completa</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    La prueba exige confirmación en pantalla y el cuerpo
+    <code>{"confirm_paid": true}</code> en la API. Un solo intento: si falla, queda en Fallido y no
+    reintenta 24 horas. Las tres acciones responden 409 si hay un incidente real en curso.
+  </p>
+  <div class="note warn">
+    <b>Vista al cielo y sin USB.</b> La antena tiene que ver el cielo. Una antena GPS no sirve.
+    No instale el 9603 bajo techo metálico ni detrás de film UV. No pulse la prueba pagada con el
+    cable USB puesto: UART0 lo comparten el CP2104 y el módulo.
+  </div>
+
+  <h3>14.6 Mensaje de 39 bytes</h3>
+  <p>
+    Enteros multibyte en big-endian. El checksum de 16 bits que pide <code>AT+SBDWB</code> va
+    después de estos 39 bytes y no forma parte del payload. Un crédito cubre hasta 50 bytes.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Offset</th><th>Bytes</th><th>Campo</th><th>Codificación</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0</td><td class="num">1</td><td>Magic</td><td><code>0xA7</code></td></tr>
+        <tr><td class="num">1</td><td class="num">1</td><td>Versión</td><td><code>0x01</code></td></tr>
+        <tr><td class="num">2</td><td class="num">1</td><td>Clase</td><td>1 choque, 2 volcadura, 3 ambos, 127 prueba manual</td></tr>
+        <tr><td class="num">3</td><td class="num">1</td><td>Flags</td><td>b0 posición válida, b1 equipo degradado, b2 hora válida, b3 batería ≤ 3,5 V</td></tr>
+        <tr><td class="num">4</td><td class="num">4</td><td>Huella del equipo</td><td>FNV-1a de 32 bits sobre <code>device_id</code></td></tr>
+        <tr><td class="num">8</td><td class="num">4</td><td>Secuencia</td><td>El <code>seq</code> de la máquina de alerta</td></tr>
+        <tr><td class="num">12</td><td class="num">4</td><td>Tiempo</td><td>Unix UTC; 0 si no hay hora válida</td></tr>
+        <tr><td class="num">16</td><td class="num">4</td><td>Latitud</td><td>int32, grados × 1e5; 0 si no hay posición</td></tr>
+        <tr><td class="num">20</td><td class="num">4</td><td>Longitud</td><td>int32, grados × 1e5; 0 si no hay posición</td></tr>
+        <tr><td class="num">24</td><td class="num">2</td><td>Edad GNSS</td><td>Segundos, saturado en 65535</td></tr>
+        <tr><td class="num">26</td><td class="num">2</td><td>Pico</td><td>g × 100</td></tr>
+        <tr><td class="num">28</td><td class="num">2</td><td>Delta-V</td><td>km/h × 100</td></tr>
+        <tr><td class="num">30</td><td class="num">2</td><td>Inclinación</td><td>grados × 10</td></tr>
+        <tr><td class="num">32</td><td class="num">2</td><td>Giro máximo</td><td>grados/s</td></tr>
+        <tr><td class="num">34</td><td class="num">2</td><td>Batería</td><td>milivoltios</td></tr>
+        <tr><td class="num">36</td><td class="num">1</td><td>Severidad</td><td>0 ninguno, 1 leve, 2 moderado, 3 grave</td></tr>
+        <tr><td class="num">37</td><td class="num">2</td><td>CRC</td><td>CRC-16/CCITT-FALSE sobre los bytes 0 a 36</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    El identificador lógico del incidente es el par <code>(device_id, seq)</code>. La huella de
+    4 bytes permite comprobar que el IMEI del webhook y el equipo del payload coinciden, sin gastar
+    bytes en la cadena completa.
+  </p>
+
+  <h3>14.7 Reintentos</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Intento</th><th>Espera</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Al vencer el plazo celular de 20 s</td></tr>
+        <tr><td class="num">2</td><td>30 a 60 s</td></tr>
+        <tr><td class="num">3</td><td>60 a 120 s</td></tr>
+        <tr><td class="num">4</td><td>5 min</td></tr>
+        <tr><td class="num">5</td><td>10 min</td></tr>
+        <tr><td class="num">6 y siguientes</td><td>20 a 30 min</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    A las 24 horas el incidente pasa a Fallido por vencimiento. Los códigos MO 12, 14, 15, 16 y 64
+    se tratan como permanentes y no reintentan. 33 y 65 (antena o PLL) no abandonan el incidente:
+    alargan la espera a 20 min, por si el conector vuelve a hacer contacto. 36 fuerza 3 min; 38
+    consulta el control de tráfico del módulo.
+  </p>
+
+  <h3>14.8 Qué debe hacer el servidor</h3>
+  <p>
+    El webhook de Ground Control entrega el hexadecimal y el IMEI. Orden recomendado del handler:
+  </p>
+  <ol>
+    <li>Verificar el JWT de Ground Control.</li>
+    <li>Comprobar que el IMEI pertenece a la flota.</li>
+    <li>Decodificar el hexadecimal: longitud 39, magic <code>0xA7</code>, versión 1 y CRC-16.</li>
+    <li>Insertar con índice único <code>(imei, momsn)</code>.</li>
+    <li>Insertar o actualizar el incidente con índice único <code>(device_id, seq)</code>.</li>
+    <li>Responder 200 en menos de 3 s.</li>
+    <li>Notificar al operador solo en la primera recepción de ese incidente.</li>
+    <li>Si después llega el JSON por MQTT con el mismo <code>seq</code>, enriquecer sin notificar de nuevo.</li>
+  </ol>
+  <p>
+    La posición que se muestra es la GNSS del payload. La estimación de Iridium se guarda con su
+    CEP y solo se ofrece si el payload no traía posición válida.
+  </p>
+
+  <h3>14.9 Costos y límites de esta instalación</h3>
+  <ul>
+    <li>La tarifa prepago documentada por Ground Control cobra un crédito por cada bloque de 50 bytes
+        o fracción, tanto saliente como entrante. 39 bytes son un crédito. La tarifa en dinero se
+        consulta en el portal; cambia con el plan.</li>
+    <li>Diagnóstico y medición de señal no abren SBD y no gastan crédito de datos.</li>
+    <li>Una consulta de buzón vacío sí gasta. Por eso no hay SBDIX de diagnóstico ni recepción MT.</li>
+    <li>El 9603 queda siempre encendido en esta versión de demostración: 40 a 50 mA en reposo, con
+        fuente fija. Antes de dejarlo en un vehículo a batería hay que retomar el apagado por
+        <code>OnOff</code>.</li>
+    <li>RockBLOCK 9602 cambia el conector. RockBLOCK Plus lleva RS-232 y no se conecta a este
+        circuito.</li>
+  </ul>
+</section>
+
+<!-- =============== 15 =============== -->
+<section id="s15">
+  <h2><span class="n">Sección 15</span>Anexos</h2>
+
+  <h3>A · Formato del SMS de respaldo</h3>
+  <p>
+    Un solo mensaje de hasta 160 caracteres, en texto plano, con el enlace de mapa en línea propia
+    para que sea seleccionable desde cualquier teléfono.
+  </p>
+  <div class="grid2">
+    <div>
+      <div class="filename">Alerta</div>
+<pre><code>ALERTA CHOQUE grave
+SDA-A4C138
+19/08 14:32
+-9.930833,-76.241944
+maps.google.com/?q=-9.930833,-76.241944
+Bat 4.02V</code></pre>
+    </div>
+    <div>
+      <div class="filename">Anulación</div>
+<pre><code>ALERTA ANULADA
+SDA-A4C138
+Evento 143
+Anulada 64 s despues del envio</code></pre>
+    </div>
+  </div>
+  <p>
+    Sin posición GNSS, la cuarta línea se reemplaza por <code>Sin posicion GNSS</code>. El nombre del
+    evento cambia según el tipo: CHOQUE, VOLCADURA, SOS, CORTE DE ENERGIA, BATERIA BAJA o PRUEBA.
+    Un mismo evento genera un solo SMS, con un límite configurable de mensajes por hora.
+  </p>
+
+  <h3>B · Estructura de la microSD</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Ruta</th><th>Contenido</th><th>Formato</th></tr></thead>
+      <tbody>
+        <tr><td><code>/EVT/aaaa-mm-dd.jsonl</code></td><td>Eventos del día</td><td>Una línea JSON por evento, con el campo <code>published</code></td></tr>
+        <tr><td><code>/LOG/aaaa-mm-dd.csv</code></td><td>Telemetría periódica</td><td><code>fecha, lat, lon, velocidad_kmh, inclinacion_deg, pico_g, rssi_dbm, bateria_v</code></td></tr>
+        <tr><td><code>/CRASH/aaaammdd-hhmmss.csv</code></td><td>Aceleración cruda del impacto</td><td>100 Hz, desde 5 s antes hasta 10 s después</td></tr>
+        <tr><td><code>/QUEUE/000143.json</code></td><td>Eventos pendientes de publicar</td><td>Un archivo por evento, nombrado por su secuencia</td></tr>
+        <tr><td><code>/SYS/boot.log</code></td><td>Arranques y reinicios</td><td>Texto</td></tr>
+        <tr><td><code>/CONFIG/backup.json</code></td><td>Respaldo de la configuración</td><td>JSON</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    El JSON de <code>/EVT</code> es idéntico al publicado por MQTT más el campo
+    <code>published</code>, lo que permite auditar después qué llegó al servidor y qué quedó
+    pendiente.
+  </p>
+
+  <h3>C · Valores de las enumeraciones</h3>
+  <div class="grid2">
+    <div class="card">
+      <h4>Tipo de evento</h4>
+      <p><code>crash</code> · <code>rollover</code> · <code>sos</code> · <code>cancel</code> ·
+         <code>test</code> · <code>power_loss</code> · <code>low_battery</code> · <code>booted</code></p>
+      <h4>Severidad</h4>
+      <p><code>none</code> · <code>leve</code> · <code>moderado</code> · <code>grave</code></p>
+      <h4>Origen de la hora</h4>
+      <p><code>none</code> · <code>uptime</code> · <code>gnss</code> · <code>network</code> ·
+         <code>ntp</code></p>
+    </div>
+    <div class="card">
+      <h4>Estado de la SIM</h4>
+      <p><code>unknown</code> · <code>absent</code> · <code>pin_required</code> ·
+         <code>puk_required</code> · <code>ready</code> · <code>failure</code></p>
+      <h4>Registro en red</h4>
+      <p><code>not_registered</code> · <code>registered_home</code> · <code>searching</code> ·
+         <code>denied</code> · <code>registered_roaming</code> · <code>unknown</code></p>
+      <h4>Motivo de rechazo</h4>
+      <p><code>short_duration</code> · <code>no_delta_v</code> · <code>high_freq_only</code> ·
+         <code>stationary</code> · <code>tilt_too_brief</code></p>
+    </div>
+  </div>
+
+  <h3>D · API local del equipo</h3>
+  <p>
+    La interfaz web se apoya en una API REST servida por el propio equipo en
+    <code>http://192.168.4.1</code>. Está disponible para integraciones locales, por ejemplo un banco
+    de pruebas en taller. Requiere la misma autenticación que la interfaz.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Ruta</th><th>Método</th><th>Uso</th></tr></thead>
+      <tbody>
+        <tr><td><code>/api/status</code></td><td>GET</td><td>Estado completo. Es el cuerpo ampliado del tópico <code>status</code></td></tr>
+        <tr><td><code>/api/config</code></td><td>GET · POST</td><td>Leer y modificar la configuración</td></tr>
+        <tr><td><code>/api/modem</code></td><td>GET</td><td>Diagnóstico del módem en cinco niveles</td></tr>
+        <tr><td><code>/api/modem/data-test</code></td><td>POST</td><td>Prueba del contexto de datos</td></tr>
+        <tr><td><code>/api/modem/sms-test</code></td><td>POST</td><td>Envío de un SMS de prueba</td></tr>
+        <tr><td><code>/api/satellite</code></td><td>GET</td><td>Estado cacheado del RockBLOCK. No toma el UART</td></tr>
+        <tr><td><code>/api/satellite/diag</code></td><td>POST</td><td>Diagnóstico sin sesión SBD</td></tr>
+        <tr><td><code>/api/satellite/signal</code></td><td>POST</td><td>Medición CSQ, sin sesión SBD</td></tr>
+        <tr><td><code>/api/satellite/test</code></td><td>POST</td><td>Prueba pagada. Exige <code>confirm_paid: true</code></td></tr>
+        <tr><td><code>/api/calibrate</code></td><td>GET · POST · DELETE</td><td>Secuencia de calibración</td></tr>
+        <tr><td><code>/api/test</code></td><td>POST</td><td>Prueba de LED, buzzer o evento completo</td></tr>
+        <tr><td><code>/api/files</code> · <code>/api/file</code></td><td>GET · DELETE</td><td>Listado y descarga de archivos de la microSD</td></tr>
+        <tr><td><code>/api/events?n=20</code></td><td>GET</td><td>Últimos eventos registrados</td></tr>
+        <tr><td><code>/api/update</code></td><td>POST</td><td>Actualización de firmware</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>E · Glosario</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Término</th><th>Significado</th></tr></thead>
+      <tbody>
+        <tr><td>Delta-V</td><td>Cambio de velocidad durante el impacto, obtenido integrando la aceleración. Es el criterio que usan los sistemas de retención para distinguir un choque de un golpe</td></tr>
+        <tr><td>QoS 1</td><td>Nivel de servicio de MQTT que garantiza al menos una entrega, con confirmación del broker</td></tr>
+        <tr><td>Mensaje retenido</td><td>El broker guarda el último mensaje del tópico y lo entrega a todo cliente que se suscriba después</td></tr>
+        <tr><td>LWT</td><td>Last Will and Testament. Mensaje que el broker publica por cuenta del cliente cuando este desaparece sin despedirse</td></tr>
+        <tr><td>Sesión persistente</td><td>El broker conserva suscripciones y mensajes pendientes de un cliente entre conexiones</td></tr>
+        <tr><td>APN</td><td>Punto de acceso del operador celular. Determina si la línea puede establecer contexto de datos</td></tr>
+        <tr><td>Contexto PDP</td><td>Sesión de datos activa con dirección IP asignada por el operador</td></tr>
+        <tr><td>RSSI</td><td>Nivel de señal recibida en dBm. Más cercano a cero es mejor</td></tr>
+        <tr><td>HDOP</td><td>Dilución horizontal de la precisión del GNSS. Bajo 2 indica buena geometría de satélites</td></tr>
+        <tr><td>Caja negra</td><td>Archivo con la aceleración cruda alrededor del impacto, para reconstruir lo ocurrido</td></tr>
+        <tr><td>SBD</td><td>Short Burst Data de Iridium. Mensajes cortos, no una sesión de datos continua</td></tr>
+        <tr><td>CSQ / CSQF</td><td>Barras de señal Iridium 0 a 5. CSQ mide ahora (hasta ~20 s). CSQF devuelve el caché del módulo</td></tr>
+        <tr><td>MOMSN</td><td>Mobile Originated Message Sequence Number. Avanza cuando el 9603 acepta que el mensaje salió</td></tr>
+        <tr><td>Crédito Iridium</td><td>Unidad de facturación de Ground Control. Un bloque de 1 a 50 bytes consume uno si la sesión SBD se completa</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+</main>
+</div>
+
+<footer>
+  <div>
+    <b>Sensor de accidentes vehiculares SDA</b> · Documento SDA-DOC-01 · Firmware 1.0.0
+    <span>Los tópicos, los formatos de mensaje y los parámetros descritos corresponden a la versión
+    de firmware indicada.</span>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -54,13 +54,17 @@ class AppProviders extends StatelessWidget {
         ChangeNotifierProvider(
           create: (ctx) => SessionProvider(ctx.read<AuthRepository>()),
         ),
-        ChangeNotifierProxyProvider<SessionProvider, EventProvider>(
-          create: (ctx) => EventProvider(ctx.read<EventRepository>()),
-          update: (ctx, session, eventProvider) => eventProvider!..setUserId(session.user?.id),
-        ),
         ChangeNotifierProxyProvider<SessionProvider, VehicleProvider>(
           create: (ctx) => VehicleProvider(ctx.read<VehicleRepository>()),
           update: (ctx, session, vehicleProvider) => vehicleProvider!..setUserId(session.user?.id),
+        ),
+        ChangeNotifierProxyProvider2<SessionProvider, VehicleProvider, EventProvider>(
+          create: (ctx) => EventProvider(ctx.read<EventRepository>()),
+          update: (ctx, session, vehicle, eventProvider) => eventProvider!
+            ..setContext(
+              userId: session.user?.id,
+              vehicleId: vehicle.vehicle?.id,
+            ),
         ),
         ChangeNotifierProxyProvider<VehicleProvider, DeviceStatusProvider>(
           create: (ctx) => DeviceStatusProvider(ctx.read<DeviceRepository>()),

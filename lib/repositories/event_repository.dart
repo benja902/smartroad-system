@@ -2,13 +2,14 @@ import '../models/accident_event.dart';
 
 abstract class EventRepository {
   /// Full event log for a user — feeds Alertas and Home's recent-alerts list.
-  Stream<List<AccidentEvent>> watchEvents(String userId);
+  /// When [vehicleId] is available, implementations may combine current
+  /// vehicle events with historical records associated only by [userId].
+  Stream<List<AccidentEvent>> watchEvents(String userId, {String? vehicleId});
 
-  /// The single most recent event where shouldForceCriticalScreen() is
-  /// true, or null. Kept as its own stream (not derived client-side from
-  /// [watchEvents]) so the router's redirect has a cheap, single-purpose
-  /// signal.
-  Stream<AccidentEvent?> watchCriticalEvent(String userId);
+  /// The single most recent event where shouldForceCriticalScreen() is true,
+  /// or null. Implementations derive it from the same merged event view so
+  /// historical and vehicle-associated records follow identical semantics.
+  Stream<AccidentEvent?> watchCriticalEvent(String userId, {String? vehicleId});
 
   /// The only mutation the app is allowed to make on an event — marks it
   /// as seen by the user. This is what lets the critical screen stop

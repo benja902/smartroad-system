@@ -21,11 +21,26 @@
     },
     "events": {
       ".read": "auth != null",
-      ".indexOn": ["userId", "deviceId", "seq"],
+      ".indexOn": ["userId", "deviceId", "seq", "vehicleId"],
       "$eventId": {
         ".write": false,
         "acknowledged": {
           ".write": "auth != null"
+        }
+      }
+    },
+    "userIncidentState": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$eventKey": {
+          ".write": "auth != null && auth.uid === $uid && newData.exists() && root.child('events').child($eventKey).exists() && (root.child('events').child($eventKey).child('userId').val() === auth.uid || (root.child('events').child($eventKey).child('vehicleId').isString() && root.child('vehicles').child(root.child('events').child($eventKey).child('vehicleId').val()).child('ownerId').val() === auth.uid))",
+          ".validate": "newData.hasChildren(['acknowledged'])",
+          "acknowledged": {
+            ".validate": "newData.isBoolean()"
+          },
+          "$other": {
+            ".validate": false
+          }
         }
       }
     },

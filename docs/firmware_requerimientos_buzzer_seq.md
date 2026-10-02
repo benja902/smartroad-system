@@ -1,10 +1,20 @@
-# Requerimientos para firmware SDA — buzzer, persistencia de `seq` y confirmación de payload
+# Documento histórico — requerimientos de buzzer y persistencia de `seq`
 
-Preparado tras validar el sistema completo (hardware → MQTT → bridge → Firebase → app) con pruebas físicas reales sobre `SDA-E9A8D8`. No implica cambios en el contrato de datos (`docs/device_contract.md`) — todo lo de acá es lógica interna del equipo.
+> **Estado: histórico, no normativo.** Este documento registra hallazgos y requerimientos de una versión anterior del firmware. La referencia vigente del SDA es `manual-sda (4).html`.
 
-## 1. Bugs a corregir (prioridad sobre lo nuevo)
+Estado conocido al cerrar la línea base:
+
+- El problema del buzzer fue reportado como corregido en el firmware final.
+- RockBLOCK fue añadido posteriormente y su contrato vigente está documentado en `manual-sda (4).html` y `docs/device_contract.md`.
+- La persistencia de `seq` después de apagar o reiniciar continúa pendiente de validación física con el prototipo.
+
+El contenido siguiente se conserva como evidencia histórica de las pruebas realizadas sobre `SDA-E9A8D8`. No autoriza cambios de firmware ni reemplaza el contrato vigente.
+
+## 1. Hallazgos históricos
 
 ### 1.1 El buzzer nunca se activa durante una alerta real
+**Estado actualizado:** reportado como corregido en el firmware final; pendiente únicamente de confirmación durante las pruebas físicas end-to-end.
+
 Confirmado con RTDB en vivo: `outputs.buzzer` se mantuvo en `false` durante todo el ciclo de una alerta grave (`pre_alarm`/`sending`/`alert_active`), en pruebas con batería y con USB-C (se descartó voltaje como causa). La configuración del equipo tiene "Buzzer activo" habilitado. El manual especifica pitidos cortos que aceleran en el último tercio de la prealarma y continúan intermitentes en la ventana de anulación hasta silenciarse a los 5 min — esa lógica no se está ejecutando o no está llegando a la salida física.
 
 **Sugerencia de diagnóstico**: revisar si la rutina que acciona el pin del buzzer está en el mismo camino de código que el punto 1.2 (ver abajo) — podrían compartir causa raíz.
@@ -13,6 +23,8 @@ Confirmado con RTDB en vivo: `outputs.buzzer` se mantuvo en `false` durante todo
 Observado en vivo: tras varias inclinaciones seguidas en poco tiempo, el equipo quedó en `sending` durante 58+ segundos sin publicar el evento correspondiente al tópico `sda/{id}/event`. El bridge no descartó ningún mensaje (no hay log de error) — simplemente nunca llegó nada. Se resolvió manualmente presionando CANCELAR. `sending` debería ser un estado de tránsito breve (segundos, no casi un minuto).
 
 ### 1.3 El contador `seq` se reinicia al apagar/encender el equipo
+**Estado actualizado:** el manual vigente declara persistencia, pero falta validarla físicamente en el firmware final.
+
 El campo `seq` es la clave de deduplicación en el servidor (`{deviceId}_{seq}`). Al reiniciarse a 1 después de cada apagado/encendido, un evento real nuevo puede caer en la misma clave que un evento viejo de una sesión anterior, heredando su estado ya procesado (confirmado en pruebas: un evento nuevo llegó marcado como "atendido" automáticamente por herencia de un evento viejo con la misma clave). Se aplicó un mitigante del lado del servidor (bridge), pero **la corrección correcta es que el firmware persista el último `seq` usado en memoria no volátil (NVS/flash)** y continúe desde ahí tras cada reinicio, en vez de reiniciar el contador.
 
 ## 2. Especificación acústica del buzzer

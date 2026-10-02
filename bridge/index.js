@@ -57,12 +57,12 @@ cliente.on('connect', () => {
 cliente.on('error', (e) => console.error('mqtt error:', e.message));
 cliente.on('reconnect', () => console.log('mqtt reconectando...'));
 
-// Cache en memoria: deviceId -> userId (dueño del vehículo). Evita una
-// consulta a vehicles/ por cada evento; se refresca si no se encuentra.
-const ownerCache = new Map();
+// Cache en memoria: deviceId -> { vehicleId, userId }. Evita una consulta
+// a vehicles/ por cada evento; se refresca si no se encuentra.
+const associationCache = new Map();
 
-async function resolveUserId(deviceId) {
-  if (ownerCache.has(deviceId)) return ownerCache.get(deviceId);
+async function resolveAssociation(deviceId) {
+  if (associationCache.has(deviceId)) return associationCache.get(deviceId);
 
   const snapshot = await db
     .ref('vehicles')
@@ -72,14 +72,14 @@ async function resolveUserId(deviceId) {
     .get();
 
   if (!snapshot.exists()) {
-    console.warn(`sin vehículo registrado para deviceId=${deviceId}, evento sin userId`);
+    console.warn(`sin vehículo registrado para deviceId=${deviceId}, evento sin asociación`);
     return null;
   }
 
-  const [vehicle] = Object.values(snapshot.val());
-  const userId = vehicle.ownerId ?? null;
-  if (userId) ownerCache.set(deviceId, userId);
-  return userId;
+  const [[vehicleId, vehicle]] = Object.entries(snapshot.val());
+  const association = { vehicleId, userId: vehicle.ownerId ?? null };
+  associationCache.set(deviceId, association);
+  return association;
 }
 
 cliente.on('message', async (topico, cuerpo) => {
@@ -116,7 +116,8 @@ cliente.on('message', async (topico, cuerpo) => {
 });
 
 async function guardarEvento(deviceId, ev) {
-  const userId = await resolveUserId(deviceId);
+  const association = await resolveAssociation(deviceId);
+  const userId = association?.userId ?? null;
   const dedupKey = `${deviceId}_${ev.seq}`;
   const ref = db.ref(`events/${dedupKey}`);
 
@@ -129,7 +130,12 @@ async function guardarEvento(deviceId, ev) {
   // limpian esos campos antes de fusionar. Si el `ts` coincide (o ambos
   // son null), es una reentrega del mismo evento y esos campos se
   // conservan tal cual.
-  const actualizacion = { ...ev, userId, receivedAt: ServerValue.TIMESTAMP };
+  // vehicleId siempre procede de la asociación administrativa. Cualquier
+  // campo homónimo recibido en el payload MQTT se descarta.
+  const eventPayload = { ...ev };
+  delete eventPayload.vehicleId;
+  const actualizacion = { ...eventPayload, userId, receivedAt: ServerValue.TIMESTAMP };
+  if (association?.vehicleId) actualizacion.vehicleId = association.vehicleId;
   if (ev.type === 'crash' || ev.type === 'rollover' || ev.type === 'sos') {
     const existente = (await ref.get()).val();
     if (existente && existente.ts !== (ev.ts ?? null)) {

@@ -39,7 +39,9 @@ void main() {
       repo.triggerCancel(original.seq);
 
       final events = await repo.watchEvents('user-1').first;
-      final cancelEvent = events.firstWhere((e) => e.type == AccidentEventType.cancel);
+      final cancelEvent = events.firstWhere(
+        (e) => e.type == AccidentEventType.cancel,
+      );
       expect(cancelEvent.seq, isNot(original.seq));
       expect(cancelEvent.cancelsSeq, original.seq);
 
@@ -93,5 +95,46 @@ void main() {
       final events = await repo.watchEvents('user-1').first;
       expect(events, hasLength(2));
     });
+
+    test(
+      'vehicle context keeps historical and vehicle events without duplicates',
+      () async {
+        final repo = MockEventRepository();
+        final historical = repo.triggerCrash(severity: AccidentSeverity.leve);
+        final withVehicle = repo.triggerCrash(
+          severity: AccidentSeverity.moderado,
+          vehicleId: 'vehicle-1',
+        );
+
+        final events = await repo
+            .watchEvents('user-1', vehicleId: 'vehicle-1')
+            .first;
+
+        expect(events.map((event) => event.dedupKey).toSet(), {
+          historical.dedupKey,
+          withVehicle.dedupKey,
+        });
+        expect(events, hasLength(2));
+      },
+    );
+
+    test(
+      'vehicle context includes an event absent from the user query',
+      () async {
+        final repo = MockEventRepository();
+        final vehicleEvent = repo.triggerCrash(
+          severity: AccidentSeverity.leve,
+          vehicleId: 'vehicle-1',
+        );
+
+      final events = await repo
+          .watchEvents('another-user', vehicleId: 'vehicle-1')
+          .first;
+
+      expect(events.map((event) => event.dedupKey), [vehicleEvent.dedupKey]);
+      expect(vehicleEvent.userId, isNot('another-user'));
+      expect(await repo.watchEvents('another-user').first, hasLength(1));
+      },
+    );
   });
 }
