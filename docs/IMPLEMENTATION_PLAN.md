@@ -41,7 +41,7 @@ Los valores reales no deben incorporarse a documentación, fixtures ni código. 
 - [x] Definir la asociación de contactos autorizados y su alcance.
 - [x] Definir la representación mínima de incidente, destinatarios y estado de atención.
 - [x] Diseñar los nodos y claves de RTDB para lecturas autorizadas e idempotencia.
-- [ ] Implementar la compatibilidad MVP definida en `RTDB_COMPATIBILITY_MVP.md`: lectura dual de `ts`, transición aditiva `userId` → `vehicleId`, estado individual por usuario y preservación de cancelaciones.
+- [x] Implementar la compatibilidad MVP definida en `RTDB_COMPATIBILITY_MVP.md`: lectura dual de `ts`, transición aditiva `userId` → `vehicleId`, estado individual por usuario y preservación de cancelaciones. Validada y cerrada el 3 de octubre de 2026; evidencia del Bloque 4 en el documento de compatibilidad.
 - [ ] Implementar una provisión administrativa mínima para el propietario, vehículo, SDA, IMEI y contactos del MVP.
 - [ ] Tras validar la provisión, impedir la creación automática de dispositivos demo en producción, conservando el modo DEV y sin eliminar datos existentes en el mismo cambio.
 - [ ] Garantizar que `main.dart` use Firebase real y que `main_dev.dart` permanezca aislado con mocks y simulador.

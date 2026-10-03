@@ -15,6 +15,7 @@ import mqtt from 'mqtt';
 import http from 'node:http';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getDatabase, ServerValue } from 'firebase-admin/database';
+import { persistEvent } from './event_writer.js';
 // Carga las variables locales desde .env
 loadEnvFile('.env');
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -118,47 +119,11 @@ cliente.on('message', async (topico, cuerpo) => {
 });
 
 async function guardarEvento(deviceId, ev) {
-  const association = await resolveAssociation(deviceId);
-  const userId = association?.userId ?? null;
-  const dedupKey = `${deviceId}_${ev.seq}`;
-  const ref = db.ref(`events/${dedupKey}`);
-
-  // El contador `seq` del equipo puede reiniciarse (p. ej. tras apagar y
-  // encender), así que una clave deviceId_seq puede recibir un evento
-  // real distinto al que ocupó esa clave antes. update() sin más fusionaría
-  // acknowledged/cancelledBySeq/cancelledAt viejos sobre el evento nuevo,
-  // ocultando una alerta real. Si el nodo existente tiene un `ts` distinto
-  // al que llega ahora, es un evento distinto reutilizando la clave: se
-  // limpian esos campos antes de fusionar. Si el `ts` coincide (o ambos
-  // son null), es una reentrega del mismo evento y esos campos se
-  // conservan tal cual.
-  // vehicleId siempre procede de la asociación administrativa. Cualquier
-  // campo homónimo recibido en el payload MQTT se descarta.
-  const eventPayload = { ...ev };
-  delete eventPayload.vehicleId;
-  const actualizacion = { ...eventPayload, userId, receivedAt: ServerValue.TIMESTAMP };
-  if (association?.vehicleId) actualizacion.vehicleId = association.vehicleId;
-  if (ev.type === 'crash' || ev.type === 'rollover' || ev.type === 'sos') {
-    const existente = (await ref.get()).val();
-    if (existente && existente.ts !== (ev.ts ?? null)) {
-      actualizacion.acknowledged = false;
-      actualizacion.cancelledBySeq = null;
-      actualizacion.cancelledAt = null;
-    }
-  }
-
-  // update(), no set(): escritura de fusión — si una cancelación
-  // desordenada ya proyectó cancelledBySeq/cancelledAt sobre esta misma
-  // clave, no se pisa.
-  await ref.update(actualizacion);
-
-  if (ev.type === 'cancel' && typeof ev.cancels_seq === 'number') {
-    const originalKey = `${deviceId}_${ev.cancels_seq}`;
-    await db.ref(`events/${originalKey}`).update({
-      cancelledBySeq: ev.seq,
-      cancelledAt: ServerValue.TIMESTAMP,
-    });
-  }
+  const { dedupKey, userId } = await persistEvent(deviceId, ev, {
+    db,
+    resolveAssociation,
+    serverTimestamp: ServerValue.TIMESTAMP,
+  });
 
   console.log(`evento guardado: ${dedupKey} (${ev.type}, userId=${userId ?? 'desconocido'})`);
 }

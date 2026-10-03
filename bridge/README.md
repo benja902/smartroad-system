@@ -68,3 +68,19 @@ Deberías ver `puente conectado al broker MQTT`, y luego `evento guardado: ...` 
 
 - No escucha `sda/{id}/cmd/resp` ni publica comandos (`ping`/`position`/`diag` on-demand) — esa función queda para una fase posterior.
 - No usa Firestore ni `collectionGroup` — todo es Realtime Database, con `events/{deviceId}_{seq}` como colección plana, tal como se decidió explícitamente para este proyecto.
+
+## Pruebas locales de preservación de cancelaciones
+
+Desde la raíz del repositorio, ejecutar en primer plano:
+
+```powershell
+npm --prefix bridge test
+```
+
+También puede ejecutarse `npm test` desde `bridge/`. El runner nativo de Node utiliza `--test-reporter=spec` para mostrar el progreso; `-r expanded` corresponde a Flutter. Cada caso tiene un límite de cinco segundos. Si transcurren 60 segundos sin salida, detener con `Ctrl+C` y registrar el último mensaje.
+
+Las pruebas importan únicamente `event_writer.js`, el mismo módulo que usa `index.js`, con una base en memoria y asociaciones ficticias. No importan el punto de entrada, no cargan `.env`, no inicializan Firebase ni MQTT y no requieren dependencias externas, celular, SDA ni bridge activo.
+
+Se verifican ambos órdenes de llegada de incidente/cancelación para `crash`, `rollover` y `sos`, retransmisiones con tiempo diferente o ausente, conservación de `acknowledged` histórico, descarte de campos de estado del payload, asociaciones administrativas y ausencia de escrituras en `userIncidentState`.
+
+El 2 de octubre de 2026 terminaron con **12 pruebas aprobadas, 0 fallos**. Esta validación local no sustituye la comprobación posterior del flujo con el bridge activo y RTDB real. No se ejecutó un despliegue como parte de estas pruebas.
