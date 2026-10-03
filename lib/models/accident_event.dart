@@ -72,7 +72,8 @@ class AccidentEvent {
   final int? cancelledBySeq;
   final DateTime? cancelledAt;
 
-  // --- The one field the app itself is allowed to write ---
+  /// Effective personal state after repository projection. The stored global
+  /// field is read only as a legacy fallback; new writes use userIncidentState.
   final bool acknowledged;
 
   const AccidentEvent({

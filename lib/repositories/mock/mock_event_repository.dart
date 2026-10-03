@@ -20,7 +20,7 @@ class MockEventRepository implements EventRepository {
   final Map<String, Map<String, bool>> _userIncidentState = {};
   final bool readUserIncidentState;
 
-  MockEventRepository({this.readUserIncidentState = false});
+  MockEventRepository({this.readUserIncidentState = true});
 
   /// DEV fixture only; does not change the acknowledge production contract.
   void seedUserIncidentState(
@@ -224,10 +224,14 @@ class MockEventRepository implements EventRepository {
   }
 
   @override
-  Future<void> acknowledge(String dedupKey) async {
-    final event = _events[dedupKey];
-    if (event == null) return;
-    _events[dedupKey] = event.copyWith(acknowledged: true);
+  Future<void> acknowledge(String dedupKey, {required String userId}) async {
+    if (userId.trim().isEmpty) {
+      throw StateError('An authenticated user is required');
+    }
+    if (!_events.containsKey(dedupKey)) {
+      throw StateError('The incident does not exist');
+    }
+    (_userIncidentState[userId] ??= {})[dedupKey] = true;
     _emit();
   }
 

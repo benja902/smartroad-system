@@ -128,7 +128,7 @@ class DevSimulatorScreen extends StatelessWidget {
                     ),
                     _ActionButton(
                       label: 'Marcar como atendido ("Ya lo vi")',
-                      onPressed: criticalEvent == null ? null : () => eventRepo.acknowledge(criticalEvent.dedupKey),
+                      onPressed: criticalEvent == null ? null : () => context.read<EventProvider>().acknowledge(criticalEvent.dedupKey),
                     ),
                   ],
                 ),

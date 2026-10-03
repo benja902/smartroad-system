@@ -11,10 +11,7 @@ abstract class EventRepository {
   /// historical and vehicle-associated records follow identical semantics.
   Stream<AccidentEvent?> watchCriticalEvent(String userId, {String? vehicleId});
 
-  /// The only mutation the app is allowed to make on an event — marks it
-  /// as seen by the user. This is what lets the critical screen stop
-  /// forcing itself even if the physical CANCELAR button on the device
-  /// was never pressed (e.g. a false alarm nobody cancels from the
-  /// equipment).
-  Future<void> acknowledge(String dedupKey);
+  /// Marks an incident as seen only for [userId], without modifying the
+  /// canonical event or the state of other users.
+  Future<void> acknowledge(String dedupKey, {required String userId});
 }

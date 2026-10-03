@@ -17,11 +17,7 @@ void main() {
         .listen(otherEvents.add);
     await Future<void>.delayed(Duration.zero);
 
-    repo.seedUserIncidentState(
-      MockDataSeed.userId,
-      original.dedupKey,
-      acknowledged: true,
-    );
+    await repo.acknowledge(original.dedupKey, userId: MockDataSeed.userId);
     await Future<void>.delayed(Duration.zero);
     expect(ownerEvents.last.single.acknowledged, isTrue);
     expect(otherEvents.last.single.acknowledged, isFalse);
@@ -59,31 +55,28 @@ void main() {
     await otherSubscription.cancel();
   });
 
-  test(
-    'historical fallback belongs to owner and personal false wins',
-    () async {
-      final repo = MockEventRepository(readUserIncidentState: true);
-      final original = repo.triggerSos();
-      await repo.acknowledge(original.dedupKey);
-      expect(
-        (await repo.watchEvents(MockDataSeed.userId).first).single.acknowledged,
-        isTrue,
-      );
-      expect(
-        (await repo.watchEvents('second-user').first).single.acknowledged,
-        isFalse,
-      );
-      repo.seedUserIncidentState(
-        MockDataSeed.userId,
-        original.dedupKey,
-        acknowledged: false,
-      );
-      expect(
-        (await repo.watchEvents(MockDataSeed.userId).first).single.acknowledged,
-        isFalse,
-      );
-    },
-  );
+  test('historical recognition is personal and explicit false wins', () async {
+    final repo = MockEventRepository(readUserIncidentState: true);
+    final original = repo.triggerSos();
+    await repo.acknowledge(original.dedupKey, userId: MockDataSeed.userId);
+    expect(
+      (await repo.watchEvents(MockDataSeed.userId).first).single.acknowledged,
+      isTrue,
+    );
+    expect(
+      (await repo.watchEvents('second-user').first).single.acknowledged,
+      isFalse,
+    );
+    repo.seedUserIncidentState(
+      MockDataSeed.userId,
+      original.dedupKey,
+      acknowledged: false,
+    );
+    expect(
+      (await repo.watchEvents(MockDataSeed.userId).first).single.acknowledged,
+      isFalse,
+    );
+  });
 
   test('re-subscribing retains personal state and event ordering', () async {
     final repo = MockEventRepository(readUserIncidentState: true);
@@ -103,22 +96,22 @@ void main() {
     }
   });
 
-  test('default DEV behavior still uses global acknowledgment', () async {
+  test('default DEV behavior uses personal acknowledgment', () async {
     final repo = MockEventRepository();
     final original = repo.triggerSos();
-    repo.seedUserIncidentState(
-      MockDataSeed.userId,
-      original.dedupKey,
-      acknowledged: true,
-    );
     expect(
       (await repo.watchEvents(MockDataSeed.userId).first).single.acknowledged,
       isFalse,
     );
-    await repo.acknowledge(original.dedupKey);
+    await repo.acknowledge(original.dedupKey, userId: MockDataSeed.userId);
     expect(
       (await repo.watchEvents(MockDataSeed.userId).first).single.acknowledged,
       isTrue,
+    );
+    expect(original.acknowledged, isFalse);
+    expect(
+      (await repo.watchEvents('second-user').first).single.acknowledged,
+      isFalse,
     );
   });
 }

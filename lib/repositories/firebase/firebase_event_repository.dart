@@ -20,12 +20,12 @@ import '../event_repository.dart';
 class FirebaseEventRepository implements EventRepository {
   final DatabaseReference _eventsRef;
   final DatabaseReference _userIncidentStateRef;
-  // Enable only after the per-user read rules have been validated.
+  // The minimal per-user rules have been validated and deployed.
   final bool readUserIncidentState;
 
   FirebaseEventRepository({
     FirebaseDatabase? database,
-    this.readUserIncidentState = false,
+    this.readUserIncidentState = true,
   }) : _eventsRef = (database ?? FirebaseDatabase.instance).ref('events'),
        _userIncidentStateRef = (database ?? FirebaseDatabase.instance).ref(
          'userIncidentState',
@@ -132,8 +132,13 @@ class FirebaseEventRepository implements EventRepository {
   }
 
   @override
-  Future<void> acknowledge(String dedupKey) {
-    return _eventsRef.child(dedupKey).update({'acknowledged': true});
+  Future<void> acknowledge(String dedupKey, {required String userId}) async {
+    if (userId.trim().isEmpty) {
+      throw StateError('An authenticated user is required');
+    }
+    await _userIncidentStateRef.child(userId).child(dedupKey).update({
+      'acknowledged': true,
+    });
   }
 
   Stream<Map<String, Map<String, dynamic>>> _watchRawEvents(

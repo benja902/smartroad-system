@@ -61,7 +61,7 @@ void main() {
       final repo = MockEventRepository();
       final event = repo.triggerCrash(severity: AccidentSeverity.grave);
 
-      await repo.acknowledge(event.dedupKey);
+      await repo.acknowledge(event.dedupKey, userId: 'user-1');
 
       final events = await repo.watchEvents('user-1').first;
       final updated = events.firstWhere((e) => e.seq == event.seq);

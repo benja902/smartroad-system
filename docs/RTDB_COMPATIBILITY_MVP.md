@@ -80,6 +80,36 @@ Las pruebas verificaron autorización histórica y por vehículo, denegaciones, 
 
 No se publicaron reglas ni se modificaron datos reales. La lectura personal sigue desactivada por defecto y la escritura global de “Ya lo vi” sigue vigente. La publicación y la activación requieren un bloque posterior autorizado. Estas reglas mínimas no sustituyen las reglas finales de asociaciones y roles: los permisos previos de escritura de `vehicles` también permanecen pendientes de endurecimiento.
 
+### Paso 4A — publicación de reglas mínimas, sin activar Flutter
+
+El **2 de octubre de 2026**, tras autorización explícita del usuario, se publicaron únicamente las reglas de `userIncidentState` en la instancia RTDB utilizada por Flutter. La comparación previa confirmó que todas las demás reglas desplegadas coincidían con las locales y que la nueva ruta todavía no estaba definida.
+
+La publicación respondió **HTTP 200**. Una lectura posterior confirmó coincidencia exacta con las reglas candidatas y preservación íntegra de las demás reglas, incluidos permisos e índices de `events`. No se escribieron datos de usuarios, vehículos, dispositivos, eventos ni estados individuales.
+
+La validación de permisos con usuarios simulados sigue respaldada por las **18 pruebas del Emulator** del Paso 3; la lectura administrativa posterior verifica el despliegue, no sustituye esas pruebas. No hace falta ejecutar `main_dev.dart`, `main.dart`, el bridge ni hardware para comprobar esta publicación. La lectura personal permanece desactivada y “Ya lo vi” conserva la escritura global hasta implementar y validar el Paso 4B.
+
+### Paso 4B — reconocimiento individual activado; validación real pendiente
+
+El **2 de octubre de 2026** se activó por defecto la lectura personal en los repositorios Firebase y mock. “Ya lo vi” captura el `uid` de la sesión a través de `EventProvider` y escribe únicamente `userIncidentState/{uid}/{eventKey}/acknowledged = true`. También se conectó a ese proveedor la acción equivalente del panel DEV. El evento canónico, el campo global almacenado, las cancelaciones y la clave `{deviceId}_{seq}` no se modifican.
+
+La lectura conserva el fallback global solo para eventos históricos **sin `vehicleId` cuyo `userId` coincida con el usuario actual**. En eventos con `vehicleId`, sin reconocimiento personal, la confirmación global no se hereda: pueden volver a mostrarse como pendientes si solo estaban atendidos globalmente. No se migran ni se copian confirmaciones automáticamente.
+
+Las **65 pruebas dirigidas pasaron** y el análisis Dart de los archivos afectados terminó **sin problemas**. Cubrieron la ruta exacta de escritura Firebase mediante un doble local, errores sin escritura global alternativa, falta de sesión, captura del usuario ante cambios de sesión, estado independiente entre usuarios, fallback histórico, cancelaciones, merge, orden, clasificación y regresiones de emergencia/DEV. Los errores de lectura quedan registrados en `EventProvider.error`; los errores de escritura se propagan y no se convierten en una confirmación local. No se añadió una nueva presentación de errores en las pantallas.
+
+Comando ejecutado desde la raíz del proyecto, en primer plano:
+
+```powershell
+flutter test --no-pub -r expanded test/firebase_event_repository_acknowledge_test.dart test/event_provider_user_state_test.dart test/firebase_event_repository_user_state_test.dart test/mock_event_repository_user_state_test.dart test/mock_event_repository_test.dart test/firebase_event_repository_merge_test.dart test/accident_event_test.dart test/alert_classification_test.dart test/emergency_flow_test.dart test/dev_simulator_test.dart
+```
+
+Las pruebas automáticas no requieren celular, bridge, Firebase real ni SDA. Las pruebas manuales de la app requieren un dispositivo Android o emulador:
+
+1. **DEV (`flutter run -t lib/main_dev.dart`)**: generar choque grave, volcadura grave o SOS; pulsar “Ya lo vi”; comprobar que se cierre la emergencia y se muestre como atendida. Generar otro incidente y comprobar que siga abriendo la emergencia. En otro incidente, usar la cancelación del simulador y verificar que se presente como cancelado. No hacen falta internet, bridge ni SDA. El estado mock se conserva dentro de la ejecución, no después de cerrar completamente y reiniciar la app.
+2. **Firebase (`flutter run -t lib/main.dart`)**: usar la cuenta propietaria existente y un incidente ya almacenado. Observar el `acknowledged` global antes de pulsar “Ya lo vi”; después comprobar en la consola, sin editar datos manualmente, que aparezca el estado propio en `userIncidentState` y que el evento global permanezca intacto. Cerrar y volver a abrir la app o iniciar nuevamente la misma sesión; el incidente debe seguir atendido para ese usuario. Hace falta conexión a Firebase; no hacen falta bridge ni SDA si ya existe el incidente.
+3. **Históricos y cancelaciones**: comprobar que los históricos sin `vehicleId` siguen disponibles, que el fallback global del propietario se conserva y que los cancelados siguen cancelados. La independencia entre dos usuarios se valida localmente mediante tests; no requiere crear cuentas ni asociaciones nuevas en Firebase.
+
+No se ejecutó Flutter contra Firebase real ni se escribieron estados individuales reales durante esta implementación. La validación manual anterior queda pendiente; no se declara cerrado todo el Bloque 3 ni la tarea global de compatibilidad. La preservación de cancelaciones en la escritura del bridge sigue siendo otro bloque.
+
 ## 4. Preservación de cancelaciones
 
 - `cancelledBySeq`, `cancelledAt` y el futuro estado global `cancelled` pertenecen al incidente y no al usuario.

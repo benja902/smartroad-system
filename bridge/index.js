@@ -9,12 +9,14 @@
 //
 // Requiere una cuenta de servicio con permiso de escritura en Realtime
 // Database (bypassa las reglas de seguridad, igual que el Admin SDK).
+import { loadEnvFile } from 'node:process';
 
 import mqtt from 'mqtt';
 import http from 'node:http';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getDatabase, ServerValue } from 'firebase-admin/database';
-
+// Carga las variables locales desde .env
+loadEnvFile('.env');
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
   console.error('Falta la variable de entorno DATABASE_URL (URL de tu Realtime Database).');

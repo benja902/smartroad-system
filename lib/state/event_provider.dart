@@ -22,6 +22,9 @@ class EventProvider extends ChangeNotifier {
   AccidentEvent? _criticalEvent;
   AccidentEvent? get criticalEvent => _criticalEvent;
 
+  Object? _error;
+  Object? get error => _error;
+
   EventProvider(this._eventRepository);
 
   void setContext({required String? userId, String? vehicleId}) {
@@ -30,6 +33,7 @@ class EventProvider extends ChangeNotifier {
     _userId = userId;
     _vehicleId = vehicleId;
     final contextVersion = ++_contextVersion;
+    _error = null;
 
     _eventsSubscription?.cancel();
     if (userChanged) {
@@ -46,12 +50,20 @@ class EventProvider extends ChangeNotifier {
 
     _eventsSubscription = _eventRepository
         .watchEvents(userId, vehicleId: vehicleId)
-        .listen((events) {
-          if (contextVersion != _contextVersion) return;
-          _events = events;
-          _criticalEvent = _findCriticalEvent(events);
-          notifyListeners();
-        });
+        .listen(
+          (events) {
+            if (contextVersion != _contextVersion) return;
+            _events = events;
+            _criticalEvent = _findCriticalEvent(events);
+            _error = null;
+            notifyListeners();
+          },
+          onError: (Object error) {
+            if (contextVersion != _contextVersion) return;
+            _error = error;
+            notifyListeners();
+          },
+        );
     notifyListeners();
   }
 
@@ -62,9 +74,24 @@ class EventProvider extends ChangeNotifier {
     return null;
   }
 
-  /// The only mutation the app can make on an event: mark it as seen.
-  Future<void> acknowledge(String dedupKey) =>
-      _eventRepository.acknowledge(dedupKey);
+  /// Capture the session user before starting the personal write.
+  /// The event stream, not an optimistic local mutation, updates the UI.
+  Future<void> acknowledge(String dedupKey) async {
+    final userId = _userId;
+    if (userId == null || userId.trim().isEmpty) {
+      throw StateError('An authenticated user is required');
+    }
+    final contextVersion = _contextVersion;
+    try {
+      await _eventRepository.acknowledge(dedupKey, userId: userId);
+    } catch (error) {
+      if (contextVersion == _contextVersion) {
+        _error = error;
+        notifyListeners();
+      }
+      rethrow;
+    }
+  }
 
   @override
   void dispose() {
