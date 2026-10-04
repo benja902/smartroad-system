@@ -28,6 +28,11 @@ beforeEach(async () => {
   await env.clearDatabase();
   await env.withSecurityRulesDisabled(async (context) => {
     await context.database().ref().set({
+      users: {
+        owner: { ownerVehicleId: 'owned', vehicleIds: { owned: true } },
+        'other-owner': { ownerVehicleId: 'other', vehicleIds: { other: true } },
+        'legacy-user': { name: 'Legacy' },
+      },
       vehicles: {
         owned: { ownerId: 'owner', deviceId: 'SDA-TEST' },
         other: { ownerId: 'other-owner' },
@@ -75,8 +80,8 @@ test('vehicle owner can acknowledge despite different legacy userId', async () =
   await assertSucceeds(db().ref(statePath('transitioned')).set({ acknowledged: false }));
 });
 
-test('compatible legacy userId branch remains accepted during transition', async () => {
-  await assertSucceeds(db('legacy-user').ref(statePath('transitioned', 'legacy-user')).set({ acknowledged: true }));
+test('userId alone cannot grant access to an event owned by another vehicle', async () => {
+  await assertFails(db('legacy-user').ref(statePath('transitioned', 'legacy-user')).set({ acknowledged: true }));
 });
 
 test('user cannot write someone else state even for an owned event', async () => {
@@ -139,16 +144,15 @@ test('acknowledgment preserves canonical cancellation', async () => {
   assert.deepEqual((await db().ref('events/cancelled').once('value')).val(), before);
 });
 
-test('existing events permissions and indexes are unchanged', async () => {
-  assert.deepEqual(JSON.parse(rules).rules.events, {
-    '.read': 'auth != null',
-    '.indexOn': ['userId', 'deviceId', 'seq', 'vehicleId'],
-    '$eventId': { '.write': false, acknowledged: { '.write': 'auth != null' } },
-  });
-  await assertSucceeds(db('stranger').ref('events').once('value'));
+test('events indexes remain and global acknowledgment is backend-only', async () => {
+  assert.deepEqual(JSON.parse(rules).rules.events['.indexOn'],
+    ['userId', 'deviceId', 'seq', 'vehicleId']);
+  await assertFails(db('stranger').ref('events').once('value'));
+  await assertFails(db().ref('events').once('value'));
   await assertFails(db(null).ref('events').once('value'));
   await assertFails(db().ref('events/vehicleOnly').set({ seq: 999 }));
-  await assertSucceeds(db('stranger').ref('events/historical/acknowledged').set(true));
+  await assertFails(db().ref('events/historical/acknowledged').set(true));
+  await assertFails(db('stranger').ref('events/historical/acknowledged').set(true));
   await assertFails(db(null).ref('events/historical/acknowledged').set(true));
 });
 

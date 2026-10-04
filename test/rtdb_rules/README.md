@@ -1,4 +1,4 @@
-# Pruebas locales de userIncidentState — Paso 3
+# Pruebas locales de reglas RTDB — Fase 1
 
 Requisitos: Node.js 20 o posterior, Firebase CLI y Java 21 o posterior para la CLI actual. Las dependencias de pruebas son independientes del bridge y de Flutter. El Database Emulator utiliza `127.0.0.1:19000`.
 
@@ -28,7 +28,7 @@ El runner Node usa `--test-reporter=spec` para mostrar cada caso y limita cada p
 
 La configuración carga `database.rules.json` únicamente en el emulador. El proyecto `demo-smartroad-rules`, el host local obligatorio y los datos ficticios separan estas pruebas de la instancia real. El script rechaza ejecutarse sin `FIREBASE_DATABASE_EMULATOR_HOST` local. Los datos se restablecen entre casos y el emulador se apaga al finalizar.
 
-Se comprueban:
+La suite comprueba:
 
 - lectura del estado propio y rechazo del ajeno o sin autenticación;
 - escritura propia mediante el `userId` histórico o `vehicleId → ownerId`, como alternativas compatibles;
@@ -36,10 +36,13 @@ Se comprueban:
 - únicamente `acknowledged` booleano, sin campos adicionales ni borrado;
 - rechazo atómico de escrituras múltiples que incluyan rutas ajenas o campos adicionales;
 - preservación del evento canónico y sus cancelaciones;
-- permisos actuales e índices de `events`, incluidas ambas consultas.
+- índices de `events`, consultas duales restringidas al propietario y rechazo del reconocimiento global;
+- lecturas positivas y negativas de propietario, contacto `pending`, `active` y `revoked`, ajenos y usuarios sin autenticar;
+- escritura exclusiva del backend para perfiles, asociaciones, SDA, eventos, proyecciones y entregas satelitales;
+- necesidad del índice administrativo `ownerVehicleId` para excluir a los contactos de la consulta histórica por `userId`.
 
-No hace falta ejecutar `main_dev.dart` ni `main.dart`, conectar el celular, iniciar el bridge o usar el SDA. La validación de las reglas no activa la lectura personal ni cambia la escritura de “Ya lo vi”. No ejecutar `firebase deploy` como parte de este paso.
+No hace falta ejecutar `main_dev.dart` ni `main.dart`, conectar el celular, iniciar el bridge o usar el SDA. Las reglas nuevas se prueban **solo** en Emulator; no ejecutar `firebase deploy` como parte de este paso. `RTDB_RULES_PHASE1.md` documenta el nuevo índice administrativo requerido antes de una publicación futura.
 
-Las reglas previas de `vehicles` y `events` permanecen sin cambios. Esta autorización mínima no sustituye el endurecimiento posterior de asociaciones y roles: en particular, la asociación de propietario todavía depende de los permisos actuales de escritura de `vehicles`. No se otorgan permisos nuevos a contactos.
+Las pruebas verifican que `vehicles` y `events` ya no admitan escrituras de clientes y que los contactos no lean los eventos canónicos ni datos técnicos. La proyección `contactIncidents` aún no se produce en Firebase real; su lectura se prueba únicamente con datos ficticios.
 
-Resultado registrado el 2 de octubre de 2026: **18 pruebas aprobadas, 0 fallos**, ejecutadas en primer plano con Firebase CLI 15.16.0, Database Emulator 4.11.2 y el Java 25 incluido en Android Studio. No se publicaron reglas.
+Antecedente: el 2 de octubre de 2026 pasaron **18 pruebas** del estado individual con las reglas mínimas anteriores. El 4 de octubre de 2026 la suite ampliada de Fase 1 terminó con **30 pruebas aprobadas y 0 fallos** en Emulator, incluidos ambos archivos `*.test.mjs`. El script de pruebas devolvió código 0; en este entorno la CLI de Firebase mostró después un error de cierre y devolvió código 1. Ese error posterior no corresponde a una prueba fallida ni a reglas publicadas. No se modificó la configuración de la CLI ni se ejecutó contra Firebase real.

@@ -3,37 +3,63 @@
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid"
-      }
-    },
-    "vehicles": {
-      ".read": "auth != null",
-      ".indexOn": ["ownerId", "deviceId"],
-      "$vehicleId": {
-        ".write": "auth != null"
-      }
-    },
-    "devices": {
-      ".read": "auth != null",
-      "$deviceId": {
         ".write": false
       }
     },
+    "vehicles": {
+      ".read": "auth != null && query.orderByChild === 'ownerId' && query.equalTo === auth.uid && root.child('users').child(auth.uid).child('ownerVehicleId').isString() && root.child('vehicles').child(root.child('users').child(auth.uid).child('ownerVehicleId').val()).child('ownerId').val() === auth.uid",
+      ".indexOn": ["ownerId", "deviceId"],
+      "$vehicleId": {
+        ".read": "auth != null && data.child('ownerId').val() === auth.uid",
+        ".write": false
+      }
+    },
+    "devices": {
+      "$deviceId": {
+        ".read": "auth != null && root.child('deviceRegistry').child($deviceId).child('active').val() === true && root.child('deviceRegistry').child($deviceId).child('vehicleId').isString() && root.child('users').child(auth.uid).child('ownerVehicleId').val() === root.child('deviceRegistry').child($deviceId).child('vehicleId').val() && root.child('vehicles').child(root.child('deviceRegistry').child($deviceId).child('vehicleId').val()).child('ownerId').val() === auth.uid && root.child('vehicles').child(root.child('deviceRegistry').child($deviceId).child('vehicleId').val()).child('deviceId').val() === $deviceId",
+        ".write": false
+      }
+    },
+    "deviceRegistry": {
+      ".read": false,
+      ".write": false
+    },
     "events": {
-      ".read": "auth != null",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('ownerVehicleId').isString() && root.child('vehicles').child(root.child('users').child(auth.uid).child('ownerVehicleId').val()).child('ownerId').val() === auth.uid && ((query.orderByChild === 'userId' && query.equalTo === auth.uid) || (query.orderByChild === 'vehicleId' && query.equalTo === root.child('users').child(auth.uid).child('ownerVehicleId').val()))",
       ".indexOn": ["userId", "deviceId", "seq", "vehicleId"],
       "$eventId": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('ownerVehicleId').isString() && root.child('vehicles').child(root.child('users').child(auth.uid).child('ownerVehicleId').val()).child('ownerId').val() === auth.uid && ((data.child('vehicleId').isString() && data.child('vehicleId').val() === root.child('users').child(auth.uid).child('ownerVehicleId').val()) || (!data.child('vehicleId').exists() && data.child('userId').val() === auth.uid))",
         ".write": false,
         "acknowledged": {
-          ".write": "auth != null"
+          ".write": false
         }
       }
+    },
+    "vehicleContacts": {
+      "$vehicleId": {
+        ".read": "auth != null && root.child('vehicles').child($vehicleId).child('ownerId').val() === auth.uid",
+        ".write": false,
+        "$contactUid": {
+          ".read": "auth != null && auth.uid === $contactUid && data.exists()",
+          ".write": false
+        }
+      }
+    },
+    "contactIncidents": {
+      "$vehicleId": {
+        ".read": "auth != null && root.child('vehicleContacts').child($vehicleId).child(auth.uid).child('status').val() === 'active'",
+        ".write": false
+      }
+    },
+    "satelliteDeliveries": {
+      ".read": false,
+      ".write": false
     },
     "userIncidentState": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         "$eventKey": {
-          ".write": "auth != null && auth.uid === $uid && newData.exists() && root.child('events').child($eventKey).exists() && (root.child('events').child($eventKey).child('userId').val() === auth.uid || (root.child('events').child($eventKey).child('vehicleId').isString() && root.child('vehicles').child(root.child('events').child($eventKey).child('vehicleId').val()).child('ownerId').val() === auth.uid))",
+          ".write": "auth != null && auth.uid === $uid && newData.exists() && root.child('events').child($eventKey).exists() && root.child('users').child(auth.uid).child('ownerVehicleId').isString() && root.child('vehicles').child(root.child('users').child(auth.uid).child('ownerVehicleId').val()).child('ownerId').val() === auth.uid && ((root.child('events').child($eventKey).child('vehicleId').isString() && root.child('events').child($eventKey).child('vehicleId').val() === root.child('users').child(auth.uid).child('ownerVehicleId').val()) || (!root.child('events').child($eventKey).child('vehicleId').exists() && root.child('events').child($eventKey).child('userId').val() === auth.uid))",
           ".validate": "newData.hasChildren(['acknowledged'])",
           "acknowledged": {
             ".validate": "newData.isBoolean()"

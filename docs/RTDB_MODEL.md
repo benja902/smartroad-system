@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Este documento define la estructura conceptual mínima de RTDB para el MVP de SmartRoad con un único SDA físico. No implementa reglas Firebase, migraciones, código Flutter, bridge, datos reales ni cambios en Firebase.
+Este documento define la estructura conceptual mínima de RTDB para el MVP de SmartRoad con un único SDA físico. Las reglas locales se describen aparte en `RTDB_RULES_PHASE1.md`; este documento no implica que estén publicadas ni que se hayan migrado datos reales.
 
 El diseño preserva y evoluciona incrementalmente el flujo existente:
 
@@ -43,10 +43,13 @@ Los nombres representan responsabilidades conceptuales. Las reglas, índices y o
 | `name` | Nombre mostrado por Flutter; conserva el campo consumido actualmente |
 | `phone` | Dato de contacto de la aplicación, cuando sea necesario |
 | `vehicleIds/{vehicleId}` | Índice ligero de vehículos actualmente accesibles para el usuario |
+| `ownerVehicleId` | Índice administrativo del único vehículo que posee el usuario en este MVP; no existe en perfiles de contacto |
 
 Firebase Authentication sigue siendo la autoridad de identidad. No se define un rol global en `users`.
 
 `vehicleIds` permite conservar el acceso actual de Flutter sin buscar todas las relaciones de la base. Debe mantenerse de forma coherente con el propietario o contacto activo mediante una operación controlada por el backend.
+
+`ownerVehicleId` es necesario para distinguir de forma verificable al propietario del contacto en la consulta histórica de `events` por `userId`. Las reglas comprueban además que `vehicles/{ownerVehicleId}/ownerId == auth.uid`; el índice por sí solo no concede acceso. Solo una operación administrativa puede escribirlo. Su necesidad y la prueba en Emulator están documentadas en `RTDB_RULES_PHASE1.md`. No se ha añadido todavía a Firebase real.
 
 No se incluyen preferencias avanzadas, organizaciones ni perfiles comerciales.
 

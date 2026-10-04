@@ -3,12 +3,31 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
 import 'package:smartroad/app.dart';
+import 'package:smartroad/main_dev.dart' as dev_entry;
+import 'package:smartroad/repositories/auth_repository.dart';
+import 'package:smartroad/repositories/device_repository.dart';
 import 'package:smartroad/repositories/event_repository.dart';
+import 'package:smartroad/repositories/mock/mock_auth_repository.dart';
+import 'package:smartroad/repositories/mock/mock_device_repository.dart';
 import 'package:smartroad/repositories/mock/mock_event_repository.dart';
+import 'package:smartroad/repositories/mock/mock_vehicle_repository.dart';
+import 'package:smartroad/repositories/vehicle_repository.dart';
 
 import 'test_helpers.dart';
 
 void main() {
+  testWidgets('main_dev.dart injects every mock without Firebase initialization', (tester) async {
+    dev_entry.main();
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(UrbesApp));
+    expect(context.read<AuthRepository>(), isA<MockAuthRepository>());
+    expect(context.read<VehicleRepository>(), isA<MockVehicleRepository>());
+    expect(context.read<DeviceRepository>(), isA<MockDeviceRepository>());
+    expect(context.read<EventRepository>(), isA<MockEventRepository>());
+    expect(find.byTooltip('Panel de desarrollo'), findsOneWidget);
+  });
+
   testWidgets('Production app (includeDevRoute: false) hides the /dev entry point', (tester) async {
     await tester.pumpWidget(mockAppProviders(child: const UrbesApp()));
     await tester.pumpAndSettle();

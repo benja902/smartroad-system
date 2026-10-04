@@ -17,11 +17,11 @@ class _User extends Fake implements fb_auth.User {
   @override
   final String? email;
   @override
-  final String? displayName;
+  final String? displayName = null;
   @override
-  final String? phoneNumber;
+  final String? phoneNumber = null;
 
-  _User(this.uid, {this.email, this.displayName, this.phoneNumber});
+  _User(this.uid, {this.email});
 }
 
 class _Credential extends Fake implements fb_auth.UserCredential {
