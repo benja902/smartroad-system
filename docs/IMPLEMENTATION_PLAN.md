@@ -43,7 +43,8 @@ Los valores reales no deben incorporarse a documentación, fixtures ni código. 
 - [x] Diseñar los nodos y claves de RTDB para lecturas autorizadas e idempotencia.
 - [x] Implementar la compatibilidad MVP definida en `RTDB_COMPATIBILITY_MVP.md`: lectura dual de `ts`, transición aditiva `userId` → `vehicleId`, estado individual por usuario y preservación de cancelaciones. Validada y cerrada el 3 de octubre de 2026; evidencia del Bloque 4 en el documento de compatibilidad.
 - [ ] Implementar una provisión administrativa mínima para el propietario, vehículo, SDA, IMEI y contactos del MVP.
-- [ ] Tras validar la provisión, impedir la creación automática de dispositivos demo en producción, conservando el modo DEV y sin eliminar datos existentes en el mismo cambio.
+- [x] Tras validar la provisión, impedir la creación automática de dispositivos demo en producción, conservando el modo DEV y sin eliminar datos existentes en el mismo cambio. Validado manualmente en `main.dart` el 3 de octubre de 2026: el propietario cargó su vehículo, SDA y eventos existentes; tras cerrar sesión y volver a entrar no aparecieron nuevos datos demo.
+- [ ] Tratar por separado el inicio de sesión de una cuenta Firebase Auth sin perfil `users/{uid}` en RTDB: actualmente se construye un usuario solo en memoria y puede entrar sin vehículo. No resuelto al retirar el bootstrap demo.
 - [ ] Garantizar que `main.dart` use Firebase real y que `main_dev.dart` permanezca aislado con mocks y simulador.
 - [ ] Escribir reglas de RTDB acordes con roles, asociaciones y escrituras exclusivas del backend.
 - [ ] Crear pruebas locales específicas para las reglas de RTDB.
@@ -96,6 +97,7 @@ Los valores reales no deben incorporarse a documentación, fixtures ni código. 
 - [ ] Implementar Alertas con los estados y filtros esenciales del MVP.
 - [ ] Implementar detalle de incidente y su evolución.
 - [ ] Implementar mapa y geolocalización con indicación de calidad.
+- [ ] Ajuste pendiente por hallazgo físico (validación en fase 10): conservar la última posición y etiquetarla como "última ubicación conocida" cuando el SDA esté offline; no presentar LTE/GNSS antiguos como disponibilidad actual y usar timestamps/frescura para distinguir estado actual de último dato conocido. No implementado todavía.
 - [ ] Implementar Vehículo con información autorizada del único prototipo.
 - [ ] Implementar Historial mediante consultas acotadas suficientes para el MVP.
 - [ ] Implementar Perfil y cierre de sesión.
@@ -168,6 +170,18 @@ El bloque backend puede comenzar después de completar las fases 1–2, en paral
 ## Fase 10 — Pruebas físicas end-to-end
 
 Esta fase repite los supuestos comprobados en los checkpoints tempranos dentro del sistema final desplegado. Los checkpoints no sustituyen esta validación completa de aceptación.
+
+### Hallazgos de validación física — pendientes de medición y ajuste
+
+Observaciones registradas el 3 de octubre de 2026; no implican cambios de código ni una causa técnica confirmada:
+
+- Al apagar el SDA, la transición a offline tarda aproximadamente un minuto. No atribuir todavía este tiempo a latencia MQTT.
+- Cuando el SDA queda offline, Flutter continúa mostrando LTE/GNSS y posición con los últimos valores recibidos.
+
+- [ ] Medir por etapas el tiempo desde el apagado hasta la visualización de offline: apagado del SDA, detección/publicación de offline en el broker, recepción en el bridge, actualización de RTDB y recepción/visualización en Flutter. Registrar tiempos y evidencias para identificar dónde se produce la demora, sin presuponer su causa.
+- [ ] Validar el ajuste pendiente de la fase 5: conservar la última posición como "última ubicación conocida", no mostrar LTE/GNSS antiguos como disponibilidad actual y distinguir estado actual de último dato conocido mediante timestamps/frescura.
+
+### Pruebas de aceptación
 
 - [ ] Verificar conexión, Last Will, disponibilidad y estado retained del SDA.
 - [ ] Generar eventos físicos controlados de cada tipo permitido.

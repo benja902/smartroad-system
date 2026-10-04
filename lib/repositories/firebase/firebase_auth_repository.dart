@@ -3,7 +3,6 @@ import 'package:firebase_database/firebase_database.dart';
 
 import '../../models/user_model.dart';
 import '../auth_repository.dart';
-import 'firebase_bootstrap_service.dart';
 
 /// Firebase-backed AuthRepository. Firebase Auth owns identity
 /// (email/password, session); the richer profile (phone, vehicleIds)
@@ -11,14 +10,12 @@ import 'firebase_bootstrap_service.dart';
 class FirebaseAuthRepository implements AuthRepository {
   final fb_auth.FirebaseAuth _auth;
   final DatabaseReference _usersRef;
-  final FirebaseBootstrapService _bootstrap;
 
   FirebaseAuthRepository({
     fb_auth.FirebaseAuth? auth,
     FirebaseDatabase? database,
   })  : _auth = auth ?? fb_auth.FirebaseAuth.instance,
-        _usersRef = (database ?? FirebaseDatabase.instance).ref('users'),
-        _bootstrap = FirebaseBootstrapService(database: database);
+        _usersRef = (database ?? FirebaseDatabase.instance).ref('users');
 
   @override
   Stream<UserModel?> authStateChanges() {
@@ -32,16 +29,6 @@ class FirebaseAuthRepository implements AuthRepository {
     if (firebaseUser == null) {
       throw StateError('Sign-in succeeded but no Firebase user was returned.');
     }
-
-    // No real device provisions users/vehicles/devices yet — seed demo
-    // data on first sign-in so the app is testable end-to-end. See
-    // FirebaseBootstrapService for details; remove once real provisioning
-    // exists.
-    await _bootstrap.ensureDemoDataSeeded(
-      firebaseUser.uid,
-      email: firebaseUser.email ?? email,
-      displayName: firebaseUser.displayName,
-    );
 
     final user = await _toUserModel(firebaseUser);
     if (user == null) {
