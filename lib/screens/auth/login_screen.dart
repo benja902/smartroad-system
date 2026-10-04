@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../repositories/auth_repository.dart';
 import '../../state/session_provider.dart';
 import '../../widgets/primary_button.dart';
 
@@ -39,6 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await context.read<SessionProvider>().signIn(_emailController.text.trim(), _passwordController.text);
+    } on AccountNotProvisionedException {
+      setState(() => _errorMessage = 'Esta cuenta aún no está provisionada.');
     } on FirebaseAuthException catch (e) {
       setState(() => _errorMessage = _messageFor(e.code));
     } catch (e) {

@@ -32,7 +32,7 @@ class FirebaseAuthRepository implements AuthRepository {
 
     final user = await _toUserModel(firebaseUser);
     if (user == null) {
-      throw StateError('Sign-in succeeded but no Firebase user was returned.');
+      throw const AccountNotProvisionedException();
     }
     return user;
   }
@@ -44,14 +44,20 @@ class FirebaseAuthRepository implements AuthRepository {
     if (firebaseUser == null) return null;
 
     final snapshot = await _usersRef.child(firebaseUser.uid).get();
-    final profile = snapshot.exists ? Map<String, dynamic>.from(snapshot.value as Map) : null;
+    if (!snapshot.exists) {
+      if (_auth.currentUser?.uid == firebaseUser.uid) {
+        await _auth.signOut();
+      }
+      return null;
+    }
+    final profile = Map<String, dynamic>.from(snapshot.value as Map);
 
     return UserModel(
       id: firebaseUser.uid,
-      name: profile?['name'] as String? ?? firebaseUser.displayName ?? firebaseUser.email ?? 'Usuario',
-      email: profile?['email'] as String? ?? firebaseUser.email ?? '',
-      phone: profile?['phone'] as String? ?? firebaseUser.phoneNumber,
-      vehicleIds: (profile?['vehicleIds'] as Map?)?.keys.map((k) => k.toString()).toList() ?? const [],
+      name: profile['name'] as String? ?? firebaseUser.displayName ?? firebaseUser.email ?? 'Usuario',
+      email: profile['email'] as String? ?? firebaseUser.email ?? '',
+      phone: profile['phone'] as String? ?? firebaseUser.phoneNumber,
+      vehicleIds: (profile['vehicleIds'] as Map?)?.keys.map((k) => k.toString()).toList() ?? const [],
     );
   }
 }
