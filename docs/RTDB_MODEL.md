@@ -126,6 +126,8 @@ Para el MVP, la resolución principal es `deviceId → vehicleId` mediante la as
 | `activeFrom` | Inicio de vigencia cuando la autorización se activa |
 | `revokedAt` | Fin de vigencia cuando se revoca |
 
+Para este MVP se admiten como máximo tres contactos SmartRoad `pending` o `active` por vehículo. Las relaciones `revoked` permanecen para historial y no ocupan cupo. Esta decisión funcional es independiente de los destinatarios SMS del SDA.
+
 Esta relación:
 
 - vincula al usuario con el vehículo, no con el SDA;

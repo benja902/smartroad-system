@@ -25,6 +25,20 @@ export function selectExisting(snapshot, confirmedSuffix) {
   return { ownerUid: vehicle.ownerId, vehicleId, deviceId: vehicle.deviceId, deviceConfirmed: true };
 }
 
+function confirmedProfileContacts(snapshot, contactProfiles) {
+  requireValue(Array.isArray(contactProfiles) && contactProfiles.length >= 1
+    && contactProfiles.length <= 3, 'CONTACT_LIMIT_EXCEEDED');
+  return contactProfiles.map(contact => {
+    requireValue(object(contact) && key(contact.uid) && contact.confirmed === true
+      && typeof contact.name === 'string' && contact.name.trim() === contact.name
+      && contact.name.length > 0 && contact.name.length <= 120
+      && Object.keys(contact).every(field => ['uid', 'name', 'confirmed'].includes(field)),
+    'CONFIRMED_CONTACT_REQUIRED');
+    requireValue(snapshot.users?.[contact.uid]?.name === contact.name, 'CONTACT_PROFILE_CONFLICT');
+    return { uid: contact.uid, confirmed: true };
+  });
+}
+
 export function buildPlan(snapshot, request, verifiedUsers) {
   requireValue(object(request), 'INVALID_REQUEST');
   const { ownerUid, vehicleId, deviceId } = request;
@@ -73,38 +87,59 @@ export function buildPlan(snapshot, request, verifiedUsers) {
   }
 
   const requestedContacts = request.contacts ?? [];
-  requireValue(Array.isArray(requestedContacts), 'INVALID_CONTACTS');
+  requireValue(Array.isArray(requestedContacts) && requestedContacts.length <= 3, 'CONTACT_LIMIT_EXCEEDED');
+  const existingRelations = contacts[vehicleId] ?? {};
+  requireValue(object(existingRelations), 'INVALID_CONTACT_RELATIONS');
+  const occupied = new Set(Object.entries(existingRelations)
+    .filter(([, relation]) => ['pending', 'active'].includes(relation?.status))
+    .map(([uid]) => uid));
   const seen = new Set();
   for (const [index, contact] of requestedContacts.entries()) {
-    requireValue(object(contact) && key(contact.uid) && contact.confirmed === true, 'CONFIRMED_CONTACT_REQUIRED');
+    requireValue(object(contact) && key(contact.uid) && contact.confirmed === true
+      && Object.keys(contact).every(field => ['uid', 'confirmed'].includes(field)),
+    'CONFIRMED_CONTACT_REQUIRED');
     requireValue(contact.uid !== ownerUid && !seen.has(contact.uid), 'CONTACT_IDENTITY_CONFLICT');
     seen.add(contact.uid);
-    requireValue(object(users[contact.uid]) && verifiedUsers[contact.uid]?.exists === true
-      && verifiedUsers[contact.uid]?.disabled === false, 'CONTACT_PROFILE_OR_AUTH_NOT_CONFIRMED');
-    requireValue(contacts[vehicleId] === undefined || object(contacts[vehicleId]), 'INVALID_CONTACT_RELATIONS');
-    const relation = contacts[vehicleId]?.[contact.uid];
+    requireValue(object(users[contact.uid]) && verifiedUsers[contact.uid]?.exists === true,
+      'CONTACT_PROFILE_OR_AUTH_NOT_CONFIRMED');
+    requireValue(verifiedUsers[contact.uid]?.disabled === true, 'CONTACT_ACCOUNT_MUST_BE_DISABLED');
+    const relation = existingRelations[contact.uid];
     requireValue(relation === undefined || (object(relation)
       && ['pending', 'active', 'revoked'].includes(relation.status)), 'CONTACT_RELATION_REQUIRES_REVIEW');
     // No activa, revoca ni reactiva autorizaciones existentes.
-    if (relation === undefined) propose(`vehicleContacts/${vehicleId}/${contact.uid}/status`, undefined, 'pending',
-      `vehicleContacts/{existingVehicle}/{confirmedContact${index + 1}}/status`, 'pending');
+    if (relation === undefined) {
+      occupied.add(contact.uid);
+      propose(`vehicleContacts/${vehicleId}/${contact.uid}/status`, undefined, 'pending',
+        `vehicleContacts/{existingVehicle}/{confirmedContact${index + 1}}/status`, 'pending');
+    }
   }
+  requireValue(occupied.size <= 3, 'CONTACT_LIMIT_EXCEEDED');
   return { patch, changes, requestedContacts: requestedContacts.length, imeiSupplied: request.rockblockImei !== undefined };
 }
 
-export async function runProvision(adapter, { request, confirmedSuffix, apply = false } = {}) {
+export async function runProvision(adapter, { request, contactProfiles, confirmedSuffix, apply = false } = {}) {
   requireValue(typeof apply === 'boolean', 'INVALID_MODE');
+  requireValue(request === undefined || contactProfiles === undefined, 'INVALID_MODE');
   let selection = request === undefined ? undefined : structuredClone(request);
   async function prepare() {
     const snapshot = await adapter.readSnapshot();
     // Fijar la asociación seleccionada: nunca adoptar otro propietario
     // silenciosamente durante la revalidación del modo apply.
     if (selection === undefined) selection = selectExisting(snapshot, confirmedSuffix);
-    const selected = selection;
+    const selected = contactProfiles === undefined ? selection : {
+      ...selection, contacts: confirmedProfileContacts(snapshot, contactProfiles),
+    };
     requireValue(object(selected) && Array.isArray(selected.contacts ?? []), 'INVALID_REQUEST');
     const ids = [selected.ownerUid, ...(selected.contacts ?? []).map(c => c?.uid)];
     requireValue(ids.every(key), 'INVALID_IDENTIFIER');
     const verifiedUsers = await adapter.verifyUsers([...new Set(ids)]);
+    if (contactProfiles !== undefined) {
+      for (const contact of contactProfiles) {
+        requireValue(typeof verifiedUsers[contact.uid]?.email === 'string'
+          && snapshot.users?.[contact.uid]?.email === verifiedUsers[contact.uid].email,
+        'CONTACT_PROFILE_CONFLICT');
+      }
+    }
     return buildPlan(snapshot, selected, verifiedUsers);
   }
   const plan = await prepare();

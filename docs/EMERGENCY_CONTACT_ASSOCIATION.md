@@ -8,7 +8,7 @@ Los contactos autorizados de SmartRoad son independientes de los destinatarios S
 
 ## Cardinalidades usuario–vehículo
 
-- Un vehículo puede tener cero, uno o varios contactos autorizados.
+- Para este MVP, un vehículo puede tener de cero a tres contactos SmartRoad en estado `pending` o `active`. Las relaciones revocadas se conservan como historial y no ocupan uno de los tres cupos.
 - Un usuario puede ser contacto autorizado de cero o varios vehículos.
 - Un mismo usuario puede ser propietario de un vehículo y contacto autorizado de otros.
 - Cada autorización corresponde a un usuario y un vehículo concretos.

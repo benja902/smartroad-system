@@ -1,33 +1,40 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { ProvisionError, runProvision } from './provision_mvp_core.mjs';
+import { ProvisionError } from './provision_mvp_core.mjs';
+import { runContactProfileProvision } from './provision_contact_profiles_core.mjs';
 
-// Reutilizar la dependencia instalada; no importar ni arrancar el bridge.
 const requireSdk = createRequire(new URL('../../bridge/package.json', import.meta.url));
 let app;
 try {
   const args = process.argv.slice(2), options = {};
   for (let index = 0; index < args.length; index++) {
     const flag = args[index];
-    if (flag === '--apply' || flag === '--existing') {
+    if (flag === '--apply') {
       if (options[flag]) throw new ProvisionError('INVALID_ARGUMENTS');
       options[flag] = true;
-    } else if (flag === '--input' || flag === '--contacts-input' || flag === '--confirmed-device-suffix') {
-      if (options[flag] !== undefined || !args[index + 1] || args[index + 1].startsWith('--')) throw new ProvisionError('INVALID_ARGUMENTS');
+    } else if (flag === '--input' || flag === '--confirmed-device-suffix') {
+      if (options[flag] !== undefined || !args[index + 1] || args[index + 1].startsWith('--')) {
+        throw new ProvisionError('INVALID_ARGUMENTS');
+      }
       options[flag] = args[++index];
     } else throw new ProvisionError('INVALID_ARGUMENTS');
   }
-  const modes = [options['--existing'], options['--input'], options['--contacts-input']].filter(Boolean);
-  if (modes.length !== 1 || Boolean(options['--confirmed-device-suffix']) === Boolean(options['--input'])) {
-    throw new ProvisionError('SELECTION_REQUIRED');
+  if (!options['--input'] || !options['--confirmed-device-suffix']) {
+    throw new ProvisionError('INPUT_AND_CONFIRMATION_REQUIRED');
   }
-
+  const input = JSON.parse(readFileSync(options['--input'], 'utf8'));
+  if (input === null || typeof input !== 'object' || Array.isArray(input)
+    || Object.keys(input).some(field => field !== 'contacts')) {
+    throw new ProvisionError('INVALID_INPUT_FIELDS');
+  }
   const base = new URL(process.env.DATABASE_URL);
   const flutterConfig = readFileSync(new URL('../../lib/firebase_options.dart', import.meta.url), 'utf8');
-  const configuredUrls = [...flutterConfig.matchAll(/databaseURL:\s*['"]([^'"]+)['"]/g)].map(match => new URL(match[1]).origin);
+  const configuredUrls = [...flutterConfig.matchAll(/databaseURL:\s*['"]([^'"]+)['"]/g)]
+    .map(match => new URL(match[1]).origin);
   if (base.protocol !== 'https:' || base.pathname !== '/' || base.search || base.hash
-    || base.username || base.password || !configuredUrls.includes(base.origin)) throw new ProvisionError('DATABASE_TARGET_MISMATCH');
-
+    || base.username || base.password || !configuredUrls.includes(base.origin)) {
+    throw new ProvisionError('DATABASE_TARGET_MISMATCH');
+  }
   const { initializeApp, applicationDefault, deleteApp } = requireSdk('firebase-admin/app');
   const { getAuth } = requireSdk('firebase-admin/auth');
   app = initializeApp({ credential: applicationDefault(), databaseURL: base.href });
@@ -56,29 +63,21 @@ try {
       }
       return result;
     },
-    // PATCH multipath: solo campos del plan, nunca reemplazos de nodos.
     async updateFields(patch) { await databaseRequest('', 'PATCH', patch); },
   };
-  const request = options['--input'] ? JSON.parse(readFileSync(options['--input'], 'utf8')) : undefined;
-  const contactsInput = options['--contacts-input']
-    ? JSON.parse(readFileSync(options['--contacts-input'], 'utf8')) : undefined;
-  if (contactsInput !== undefined && (contactsInput === null || typeof contactsInput !== 'object'
-    || Array.isArray(contactsInput) || !Array.isArray(contactsInput.contacts)
-    || Object.keys(contactsInput).some(field => field !== 'contacts'))) {
-    throw new ProvisionError('INVALID_CONTACT_INPUT');
-  }
-  console.log(options['--apply'] ? 'APPLY: modo explícito; revalidación antes de escribir.' : 'DRY-RUN: solo lecturas RTDB/Auth; ninguna escritura.');
-  const heartbeat = setInterval(() => console.log('PROGRESS: validando provisión administrativa.'), 10000);
+  console.log(options['--apply'] ? 'APPLY: revalidación antes de escribir.' : 'DRY-RUN: solo lecturas RTDB/Auth.');
+  const heartbeat = setInterval(() => console.log('PROGRESS: validando perfiles de contactos.'), 10000);
   try {
-    console.log(JSON.stringify(await runProvision(adapter, {
-      request, contactProfiles: contactsInput?.contacts,
-      confirmedSuffix: options['--confirmed-device-suffix'], apply: options['--apply'] === true,
+    console.log(JSON.stringify(await runContactProfileProvision(adapter, {
+      contacts: input.contacts, confirmedSuffix: options['--confirmed-device-suffix'],
+      apply: options['--apply'] === true,
     }), null, 2));
   } finally { clearInterval(heartbeat); }
   await deleteApp(app);
   app = undefined;
 } catch (error) {
-  console.error('PROVISION_ABORTED:', error instanceof ProvisionError ? error.code : 'CONFIGURATION_OR_OPERATION_FAILED');
+  console.error('CONTACT_PROVISION_ABORTED:', error instanceof ProvisionError
+    ? error.code : 'CONFIGURATION_OR_OPERATION_FAILED');
   process.exitCode = 1;
 } finally {
   if (app) await requireSdk('firebase-admin/app').deleteApp(app);
