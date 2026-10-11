@@ -8,7 +8,7 @@ Estado conocido al cerrar la línea base:
 - RockBLOCK fue añadido posteriormente y su contrato vigente está documentado en `manual-sda (4).html` y `docs/device_contract.md`.
 - La persistencia de `seq` después de apagar o reiniciar continúa pendiente de validación física con el prototipo.
 
-El contenido siguiente se conserva como evidencia histórica de las pruebas realizadas sobre `SDA-E9A8D8`. No autoriza cambios de firmware ni reemplaza el contrato vigente.
+El contenido siguiente se conserva como evidencia histórica de las pruebas realizadas sobre `[deviceId anonimizado]`. No autoriza cambios de firmware ni reemplaza el contrato vigente.
 
 ## 1. Hallazgos históricos
 

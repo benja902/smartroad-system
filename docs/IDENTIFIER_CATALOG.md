@@ -30,9 +30,10 @@ Conocer cualquiera de estos identificadores no concede acceso. La autorización 
 - `seq` y `momsn` no son globalmente únicos por separado.
 - Los datos mock del modo DEV deben usar valores evidentemente ficticios y permanecer separados de producción.
 
-## Validaciones pendientes
+## Evidencia disponible y checkpoints pendientes
 
-- El checkpoint físico de `seq` determinará si es necesaria una política adicional contra colisiones por reinicio, sin cambiar la identidad canónica `(deviceId, seq)`.
-- El checkpoint del SDA confirmará el `deviceId` del prototipo sin incorporarlo a este documento.
-- El checkpoint RockBLOCK confirmará el IMEI sin incorporarlo a este documento.
-- La especificación oficial de Ground Control deberá confirmar el ciclo y eventual rollover de MOMSN.
+- Para la provisión administrativa de Fase 1 se identificó el único SDA mediante una prueba física y eventos reales; se verificó su relación con el vehículo y se registró la asociación activa. El otro registro histórico/demo fue tratado en la limpieza controlada. Esta confirmación operativa **no** marca por sí sola el checkpoint físico formal del plan: falta registrar evidencia anonimizada y reproducible, sin añadir aquí el valor.
+- El IMEI del único RockBLOCK fue confirmado por el responsable y provisionado privadamente en `deviceRegistry`; no se publica ni se infiere de otro identificador. La confirmación administrativa **no** equivale a una prueba satelital ni cierra el checkpoint formal sin su evidencia correspondiente.
+- Sigue pendiente comprobar físicamente que `seq` persiste después de apagar o reiniciar el SDA. Esa prueba informará la política defensiva ante colisiones, sin cambiar la identidad nominal `(deviceId, seq)`.
+- Sigue pendiente capturar y anonimizar un payload MQTT del firmware final. Los fixtures no deben incorporar identificadores físicos reales.
+- Sigue pendiente obtener la especificación oficial de Ground Control para confirmar el ciclo y eventual rollover de MOMSN y su autenticación HTTP.

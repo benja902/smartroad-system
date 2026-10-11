@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Este documento define la estructura conceptual mínima de RTDB para el MVP de SmartRoad con un único SDA físico. Las reglas locales se describen aparte en `RTDB_RULES_PHASE1.md`; este documento no implica que estén publicadas ni que se hayan migrado datos reales.
+Este documento distingue la estructura **existente** de RTDB del modelo **objetivo** del MVP con un único SDA físico. Las reglas de Fase 1 se publicaron y verificaron el 4 de octubre de 2026 (`RTDB_RULES_PHASE1.md`); ello no implica que todos los nodos conceptuales ni el incidente canónico de Fase 2 estén implementados. Para el estado de escritura actual prevalecen `bridge/event_writer.js`, `bridge/index.js` y sus pruebas; para lo pendiente, `IMPLEMENTATION_PLAN.md` y `PHASE2_INCIDENT_SPEC.md`.
 
 El diseño preserva y evoluciona incrementalmente el flujo existente:
 
@@ -24,7 +24,7 @@ contactIncidents/{vehicleId}/{publicIncidentId}
 satelliteDeliveries/{deliveryKey}
 ```
 
-Los nombres representan responsabilidades conceptuales. Las reglas, índices y operaciones concretas se definirán en tareas posteriores.
+**Ya presentes/provisionados:** `users`, `vehicles`, `devices`, `deviceRegistry` (asociación activa e IMEI del único SDA), `events`, `userIncidentState` y una relación `vehicleContacts` en `pending`. `ownerVehicleId` del propietario ya está provisionado; el contacto continúa inhabilitado. **Planificados, sin productor real:** `contactIncidents` y `satelliteDeliveries`. La existencia de una ruta en reglas no equivale a datos producidos ni a funcionalidad móvil terminada.
 
 ## 1. Usuarios
 
@@ -49,7 +49,7 @@ Firebase Authentication sigue siendo la autoridad de identidad. No se define un 
 
 `vehicleIds` permite conservar el acceso actual de Flutter sin buscar todas las relaciones de la base. Debe mantenerse de forma coherente con el propietario o contacto activo mediante una operación controlada por el backend.
 
-`ownerVehicleId` es necesario para distinguir de forma verificable al propietario del contacto en la consulta histórica de `events` por `userId`. Las reglas comprueban además que `vehicles/{ownerVehicleId}/ownerId == auth.uid`; el índice por sí solo no concede acceso. Solo una operación administrativa puede escribirlo. Su necesidad y la prueba en Emulator están documentadas en `RTDB_RULES_PHASE1.md`. No se ha añadido todavía a Firebase real.
+`ownerVehicleId` es necesario para distinguir de forma verificable al propietario del contacto en la consulta histórica de `events` por `userId`. Las reglas comprueban además que `vehicles/{ownerVehicleId}/ownerId == auth.uid`; el índice por sí solo no concede acceso. Solo una operación administrativa puede escribirlo. Su necesidad, provisión real y prueba en Emulator están documentadas en `RTDB_RULES_PHASE1.md`.
 
 No se incluyen preferencias avanzadas, organizaciones ni perfiles comerciales.
 
@@ -157,7 +157,7 @@ Se conserva `events` para no reemplazar el flujo funcional actual. Los incidente
 
 Esta clave preserva la idempotencia actual y representa nominalmente `(deviceId, seq)`. La política defensiva ante reutilización inesperada de `seq` se definirá en la Fase 2 y no debe provocar sobrescrituras silenciosas.
 
-### Contenido mínimo
+### Contenido objetivo; distinguir campos actuales y planificados
 
 | Campo o bloque | Uso MVP |
 |---|---|
@@ -169,8 +169,8 @@ Esta clave preserva la idempotencia actual y representa nominalmente `(deviceId,
 | `severity` | Severidad recibida |
 | `status` | `active` o `cancelled` para incidentes |
 | `ts` | Tiempo reportado por el SDA, opcional; durante la transición puede ser cadena ISO 8601 o timestamp numérico |
-| `receivedAt` | Primera recepción del backend |
-| `updatedAt` | Última incorporación válida |
+| `receivedAt` | **Objetivo:** primera recepción del backend, inmutable; **actual:** el bridge lo vuelve a escribir en cada entrega MQTT |
+| `updatedAt` | **Planificado:** última incorporación válida; el bridge actual no lo escribe |
 | `queued` | Entrega diferida indicada por el firmware |
 | `transports` | Marcas y tiempos de recepción por MQTT e Iridium |
 | `position` | Ubicación disponible, con origen y calidad |
@@ -178,6 +178,8 @@ Esta clave preserva la idempotencia actual y representa nominalmente `(deviceId,
 | `cancelledBySeq` y `cancelledAt` | Evidencia de cancelación aplicada |
 
 `userId` puede mantenerse durante la transición porque el repositorio Flutter actual lo consume. El objetivo incremental es que las lecturas autorizadas dependan de `vehicleId` y de las relaciones del usuario, no de este campo de compatibilidad.
+
+**Shape actual:** el bridge usa `events/{deviceId}_{seq}` y `update()` con campos recibidos del SDA, `userId`, `vehicleId` cuando hay asociación y `receivedAt` (timestamp de la entrega actual). Para una cancelación escribe además `cancelledBySeq` y `cancelledAt` en el evento original; conserva un registro `cancel` separado. No escribe todavía `status: active/cancelled`, `updatedAt`, `transports` ni una ubicación canónica con origen/calidad. No se debe interpretar la tabla objetivo como validación del payload ya implementada. Flutter mantiene lectura dual `userId`/`vehicleId` y estado personal `acknowledged`.
 
 La lectura y escritura transitoria de estos campos se detalla en `RTDB_COMPATIBILITY_MVP.md`. La compatibilidad de lectura no autoriza a reescribir automáticamente los eventos históricos.
 
@@ -193,8 +195,10 @@ Este estado no modifica `status`, la cancelación global ni el estado de otros u
 
 ### Convergencia de transportes
 
-- MQTT primero e Iridium después actualizan el mismo `eventKey`.
-- Iridium primero y MQTT después también actualizan el mismo `eventKey`.
+**Objetivo pendiente; Iridium no tiene webhook implementado:**
+
+- MQTT primero e Iridium después actualizarán el mismo `eventKey`.
+- Iridium primero y MQTT después actualizarán el mismo `eventKey`.
 - Cada transporte completa únicamente información válida y no borra datos previos.
 - Una actualización no revierte `cancelled`.
 - La ausencia de ubicación, tiempo reportado o métricas no impide una representación parcial.
@@ -224,7 +228,7 @@ Solo el backend crea o actualiza esta proyección. Los eventos técnicos y los i
 
 ### MQTT
 
-El bridge valida el payload y resuelve `deviceId → vehicleId` antes de escribir. La clave determinista `events/{deviceId}_{seq}` concentra las retransmisiones nominales del mismo evento.
+El bridge **actual no valida** tipos, rangos, `seq` ni igualdad entre `id` del payload y `deviceId` del topic; resuelve la asociación consultando `vehicles` por `deviceId` y usa la clave determinista `events/{deviceId}_{seq}`. `deviceRegistry` ya está provisionado, pero `bridge/index.js` todavía no lo usa como fuente de asociación/allowlist. La validación y política defensiva pertenecen a Fase 2.
 
 Las actualizaciones deben fusionar campos y no reemplazar el nodo completo. La política ante una colisión real de `seq` pertenece a la Fase 2.
 
@@ -245,11 +249,11 @@ El webhook debe registrar la entrega una sola vez y después fusionar su conteni
 
 ### Cancelación
 
-Un evento `cancel` no crea un incidente visible independiente. El bridge usa `cancels_seq` para actualizar el nodo nominal del incidente original:
+Un evento `cancel` no crea un incidente visible independiente. El bridge **actual** conserva una fila `cancel` y usa `cancels_seq` para actualizar el nodo nominal del incidente original:
 
 `events/{deviceId}_{cancelsSeq}`
 
-Si la cancelación llega primero, puede crear una representación mínima con estado `cancelled` y evidencia de cancelación. El evento original posterior completa ese mismo nodo sin revertir el estado.
+Si la cancelación llega primero, el bridge actual puede crear una representación mínima con evidencia de cancelación, **sin escribir aún** `status: cancelled`. El evento original posterior completa ese mismo nodo sin borrar la evidencia. El estado global explícito es objetivo de Fase 2.
 
 Los registros `cancel` independientes existentes se conservan durante la transición para no perder evidencia. No deben mostrarse como incidentes independientes ni eliminarse antes de validar la reconciliación canónica.
 
@@ -257,7 +261,7 @@ Las escrituras coordinadas sobre índices, incidente y proyección deben diseña
 
 ## 7. Lecturas autorizadas
 
-Las siguientes rutas describen el alcance conceptual. Las reglas Firebase se escribirán en una tarea posterior.
+Las reglas de Fase 1 ya están publicadas. Lo siguiente distingue permisos **actuales** de rutas **objetivo** aún sin productor o pantalla; consultar `database.rules.json` y `RTDB_RULES_PHASE1.md` para expresiones exactas.
 
 ### Propietario
 
@@ -266,7 +270,7 @@ Puede consultar:
 - `users/{uid}` para su información mínima;
 - `vehicles/{vehicleId}` cuando sea su propietario activo;
 - `devices/{deviceId}` para el SDA activo de su vehículo;
-- `events` filtrado y acotado por `vehicleId`;
+- `events` filtrado por `vehicleId` y, para históricos, por `userId` propio (la consulta acotada de Fase 2 sigue pendiente);
 - `vehicleContacts/{vehicleId}` para gestionar contactos del vehículo.
 
 Puede ver incidentes, eventos técnicos y datos operativos permitidos. No puede provisionar o reasociar `deviceId`, IMEI ni modificar identidad o configuración crítica.
@@ -292,7 +296,7 @@ No consulta directamente:
 
 El bridge, webhook y procesos administrativos son los únicos escritores de asociaciones, estado del dispositivo, eventos canónicos, entregas satelitales y proyecciones para contactos.
 
-Flutter no escribe en `events`, `devices`, `satelliteDeliveries` ni en campos administrativos. Solo podrá escribir su propio `userIncidentState/{uid}/{eventKey}` cuando las reglas correspondientes hayan sido implementadas y probadas.
+Flutter no escribe en `events`, `devices`, `satelliteDeliveries` ni en campos administrativos. **Ya puede escribir** su propio `userIncidentState/{uid}/{eventKey}` según las reglas publicadas; el propietario validó el reconocimiento personal. El contacto `pending` no dispone todavía de acceso funcional a incidentes; su cuenta real permanece inhabilitada.
 
 ## Consistencia mínima
 

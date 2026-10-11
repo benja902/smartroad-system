@@ -1,86 +1,37 @@
-# Puente URBES SDA — MQTT → Realtime Database
+# Bridge MQTT → Firebase Realtime Database
 
-Servicio independiente (Node.js, no forma parte de la app Flutter) que mantiene la conexión MQTT con el broker del equipo SDA y escribe en Firebase Realtime Database con el shape exacto de `docs/device_contract.md`. Corresponde a la sección 8 del manual del hardware, adaptado de Firestore a Realtime Database.
+## Estado actual
 
-## Qué necesitas antes de desplegar
+Este servicio Node.js es independiente de Flutter. `index.js` mantiene una conexión MQTT TLS con sesión persistente y consume `availability`, `status`, `position` y `event`; `event_writer.js` escribe eventos en `events/{deviceId}_{seq}` y proyecta evidencia de cancelaciones. Hoy se ha ejecutado localmente; **no hay despliegue cloud validado**. El webhook de Ground Control/Iridium es otro componente aún pendiente. El escritor actual no valida de forma integral payloads, identidad `id` frente al topic ni colisiones reales de `seq`; ver `docs/PHASE2_INCIDENT_SPEC.md`.
 
-1. **Contraseña MQTT real del broker** — viene con la unidad de hardware, no está en este repo. Host y usuario ya están fijados por el manual:
-   - Host: `3da4c64f2d3841abaa515824b7592e7c.s1.eu.hivemq.cloud`
-   - Usuario: `lilygo`
-2. **Google Cloud CLI** (`gcloud`) instalado y autenticado con una cuenta que tenga permisos sobre el proyecto `smartroad-system-3b23e` (Cloud Run Admin + Service Account User, como mínimo). Descarga: https://cloud.google.com/sdk/docs/install
-3. Habilitar las APIs de Cloud Run y Secret Manager en el proyecto (una sola vez):
-   ```
-   gcloud services enable run.googleapis.com secretmanager.googleapis.com --project smartroad-system-3b23e
-   ```
+## Ejecución local
 
-## Guardar la contraseña MQTT como secreto
+Instalar dependencias desde el lockfile y ejecutar desde `bridge/` para que el punto de entrada encuentre `.env` en el directorio de trabajo. Verificar que la versión local de Node proporcione `process.loadEnvFile` (el `engines` del paquete, por sí solo, no garantiza esa API):
 
-```
-echo -n "TU_CONTRASENA_MQTT_REAL" | gcloud secrets create mqtt-pass --data-file=- --project smartroad-system-3b23e
+```powershell
+cd bridge
+npm ci
+npm start
 ```
 
-Si el secreto ya existe y quieres actualizarlo:
-```
-echo -n "TU_CONTRASENA_MQTT_REAL" | gcloud secrets versions add mqtt-pass --data-file=- --project smartroad-system-3b23e
-```
+`bridge/.env` es privado y está ignorado. Debe contener `DATABASE_URL`, `MQTT_HOST`, `MQTT_PASS` y, si difieren de los valores predeterminados, `MQTT_USER` y `MQTT_PREFIX`. Se requieren credenciales de Firebase Admin fuera del repositorio, disponibles para Application Default Credentials. No copiar valores reales a documentación, comandos compartidos, logs o fixtures. Este arranque **conecta con servicios reales y escribe RTDB**; requiere autorización y configuración deliberadas. Para trabajo autónomo usar pruebas locales y Emulator, no este comando.
 
-## Permisos del servicio (para poder escribir en Realtime Database)
+`index.js` llama actualmente `loadEnvFile('.env')` sin condición. Por ello, aunque se definan variables de entorno en el sistema, el proceso falla si falta ese archivo en su directorio de trabajo. No interpretar una receta basada solo en `--set-env-vars` como suficiente.
 
-Cloud Run usa por defecto la cuenta de servicio de cómputo del proyecto. Dale permiso de administrador de Realtime Database:
+## Pruebas locales sin MQTT ni Firebase real
 
-```
-gcloud projects add-iam-policy-binding smartroad-system-3b23e \
-  --member="serviceAccount:$(gcloud projects describe smartroad-system-3b23e --format='value(projectNumber)')-compute@developer.gserviceaccount.com" \
-  --role="roles/firebasedatabase.admin"
-```
-
-## Desplegar
-
-Desde la carpeta `bridge/`:
-
-```
-gcloud run deploy puente-urbes-sda \
-  --source . \
-  --project smartroad-system-3b23e \
-  --region southamerica-west1 \
-  --min-instances 1 \
-  --max-instances 1 \
-  --no-cpu-throttling \
-  --no-allow-unauthenticated \
-  --set-env-vars MQTT_HOST=3da4c64f2d3841abaa515824b7592e7c.s1.eu.hivemq.cloud,MQTT_USER=lilygo,MQTT_PREFIX=sda,DATABASE_URL=https://smartroad-system-3b23e-default-rtdb.firebaseio.com \
-  --set-secrets MQTT_PASS=mqtt-pass:latest
-```
-
-Notas sobre las banderas (igual que en el manual, sección 8.2):
-- `--min-instances 1` + `--no-cpu-throttling`: mantienen el proceso vivo entre peticiones — imprescindible para sostener la conexión MQTT persistente.
-- `--max-instances 1`: evita que dos instancias compartan el mismo `clientId` MQTT (el broker desconectaría a la anterior).
-- `--no-allow-unauthenticated`: el servicio no expone ningún endpoint público útil (solo una sonda de salud), no necesita estar accesible desde internet.
-
-## Verificar que está corriendo
-
-```
-gcloud run services logs read puente-urbes-sda --project smartroad-system-3b23e --region southamerica-west1 --limit 50
-```
-
-Deberías ver `puente conectado al broker MQTT`, y luego `evento guardado: ...` cada vez que el equipo publique un evento real.
-
-## Qué NO hace este puente (a propósito, fuera del MVP)
-
-- No escucha `sda/{id}/cmd/resp` ni publica comandos (`ping`/`position`/`diag` on-demand) — esa función queda para una fase posterior.
-- No usa Firestore ni `collectionGroup` — todo es Realtime Database, con `events/{deviceId}_{seq}` como colección plana, tal como se decidió explícitamente para este proyecto.
-
-## Pruebas locales de preservación de cancelaciones
-
-Desde la raíz del repositorio, ejecutar en primer plano:
+Desde la raíz del repositorio, en primer plano:
 
 ```powershell
 npm --prefix bridge test
 ```
 
-También puede ejecutarse `npm test` desde `bridge/`. El runner nativo de Node utiliza `--test-reporter=spec` para mostrar el progreso; `-r expanded` corresponde a Flutter. Cada caso tiene un límite de cinco segundos. Si transcurren 60 segundos sin salida, detener con `Ctrl+C` y registrar el último mensaje.
+El runner nativo de Node muestra progreso con `--test-reporter=spec`; `-r expanded` corresponde a Flutter. Si pasan 60 segundos sin salida, detener con `Ctrl+C` e informar el último punto conocido. Las pruebas importan solo `event_writer.js` con base y asociaciones ficticias; no cargan `.env`, no inician Firebase/MQTT y no necesitan SDA. El 2 de octubre de 2026 pasaron 12 casos de preservación de cancelaciones, retransmisión y descarte de campos de estado. Esas pruebas no cubren todavía la validación integral ni la idempotencia robusta de Fase 2.
 
-Las pruebas importan únicamente `event_writer.js`, el mismo módulo que usa `index.js`, con una base en memoria y asociaciones ficticias. No importan el punto de entrada, no cargan `.env`, no inicializan Firebase ni MQTT y no requieren dependencias externas, celular, SDA ni bridge activo.
+## Despliegue cloud: futuro, no receta ejecutable actual
 
-Se verifican ambos órdenes de llegada de incidente/cancelación para `crash`, `rollover` y `sos`, retransmisiones con tiempo diferente o ausente, conservación de `acknowledged` histórico, descarte de campos de estado del payload, asociaciones administrativas y ausencia de escrituras en `userIncidentState`.
+La Fase 8 del plan decidirá topología, Secret Manager, identidad de servicio, instalación reproducible, supervisión y recuperación. El `Dockerfile` actual no copia `.env`, mientras `index.js` lo exige; por tanto el antiguo ejemplo de Cloud Run con solo variables/secrets **no debe ejecutarse como despliegue funcional**. Tampoco se ha validado la estrategia final de proceso MQTT persistente, permisos mínimos o salud en Google Cloud. Resolver y probar esos puntos en la tarea de despliegue antes de publicar; no incluir credenciales privadas en la imagen ni conceder permisos amplios por conveniencia.
 
-El 2 de octubre de 2026 terminaron con **12 pruebas aprobadas, 0 fallos**. Esta validación local no sustituye la comprobación posterior del flujo con el bridge activo y RTDB real. No se ejecutó un despliegue como parte de estas pruebas.
+## Límites
+
+No utiliza Firestore. No publica comandos `ping`, `position` ni `diag` hacia el SDA. No implementa FCM, webhook Iridium, consultas de contacto ni políticas de Fase 2. La referencia técnica del dispositivo es `docs/device_contract.md` y, ante discrepancia de firmware, `manual-sda (4).html`.

@@ -31,7 +31,9 @@ Estos checkpoints validan supuestos de alto riesgo, pero no bloquean el desarrol
 - [ ] Comprobar físicamente que `seq` persiste después de apagar o reiniciar el SDA.
 - [ ] Capturar y anonimizar al menos un payload MQTT real emitido por el firmware final.
 
-Los valores reales no deben incorporarse a documentación, fixtures ni código. Los checkpoints deben completarse antes de cerrar la provisión de producción, la integración RockBLOCK y las pruebas end-to-end.
+Los valores reales no deben incorporarse a documentación, fixtures ni código. La provisión administrativa mínima de Fase 1 quedó cerrada con las confirmaciones disponibles; los checkpoints formales siguen pendientes y deberán completarse antes de cerrar la integración RockBLOCK y las pruebas end-to-end.
+
+La identidad del SDA se confirmó con una prueba física y eventos reales para seleccionar **la asociación administrativa del MVP**; el IMEI se confirmó privadamente para registrar el único RockBLOCK. Esa evidencia permitió la provisión de Fase 1, pero no se archivó como verificación formal reproducible de todos los checkpoints: las casillas anteriores permanecen abiertas hasta registrar evidencia anonimizada y completar las comprobaciones de persistencia de `seq` y payload final. No volver a provisionar ni alterar relaciones ya validadas solo por estas casillas.
 
 ## Fase 1 — Modelo de datos, provisión y seguridad
 
@@ -49,9 +51,13 @@ Los valores reales no deben incorporarse a documentación, fixtures ni código. 
 - [x] Escribir reglas de RTDB acordes con roles, asociaciones y escrituras exclusivas del backend. Publicadas el 4 de octubre de 2026 tras comparar las reglas desplegadas con las locales; la lectura posterior confirmó coincidencia exacta. `RTDB_RULES_PHASE1.md` documenta el alcance y la validación.
 - [x] Crear pruebas locales específicas para las reglas de RTDB. **30 pruebas aprobadas en Emulator** para propietario, contactos, consultas, denegaciones y escrituras exclusivas del backend.
 - [x] Antes de publicar las reglas, provisionar y verificar por campo `users/{ownerUid}/ownerVehicleId` para el propietario real, comparar las reglas desplegadas con las locales y validar `main.dart` después de una publicación autorizada. Campo aplicado y comprobado por lectura; dry-run posterior sin cambios. El usuario probó `main.dart` como propietario después de publicar y no reportó anomalías. La cuenta del contacto permanece inhabilitada.
-- [ ] Realizar una limpieza controlada de los datos demo que interfieran con producción.
+- [x] Realizar una limpieza controlada de los datos demo que interfieran con producción. Tras retirar el segundo registro de `devices`, la verificación de solo lectura del 4 de octubre de 2026 confirmó que permanece únicamente el SDA real, asociado al vehículo y al registro administrativo activos; se conservaron los 2 usuarios y los 33 eventos del inventario previo, sin referencias huérfanas en `userIncidentState`. El IMEI, el contacto `pending` con su cuenta inhabilitada y las reglas publicadas permanecieron coherentes. El usuario comprobó después `main.dart` como propietario y reportó que todo funciona correctamente.
 
 ## Fase 2 — Robustez y modelo canónico de incidentes
+
+**Siguiente tarea delimitada — Bloque 2.1 (modelo canónico y contrato de ingesta).** La especificación de entrada es [`PHASE2_INCIDENT_SPEC.md`](PHASE2_INCIDENT_SPEC.md). Antes de tocar la persistencia, resolver las `DECISIÓN ABIERTA` que afectan al primer incremento; documentar la elección y su prueba. Implementar después, en cambios incrementales locales, normalización/validación de MQTT y escritura canónica compatible para el único SDA. No implementar en este bloque el webhook real, FCM, pantallas nuevas, firmware, infraestructura cloud ni migración destructiva. Los demás renglones de Fase 2 siguen tareas independientes, no quedan cerrados por crear la especificación.
+
+**Aceptación verificable del Bloque 2.1:** pruebas locales con datos ficticios demuestran los escenarios aplicables de la matriz de la especificación: evento válido, duplicado/retransmisión, payload inválido y discrepancia de identidad, tiempos diferenciados sin sobrescribir la primera recepción, actualización sin perder cancelación ni reconocimiento, `queued`, asociación ausente y colisión de `seq` según la política aprobada. Conservar lectura de eventos históricos y el comportamiento DEV; ninguna prueba depende de Firebase real, SDA o satélite. Registrar explícitamente qué escenarios de fusión Iridium permanecen pendientes de la implementación del webhook. No marcar ningún ítem funcional como hecho por documentación o por pruebas propuestas solamente.
 
 - [ ] Definir el modelo canónico que recibirán Flutter, MQTT y RockBLOCK.
 - [ ] Separar tiempo del dispositivo, tiempo de recepción y tiempo de actualización.
