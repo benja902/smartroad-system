@@ -146,7 +146,7 @@ test('acknowledgment preserves canonical cancellation', async () => {
 
 test('events indexes remain and global acknowledgment is backend-only', async () => {
   assert.deepEqual(JSON.parse(rules).rules.events['.indexOn'],
-    ['userId', 'deviceId', 'seq', 'vehicleId']);
+    ['userId', 'deviceId', 'seq', 'vehicleId', 'criticalLegacyUserId', 'criticalVehicleId']);
   await assertFails(db('stranger').ref('events').once('value'));
   await assertFails(db().ref('events').once('value'));
   await assertFails(db(null).ref('events').once('value'));

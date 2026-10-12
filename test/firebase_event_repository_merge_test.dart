@@ -32,6 +32,48 @@ Map<String, dynamic> event({
 
 void main() {
   test(
+    'critical index and recent queries deduplicate without losing cancellation',
+    () async {
+      final recentUser = StreamController<RawEvents>();
+      final recentVehicle = StreamController<RawEvents>();
+      final critical = StreamController<RawEvents>();
+      final merged = StreamIterator<List<AccidentEvent>>(
+        FirebaseEventRepository.combineEventStreams(
+          recentUser.stream,
+          recentVehicle.stream,
+          additionalEvents: [critical.stream],
+        ),
+      );
+      final first = merged.moveNext();
+      recentUser.add({});
+      expect(await first, isTrue);
+      final second = merged.moveNext();
+      critical.add({
+        'SDA-TEST_1': event(seq: 1, userId: 'owner', receivedAt: 1000),
+      });
+      expect(await second, isTrue);
+      final third = merged.moveNext();
+      recentVehicle.add({
+        'SDA-TEST_1': event(
+          seq: 1,
+          vehicleId: 'vehicle-1',
+          receivedAt: 1000,
+          cancelledBySeq: 2,
+          cancelledAt: 1100,
+        ),
+      });
+      expect(await third, isTrue);
+      expect(merged.current, hasLength(1));
+      expect(merged.current.single.cancelledBySeq, 2);
+      expect(classify(merged.current.single), AlertPresentation.cancelled);
+      await merged.cancel();
+      await recentUser.close();
+      await recentVehicle.close();
+      await critical.close();
+    },
+  );
+
+  test(
     'combines vehicle-only and historical events, deduplicates and sorts',
     () async {
       final byUser = StreamController<RawEvents>();
@@ -135,49 +177,66 @@ void main() {
     await byVehicle.close();
   });
 
-  test('reads historical cancellation beside partial and unknown vehicle events', () async {
-    final byUser = StreamController<RawEvents>();
-    final byVehicle = StreamController<RawEvents>();
-    final merged = StreamIterator<List<AccidentEvent>>(
-      FirebaseEventRepository.combineEventStreams(
-        byUser.stream, byVehicle.stream,
-      ),
-    );
+  test(
+    'reads historical cancellation beside partial and unknown vehicle events',
+    () async {
+      final byUser = StreamController<RawEvents>();
+      final byVehicle = StreamController<RawEvents>();
+      final merged = StreamIterator<List<AccidentEvent>>(
+        FirebaseEventRepository.combineEventStreams(
+          byUser.stream,
+          byVehicle.stream,
+        ),
+      );
 
-    final first = merged.moveNext();
-    byUser.add({
-      'SDA-TEST_1': {
-        ...event(seq: 1, userId: 'owner', receivedAt: 1000,
-            cancelledBySeq: 4, cancelledAt: 1200),
-        'acknowledged': true,
-        'position': {'fix': true},
-      },
-    });
-    expect(await first, isTrue);
+      final first = merged.moveNext();
+      byUser.add({
+        'SDA-TEST_1': {
+          ...event(
+            seq: 1,
+            userId: 'owner',
+            receivedAt: 1000,
+            cancelledBySeq: 4,
+            cancelledAt: 1200,
+          ),
+          'acknowledged': true,
+          'position': {'fix': true},
+        },
+      });
+      expect(await first, isTrue);
 
-    final second = merged.moveNext();
-    byVehicle.add({
-      'SDA-TEST_2': {
-        'id': 'SDA-TEST', 'seq': 2, 'type': 'rollover',
-        'receivedAt': 2000, 'vehicleId': 'vehicle-1', 'queued': true,
-      },
-      'SDA-TEST_3': {
-        'id': 'SDA-TEST', 'seq': 3, 'type': 'future_alarm',
-        'severity': 'grave', 'receivedAt': 3000, 'vehicleId': 'vehicle-1',
-      },
-    });
-    expect(await second, isTrue);
-    final events = merged.current;
-    expect(events, hasLength(3));
-    expect(classify(events[0]), AlertPresentation.cancelled);
-    expect(events[0].position, isNull);
-    expect(events[0].acknowledged, isTrue);
-    expect(classify(events[1]), AlertPresentation.deferred);
-    expect(classify(events[2]), AlertPresentation.technical);
-    expect(shouldForceCriticalScreen(events[2]), isFalse);
+      final second = merged.moveNext();
+      byVehicle.add({
+        'SDA-TEST_2': {
+          'id': 'SDA-TEST',
+          'seq': 2,
+          'type': 'rollover',
+          'receivedAt': 2000,
+          'vehicleId': 'vehicle-1',
+          'queued': true,
+        },
+        'SDA-TEST_3': {
+          'id': 'SDA-TEST',
+          'seq': 3,
+          'type': 'future_alarm',
+          'severity': 'grave',
+          'receivedAt': 3000,
+          'vehicleId': 'vehicle-1',
+        },
+      });
+      expect(await second, isTrue);
+      final events = merged.current;
+      expect(events, hasLength(3));
+      expect(classify(events[0]), AlertPresentation.cancelled);
+      expect(events[0].position, isNull);
+      expect(events[0].acknowledged, isTrue);
+      expect(classify(events[1]), AlertPresentation.deferred);
+      expect(classify(events[2]), AlertPresentation.technical);
+      expect(shouldForceCriticalScreen(events[2]), isFalse);
 
-    await merged.cancel();
-    await byUser.close();
-    await byVehicle.close();
-  });
+      await merged.cancel();
+      await byUser.close();
+      await byVehicle.close();
+    },
+  );
 }

@@ -3,6 +3,8 @@ import test from 'node:test';
 import {
   CancellationConflictError, CancellationProjectionError, EventCollisionError,
   ingestMqttEvent, persistEvent, reconcileStoredCancellations,
+  reconcileCriticalReadIndex,
+  reconcileChronologicalReadIndex,
 } from '../event_writer.js';
 import { MqttEventValidationError } from '../mqtt_event_normalizer.js';
 
@@ -18,10 +20,15 @@ class MemoryDatabase {
   writes = [];
   clock = 1000;
   failProjectionOnce = false;
+  failUserIndexOnce = false;
 
   ref(path) {
     return {
       transaction: async (update) => {
+        if (this.failUserIndexOnce && path.startsWith('eventReadIndex/users/')) {
+          this.failUserIndexOnce = false;
+          throw new Error('simulated owner index failure');
+        }
         if (this.failProjectionOnce && path === eventPath) {
           this.failProjectionOnce = false;
           throw new Error('simulated projection failure');
@@ -77,11 +84,120 @@ function fixture(association = { userId: 'owner-test', vehicleId: 'vehicle-test'
   return { db, write, resolvedIds };
 }
 
+const eventCount = (db) => [...db.nodes.keys()]
+  .filter((path) => path.startsWith('events/')).length;
+
 const incident = (type = 'crash') => ({
   id: deviceId, seq: 1, type, severity: 'grave',
   ts: '2026-10-02T12:00:00Z', queued: false,
 });
 const cancellation = { id: deviceId, seq: 2, type: 'cancel', cancels_seq: 1 };
+
+test('critical read index follows canonical state, never MQTT administrative fields', options, async () => {
+  const { db, write } = fixture();
+  await write({ ...incident(), criticalVehicleId: 'forged' });
+  assert.equal(db.read(eventPath).criticalVehicleId, 'vehicle-test');
+  assert.equal(db.read(eventPath).criticalLegacyUserId, undefined);
+  await write(cancellation);
+  assert.equal(db.read(eventPath).criticalVehicleId, undefined);
+  await write(incident());
+  assert.equal(db.read(eventPath).criticalVehicleId, undefined);
+});
+
+test('critical read index excludes queued, noncritical and unassociated events', options, async () => {
+  for (const event of [
+    { ...incident(), queued: true },
+    { ...incident(), severity: 'moderado' },
+    { ...incident(), type: 'future_alarm' },
+  ]) {
+    const { db, write } = fixture();
+    await write(event);
+    assert.equal(db.read(eventPath).criticalVehicleId, undefined);
+  }
+  const { db, write } = fixture(null);
+  await write(incident());
+  assert.equal(db.read(eventPath).criticalVehicleId, undefined);
+});
+
+test('chronological pointers order by first receipt and refresh on cancellation only', options, async () => {
+  const { db, write } = fixture();
+  await write({ ...incident(), seq: 9 });
+  await write({ ...incident(), seq: 10 });
+  const prefix = 'eventReadIndex/vehicles/vehicle-test/';
+  const pointers = [...db.nodes.entries()].filter(([path]) => path.startsWith(prefix));
+  assert.equal(pointers.length, 2);
+  assert.equal([...db.nodes.keys()].filter((path) =>
+    path.startsWith('eventReadIndex/users/owner-test/')).length, 2);
+  assert.equal(pointers.map(([path]) => path).sort()[1], pointers[1][0]);
+  assert.deepEqual(pointers.map(([, pointer]) => pointer.eventKey), ['SDA-TEST_9', 'SDA-TEST_10']);
+  const beforeCancel = db.read(pointers[0][0]);
+  await write({ id: deviceId, seq: 11, type: 'cancel', cancels_seq: 9 });
+  assert.notEqual(db.read(pointers[0][0]).digest, beforeCancel.digest);
+  const writes = db.writes.length;
+  await write({ id: deviceId, seq: 11, type: 'cancel', cancels_seq: 9 });
+  assert.equal(db.writes.length, writes);
+});
+
+test('restart backfills historical owner pointer and skips unassociated rows', options, async () => {
+  const db = new MemoryDatabase();
+  db.nodes.set('events/SDA-TEST_1', {
+    id: deviceId, seq: 1, type: 'crash', userId: 'owner-test',
+  });
+  db.nodes.set('events/SDA-TEST_2', {
+    id: deviceId, seq: 2, type: 'crash', receivedAt: 200,
+  });
+  assert.deepEqual(await reconcileChronologicalReadIndex(db), { scanned: 2, updated: 1 });
+  assert.deepEqual(await reconcileChronologicalReadIndex(db), { scanned: 2, updated: 0 });
+  const paths = [...db.nodes.keys()].filter((path) => path.startsWith('eventReadIndex/'));
+  assert.equal(paths.length, 1);
+  assert.match(paths[0], /^eventReadIndex\/users\/owner-test\/0{16}_/);
+});
+
+test('failed owner pointer schedules recovery during the same bridge run', options, async () => {
+  const db = new MemoryDatabase();
+  db.failUserIndexOnce = true;
+  let scheduledRecovery;
+  let schedules = 0;
+  await assert.rejects(ingestMqttEvent('sda/SDA-TEST/event', JSON.stringify(incident()), {
+    db, serverTimestamp,
+    resolveAssociation: async () => ({ userId: 'owner-test', vehicleId: 'vehicle-test' }),
+    scheduleRecovery: () => {
+      schedules++;
+      scheduledRecovery = () => reconcileChronologicalReadIndex(db);
+    },
+  }), /simulated owner index failure/);
+  assert.equal(schedules, 1);
+  assert.equal(db.read(eventPath).criticalVehicleId, 'vehicle-test');
+  assert.equal([...db.nodes.keys()].some((path) =>
+    path.startsWith('eventReadIndex/users/owner-test/')), false);
+  assert.deepEqual(await scheduledRecovery(), { scanned: 1, updated: 1 });
+  const userPointers = [...db.nodes.entries()].filter(([path]) =>
+    path.startsWith('eventReadIndex/users/owner-test/'));
+  assert.equal(userPointers.length, 1);
+  assert.equal(userPointers[0][1].eventKey, 'SDA-TEST_1');
+  assert.deepEqual(await scheduledRecovery(), { scanned: 1, updated: 0 });
+});
+
+test('restart reconciliation restores historical critical index idempotently', options, async () => {
+  const db = new MemoryDatabase();
+  db.nodes.set('events/SDA-TEST_1', {
+    id: deviceId, seq: 1, type: 'sos', userId: 'owner-test', receivedAt: 100,
+  });
+  db.nodes.set('events/SDA-TEST_2', {
+    id: deviceId, seq: 2, type: 'crash', severity: 'grave',
+    vehicleId: 'vehicle-test', userId: 'owner-test', receivedAt: 200,
+  });
+  db.nodes.set('events/SDA-TEST_3', {
+    id: deviceId, seq: 3, type: 'crash', severity: 'grave',
+    vehicleId: 'vehicle-test', userId: 'owner-test', cancelledBySeq: 4,
+    criticalVehicleId: 'vehicle-test', receivedAt: 300,
+  });
+  assert.deepEqual(await reconcileCriticalReadIndex(db), { scanned: 3, updated: 3 });
+  assert.equal(db.read('events/SDA-TEST_1').criticalLegacyUserId, 'owner-test');
+  assert.equal(db.read('events/SDA-TEST_2').criticalVehicleId, 'vehicle-test');
+  assert.equal(db.read('events/SDA-TEST_3').criticalVehicleId, undefined);
+  assert.deepEqual(await reconcileCriticalReadIndex(db), { scanned: 3, updated: 0 });
+});
 
 for (const type of ['crash', 'rollover', 'sos']) {
   test(`${type}: incident -> cancel -> retransmissions preserve cancellation`, options, async () => {
@@ -101,7 +217,7 @@ for (const type of ['crash', 'rollover', 'sos']) {
       assert.equal(current.type, type);
       assert.equal(current.receivedAt, cancelled.receivedAt);
     }
-    assert.equal(db.nodes.size, 2);
+    assert.equal(eventCount(db), 2);
     assert.equal(db.read('events/SDA-TEST_2').cancels_seq, 1);
   });
 
@@ -120,7 +236,7 @@ for (const type of ['crash', 'rollover', 'sos']) {
     assert.equal(current.cancelledAt, placeholder.cancelledAt);
     assert.equal(current.userId, 'owner-test');
     assert.equal(current.vehicleId, 'vehicle-test');
-    assert.equal(db.nodes.size, 2);
+    assert.equal(eventCount(db), 2);
   });
 }
 
@@ -295,7 +411,8 @@ test('ingestion does not modify personal state or write outside events', options
   await write(cancellation);
   await write({ ...incident(), ts: '2026-10-02T14:00:00Z', acknowledged: false });
   assert.deepEqual(db.read(path), personal);
-  assert.ok(db.writes.every(({ path }) => path.startsWith('events/')));
+  assert.ok(db.writes.every(({ path }) =>
+    path.startsWith('events/') || path.startsWith('eventReadIndex/')));
 });
 
 test('A01: MQTT integration writes one associated row and strips injected backend state', options, async () => {
@@ -307,7 +424,7 @@ test('A01: MQTT integration writes one associated row and strips injected backen
     serverTimestamp,
   });
   assert.equal(result.written, true);
-  assert.equal(db.nodes.size, 1);
+  assert.equal(eventCount(db), 1);
   assert.equal(db.read(eventPath).receivedAt, 1001);
   assert.equal(db.read(eventPath).vehicleId, 'vehicle-test');
   assert.equal(db.read(eventPath).userId, 'owner-test');
@@ -404,7 +521,7 @@ test('B01/B02: duplicates and changed ts do not replace first receipt or earlier
   await write({ ...incident(), ts: null });
   assert.equal(db.read(eventPath).receivedAt, first.receivedAt);
   assert.equal(db.read(eventPath).ts, first.ts);
-  assert.equal(db.nodes.size, 1);
+  assert.equal(eventCount(db), 1);
 });
 
 test('B03/B04/H01: compatible additions preserve history and reject destructive null', options, async () => {
@@ -445,7 +562,7 @@ test('B05/B06: concurrent incompatible types leave the first committed row intac
   ]);
   assert.equal(outcomes.filter((item) => item.status === 'fulfilled').length, 1);
   assert.equal(outcomes.filter((item) => item.reason instanceof EventCollisionError).length, 1);
-  assert.equal(db.nodes.size, 1);
+  assert.equal(eventCount(db), 1);
   assert.equal(db.read(eventPath).receivedAt, 1001);
 });
 
@@ -469,7 +586,7 @@ test('B06: concurrent duplicate deliveries keep one key and first receipt', opti
   const { db, write } = fixture();
   const outcomes = await Promise.all([write(incident()), write(incident())]);
   assert.equal(outcomes.filter((item) => item.written).length, 1);
-  assert.equal(db.nodes.size, 1);
+  assert.equal(eventCount(db), 1);
   assert.equal(db.read(eventPath).receivedAt, 1001);
 });
 

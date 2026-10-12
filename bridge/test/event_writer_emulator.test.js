@@ -2,12 +2,91 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   CancellationConflictError, CancellationProjectionError, ingestMqttEvent, persistEvent,
-  reconcileStoredCancellations,
+  reconcileStoredCancellations, reconcileCriticalReadIndex,
+  reconcileChronologicalReadIndex,
 } from '../event_writer.js';
 import { AssociationLookupError, resolveAssociation } from '../association_resolver.js';
 
 const emulatorOnly = process.env.FIREBASE_DATABASE_EMULATOR_HOST === '127.0.0.1:19000' &&
   process.env.GCLOUD_PROJECT === 'demo-smartroad-bridge';
+
+test('Database Emulator: chronological pointers survive restart and track cancellation', {
+  skip: emulatorOnly ? false : 'requires local RTDB Emulator and demo project',
+  timeout: 30000,
+}, async () => {
+  const { initializeApp, deleteApp } = await import('firebase-admin/app');
+  const { getDatabase, ServerValue } = await import('firebase-admin/database');
+  const app = initializeApp({
+    projectId: 'demo-smartroad-bridge',
+    databaseURL: 'https://demo-smartroad-bridge-default-rtdb.firebaseio.com',
+  }, `chronological-index-${Date.now()}`);
+  try {
+    const db = getDatabase(app);
+    await db.ref('events').remove();
+    await db.ref('eventReadIndex').remove();
+    const context = {
+      db, serverTimestamp: ServerValue.TIMESTAMP,
+      resolveAssociation: async () => ({ userId: 'owner-test', vehicleId: 'vehicle-test' }),
+    };
+    await persistEvent('SDA-TEST', { id: 'SDA-TEST', seq: 9, type: 'crash' }, context);
+    await persistEvent('SDA-TEST', { id: 'SDA-TEST', seq: 10, type: 'crash' }, context);
+    const index = db.ref('eventReadIndex/vehicles/vehicle-test');
+    const pointers = (await index.orderByKey().limitToLast(2).get()).val();
+    assert.deepEqual(Object.values(pointers).map(({ eventKey }) => eventKey),
+      ['SDA-TEST_9', 'SDA-TEST_10']);
+    await index.remove();
+    assert.deepEqual(await reconcileChronologicalReadIndex(db), { scanned: 2, updated: 2 });
+    assert.deepEqual(await reconcileChronologicalReadIndex(db), { scanned: 2, updated: 0 });
+    const firstKey = Object.keys((await index.get()).val())[0];
+    const digest = (await index.child(firstKey).get()).val().digest;
+    await persistEvent('SDA-TEST', {
+      id: 'SDA-TEST', seq: 11, type: 'cancel', cancels_seq: 9,
+    }, context);
+    assert.notEqual((await index.child(firstKey).get()).val().digest, digest);
+    assert.equal((await db.ref('events/SDA-TEST_9').get()).val().cancelledBySeq, 11);
+    await db.ref('events').remove();
+    await db.ref('eventReadIndex').remove();
+  } finally {
+    await deleteApp(app);
+  }
+});
+
+test('Database Emulator: critical index survives restart and clears with cancellation', {
+  skip: emulatorOnly ? false : 'requires local RTDB Emulator and demo project',
+  timeout: 30000,
+}, async () => {
+  const { initializeApp, deleteApp } = await import('firebase-admin/app');
+  const { getDatabase, ServerValue } = await import('firebase-admin/database');
+  const app = initializeApp({
+    projectId: 'demo-smartroad-bridge',
+    databaseURL: 'https://demo-smartroad-bridge-default-rtdb.firebaseio.com',
+  }, `critical-index-${Date.now()}`);
+  try {
+    const db = getDatabase(app);
+    const ref = db.ref('events/SDA-TEST_1');
+    await db.ref('events').remove();
+    const context = {
+      db, serverTimestamp: ServerValue.TIMESTAMP,
+      resolveAssociation: async () => ({ userId: 'owner-test', vehicleId: 'vehicle-test' }),
+    };
+    await persistEvent('SDA-TEST', {
+      id: 'SDA-TEST', seq: 1, type: 'crash', severity: 'grave',
+    }, context);
+    assert.equal((await ref.get()).val().criticalVehicleId, 'vehicle-test');
+    await ref.child('criticalVehicleId').remove();
+    assert.equal((await ref.get()).val().criticalVehicleId, undefined);
+    assert.deepEqual(await reconcileCriticalReadIndex(db), { scanned: 1, updated: 1 });
+    assert.deepEqual(await reconcileCriticalReadIndex(db), { scanned: 1, updated: 0 });
+    await persistEvent('SDA-TEST', {
+      id: 'SDA-TEST', seq: 2, type: 'cancel', cancels_seq: 1,
+    }, context);
+    assert.equal((await ref.get()).val().criticalVehicleId, undefined);
+    assert.deepEqual(await reconcileCriticalReadIndex(db), { scanned: 2, updated: 0 });
+    await db.ref('events').remove();
+  } finally {
+    await deleteApp(app);
+  }
+});
 
 test('Database Emulator: transaction keeps first receipt and compatible enrichment', {
   skip: emulatorOnly ? false : 'requires local RTDB Emulator and demo project',

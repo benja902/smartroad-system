@@ -45,13 +45,20 @@ beforeEach(async () => {
         'SDA-LEGACY': { online: false },
       },
       events: {
-        historical: { userId: 'owner', type: 'sos', seq: 1 },
-        current: { userId: 'owner', vehicleId: 'owned', type: 'crash', severity: 'grave', seq: 2 },
-        vehicleOnly: { vehicleId: 'owned', type: 'sos', seq: 3 },
+        historical: { userId: 'owner', criticalLegacyUserId: 'owner', type: 'sos', seq: 1 },
+        current: { userId: 'owner', vehicleId: 'owned', criticalVehicleId: 'owned', type: 'crash', severity: 'grave', seq: 2 },
+        vehicleOnly: { vehicleId: 'owned', criticalVehicleId: 'owned', type: 'sos', seq: 3 },
         technical: { userId: 'owner', vehicleId: 'owned', type: 'status', seq: 4 },
         unrelated: { userId: 'other-owner', vehicleId: 'other', type: 'sos', seq: 5 },
         mistagged: { userId: 'pending', vehicleId: 'owned', type: 'sos', seq: 6 },
         unassociated: { id: 'SDA-UNKNOWN', type: 'crash', severity: 'grave', seq: 7, receivedAt: 1000 },
+      },
+      eventReadIndex: {
+        vehicles: { owned: {
+          '0000000000001000_a': { eventKey: 'current' },
+          '0000000000003000_c': { eventKey: 'vehicleOnly' },
+        }, other: { '0000000000002000_b': { eventKey: 'unrelated' } } },
+        users: { owner: { '0000000000000000_h': { eventKey: 'historical' } } },
       },
       vehicleContacts: {
         owned: {
@@ -82,6 +89,64 @@ test('owner keeps the exact vehicle and dual event queries used by Flutter', asy
   assert.ok(current.hasChild('vehicleOnly'));
   await assertSucceeds(db('owner').ref('events/historical').once('value'));
   await assertSucceeds(db('owner').ref('events/vehicleOnly').once('value'));
+});
+
+test('bounded owner queries retain authorization and use event-key order', async () => {
+  await env.withSecurityRulesDisabled(async context => {
+    await context.database().ref('events').update({
+      'SDA-OWNED_9': { userId: 'owner', vehicleId: 'owned', type: 'sos', seq: 9, receivedAt: 1000 },
+      'SDA-OWNED_10': { userId: 'owner', vehicleId: 'owned', type: 'sos', seq: 10, receivedAt: 2000 },
+      'SDA-OWNED_11': { userId: 'owner', vehicleId: 'owned', type: 'sos', seq: 11, receivedAt: 3000 },
+    });
+  });
+  for (const [field, value] of [['userId', 'owner'], ['vehicleId', 'owned']]) {
+    const snapshot = await assertSucceeds(db('owner').ref('events')
+      .orderByChild(field).equalTo(value).limitToLast(2).once('value'));
+    assert.equal(snapshot.numChildren(), 2);
+    assert.equal(snapshot.hasChild('SDA-OWNED_11'), false);
+  }
+  await assertFails(db('other-owner').ref('events')
+    .orderByChild('vehicleId').equalTo('owned').limitToLast(2).once('value'));
+});
+
+test('chronological owner index selects newest times and denies other readers', async () => {
+  await env.withSecurityRulesDisabled(async context => {
+    await context.database().ref('eventReadIndex/vehicles/owned').update({
+      '0000000000002000_b': { eventKey: 'SDA-OWNED_9' },
+      '0000000000004000_d': { eventKey: 'SDA-OWNED_11' },
+    });
+  });
+  const recent = await assertSucceeds(db('owner').ref('eventReadIndex/vehicles/owned')
+    .orderByKey().limitToLast(2).once('value'));
+  assert.deepEqual(Object.values(recent.val()).map((pointer) => pointer.eventKey),
+    ['vehicleOnly', 'SDA-OWNED_11']);
+  const legacy = await assertSucceeds(db('owner').ref('eventReadIndex/users/owner')
+    .orderByKey().limitToLast(100).once('value'));
+  assert.equal(legacy.val()['0000000000000000_h'].eventKey, 'historical');
+  for (const uid of ['active', 'other-owner', 'stranger', null]) {
+    await assertFails(db(uid).ref('eventReadIndex/vehicles/owned')
+      .orderByKey().limitToLast(100).once('value'));
+    await assertFails(db(uid).ref('eventReadIndex/users/owner')
+      .orderByKey().limitToLast(100).once('value'));
+  }
+  await assertFails(db('owner').ref('eventReadIndex').once('value'));
+  await assertFails(db('owner').ref('eventReadIndex/vehicles/owned/test')
+    .set({ eventKey: 'unrelated' }));
+});
+
+test('bounded critical indexes retain older owner events without granting contact access', async () => {
+  const legacy = await assertSucceeds(db('owner').ref('events')
+    .orderByChild('criticalLegacyUserId').equalTo('owner').limitToLast(100).once('value'));
+  assert.deepEqual(Object.keys(legacy.val()), ['historical']);
+  const current = await assertSucceeds(db('owner').ref('events')
+    .orderByChild('criticalVehicleId').equalTo('owned').limitToLast(100).once('value'));
+  assert.deepEqual(Object.keys(current.val()).sort(), ['current', 'vehicleOnly']);
+  for (const uid of ['active', 'pending', 'stranger', null]) {
+    await assertFails(db(uid).ref('events')
+      .orderByChild('criticalVehicleId').equalTo('owned').limitToLast(100).once('value'));
+  }
+  await assertFails(db('other-owner').ref('events')
+    .orderByChild('criticalLegacyUserId').equalTo('owner').limitToLast(100).once('value'));
 });
 
 test('owner cannot list all vehicles or events, query another owner, or read another event', async () => {

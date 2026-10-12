@@ -16,6 +16,8 @@ import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getDatabase, ServerValue } from 'firebase-admin/database';
 import {
   CancellationProjectionError, ingestMqttEvent, reconcileStoredCancellations,
+  reconcileCriticalReadIndex,
+  reconcileChronologicalReadIndex,
 } from './event_writer.js';
 import { MqttEventValidationError } from './mqtt_event_normalizer.js';
 import { AssociationLookupError, resolveAssociation } from './association_resolver.js';
@@ -37,8 +39,10 @@ async function recoverCancellations() {
     await reconcileStoredCancellations(db, {
       reportDiagnostic: (code) => console.warn('diagnóstico MQTT:', code),
     });
+    await reconcileCriticalReadIndex(db);
+    await reconcileChronologicalReadIndex(db);
   } catch (error) {
-    console.error('conciliación de cancelaciones fallida:', error.name);
+    console.error('conciliación de eventos fallida:', error.name);
     scheduleCancellationRecovery();
   }
 }
@@ -48,8 +52,8 @@ function scheduleCancellationRecovery() {
   recoveryTimer = setTimeout(recoverCancellations, 30000);
 }
 
-// Recupera una fila cancel guardada antes de una caída o de un fallo en la
-// segunda escritura. No depende de que el broker vuelva a entregar el mensaje.
+// Recupera cancelaciones pendientes y el índice de lectura a partir de events.
+// No depende de que el broker vuelva a entregar un mensaje.
 void recoverCancellations();
 
 const PREFIX = process.env.MQTT_PREFIX ?? 'sda';
@@ -103,6 +107,7 @@ cliente.on('message', async (topico, cuerpo) => {
       const { written } = await ingestMqttEvent(topico, cuerpo, {
         db, resolveAssociation: (id) => resolveAssociation(db, id),
         serverTimestamp: ServerValue.TIMESTAMP,
+        scheduleRecovery: scheduleCancellationRecovery,
         prefix: PREFIX, reportDiagnostic: (code) => console.warn('diagnóstico MQTT:', code),
       });
       console.log(written ? 'evento guardado' : 'evento duplicado');

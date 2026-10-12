@@ -1,5 +1,6 @@
 // Escritura localmente comprobable: no inicia MQTT, Firebase ni carga .env.
 import { isUsableEventKey, normalizeMqttEvent } from './mqtt_event_normalizer.js';
+import { createHash } from 'node:crypto';
 
 export class EventCollisionError extends Error {
   constructor() {
@@ -24,6 +25,80 @@ export class CancellationProjectionError extends Error {
 
 function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function criticalIndexFields(row) {
+  if (row.cancelledBySeq !== undefined || row.queued === true ||
+      !(row.type === 'sos' ||
+        (['crash', 'rollover'].includes(row.type) && row.severity === 'grave'))) {
+    return {};
+  }
+  if (typeof row.vehicleId === 'string' && row.vehicleId) {
+    return { criticalVehicleId: row.vehicleId };
+  }
+  if (typeof row.userId === 'string' && row.userId) {
+    return { criticalLegacyUserId: row.userId };
+  }
+  return {};
+}
+
+function applyCriticalIndexFields(row) {
+  const desired = criticalIndexFields(row);
+  let changed = false;
+  for (const field of ['criticalVehicleId', 'criticalLegacyUserId']) {
+    if (desired[field] === undefined && row[field] !== undefined) {
+      delete row[field];
+      changed = true;
+    } else if (desired[field] !== undefined && row[field] !== desired[field]) {
+      row[field] = desired[field];
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+function readIndexPaths(key, row) {
+  if (typeof row.type !== 'string') return [];
+  // Historical records without receivedAt are retained at the start of the
+  // index. This does not assert a time for the original event.
+  const time = String(Number.isFinite(row.receivedAt)
+    ? Math.max(0, Math.trunc(row.receivedAt)) : 0).padStart(16, '0');
+  const identity = createHash('sha256').update(key).digest('hex');
+  const suffix = `${time}_${identity}`;
+  const paths = [];
+  if (typeof row.userId === 'string' && row.userId) {
+    paths.push(`eventReadIndex/users/${row.userId}/${suffix}`);
+  }
+  if (typeof row.vehicleId === 'string' && row.vehicleId) {
+    paths.push(`eventReadIndex/vehicles/${row.vehicleId}/${suffix}`);
+  }
+  return paths;
+}
+
+async function syncReadIndex(db, key, row) {
+  const paths = readIndexPaths(key, row);
+  if (!paths.length) return false;
+  const digest = createHash('sha256').update(JSON.stringify(row)).digest('hex');
+  let changed = false;
+  for (const path of paths) {
+    const result = await db.ref(path).transaction((current) =>
+      current?.eventKey === key && current?.digest === digest
+        ? undefined : { eventKey: key, digest }, undefined, false);
+    changed = result.committed || changed;
+  }
+  return changed;
+}
+
+// Recreate missing pointers and refresh changed rows after a bridge restart.
+export async function reconcileChronologicalReadIndex(db) {
+  const rows = (await db.ref('events').get()).val() ?? {};
+  let updated = 0;
+  for (const [key, row] of Object.entries(rows)) {
+    if (!isRecord(row) || !isUsableEventKey(row.id, row.seq) ||
+        key !== `${row.id}_${row.seq}`) continue;
+    if (await syncReadIndex(db, key, row)) updated++;
+  }
+  return { scanned: Object.keys(rows).length, updated };
 }
 
 function addCompatibleFields(target, incoming, conflicts, path = '') {
@@ -72,6 +147,7 @@ async function projectCancellation(db, deviceId, cancelRow) {
       next.cancelledAt = receivedAt;
       changed = true;
     }
+    changed = applyCriticalIndexFields(next) || changed;
     if (!changed) {
       outcome = 'duplicate';
       return undefined;
@@ -83,6 +159,7 @@ async function projectCancellation(db, deviceId, cancelRow) {
   if (!result.committed && outcome !== 'duplicate') {
     throw new Error('Cancellation projection did not commit');
   }
+  if (result.committed) await syncReadIndex(db, `${deviceId}_${originalSeq}`, (await ref.get()).val());
   return result.committed;
 }
 
@@ -112,6 +189,29 @@ export async function reconcileStoredCancellations(db, { reportDiagnostic } = {}
   return { scanned: cancellations.length, projected };
 }
 
+// Rebuild the small read index from canonical rows after a restart. Historical
+// rows without vehicleId keep their owner-only path; no event is migrated.
+export async function reconcileCriticalReadIndex(db) {
+  const rows = (await db.ref('events').get()).val() ?? {};
+  let updated = 0;
+  for (const [key, row] of Object.entries(rows)) {
+    if (!isRecord(row) || !isUsableEventKey(row.id, row.seq) ||
+        key !== `${row.id}_${row.seq}`) continue;
+    const desired = criticalIndexFields(row);
+    if (row.criticalVehicleId === desired.criticalVehicleId &&
+        row.criticalLegacyUserId === desired.criticalLegacyUserId) continue;
+    const ref = db.ref(`events/${key}`);
+    const result = await ref.transaction((current) => {
+      // Admin SDK may invoke the callback with null before loading the
+      // committed row; the server then retries against the actual value.
+      const next = structuredClone(current ?? row);
+      return applyCriticalIndexFields(next) ? next : undefined;
+    }, undefined, false);
+    if (result.committed) updated++;
+  }
+  return { scanned: Object.keys(rows).length, updated };
+}
+
 export async function ingestMqttEvent(topic, payload, options) {
   const normalized = normalizeMqttEvent(topic, payload, {
     prefix: options.prefix ?? 'sda', optionalBlockPolicy: 'drop',
@@ -125,7 +225,7 @@ export async function ingestMqttEvent(topic, payload, options) {
 }
 
 export async function persistEvent(deviceId, ev, {
-  db, resolveAssociation, serverTimestamp, kind, reportDiagnostic,
+  db, resolveAssociation, serverTimestamp, kind, reportDiagnostic, scheduleRecovery,
 }) {
   if (!isUsableEventKey(deviceId, ev.seq) || ev.id !== deviceId ||
       ev.type === 'cancel' && (!isUsableEventKey(deviceId, ev.cancels_seq) ||
@@ -142,6 +242,8 @@ export async function persistEvent(deviceId, ev, {
   for (const field of [
     'vehicleId', 'userId', 'acknowledged', 'cancelledBySeq', 'cancelledAt',
     'receivedAt', 'updatedAt', 'status', 'notifiedAt',
+    'criticalVehicleId', 'criticalLegacyUserId',
+    'eventReadIndex',
   ]) delete firmwareFields[field];
 
   let outcome;
@@ -176,7 +278,9 @@ export async function persistEvent(deviceId, ev, {
           next.vehicleId = association.vehicleId;
         }
       }
-    } else if (!changed) {
+    }
+    const indexChanged = applyCriticalIndexFields(next);
+    if (current && !changed && !indexChanged) {
       outcome = 'duplicate';
       return undefined;
     }
@@ -190,6 +294,15 @@ export async function persistEvent(deviceId, ev, {
   }
   if (kind !== 'diagnostic' && !association) reportDiagnostic?.('NO_ASSOCIATION');
   if (conflicts.size) reportDiagnostic?.('CONFLICTING_FIELD');
+
+  // The canonical row is committed first. Reuse the bridge's bounded recovery
+  // timer if its owner pointer cannot be written; keep the failure visible.
+  try {
+    await syncReadIndex(db, dedupKey, (await ref.get()).val());
+  } catch (error) {
+    scheduleRecovery?.();
+    throw error;
+  }
 
   let projected = false;
   if (ev.type === 'cancel') {

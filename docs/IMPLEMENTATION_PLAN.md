@@ -61,18 +61,20 @@ La identidad del SDA se confirmó con una prueba física y eventos reales para s
 
 **Aceptación verificable del Bloque 2.1:** pruebas locales con datos ficticios demuestran los escenarios aplicables de la matriz de la especificación: evento válido, duplicado/retransmisión, payload inválido y discrepancia de identidad, tiempos diferenciados sin sobrescribir la primera recepción, actualización sin perder cancelación ni reconocimiento, `queued`, asociación ausente y colisión de `seq` según la política aprobada. Conservar lectura de eventos históricos y el comportamiento DEV; ninguna prueba depende de Firebase real, SDA o satélite. Registrar explícitamente qué escenarios de fusión Iridium permanecen pendientes de la implementación del webhook. No marcar ningún ítem funcional como hecho por documentación o por pruebas propuestas solamente.
 
+**Consultas acotadas del propietario — incremento aprobado y cerrado en software local.** El índice cronológico y las consultas separadas de críticos antiguos tienen pruebas de bridge, reglas RTDB y Flutter; la recuperación programada del índice fallido quedó comprobada sin reiniciar el bridge (64/64 pruebas del bridge con Emulator, 34/34 de reglas y 67/67 Flutter dirigidas). Se mantienen los límites de 100 filas por rama, la posible ventana incompleta hasta terminar la conciliación y la validación pendiente con servicios reales. La lectura de contactos sigue en Fase 3.
+
 - [ ] Definir el modelo canónico que recibirán Flutter, MQTT y RockBLOCK.
 - [ ] Separar tiempo del dispositivo, tiempo de recepción y tiempo de actualización.
 - [ ] Representar explícitamente `queued`, fuente de transporte y calidad de datos.
-- [ ] Definir reglas de fusión para incidentes parciales y enriquecimiento posterior.
-- [ ] Soportar cancelaciones que lleguen antes o después del evento original.
-- [ ] Definir el tratamiento de `ts` ausente, inválido o igual a cero.
-- [ ] Definir la política ante reutilización inesperada de `seq`.
+- [x] Definir reglas de fusión para incidentes parciales y enriquecimiento posterior. Política MQTT aprobada y comprobada en 2.1b; la convergencia Iridium↔MQTT sigue en Fase 7.
+- [x] Soportar cancelaciones que lleguen antes o después del evento original. Comprobado en 2.1c con duplicados, concurrencia y recuperación local.
+- [x] Definir el tratamiento de `ts` ausente, inválido o igual a cero. Comprobado para MQTT y lectura Flutter en 2.1; la unidad numérica real del firmware sigue pendiente de verificación física.
+- [x] Definir la política ante reutilización inesperada de `seq`. Las colisiones incompatibles se rechazan sin sobrescribir; la persistencia real de `seq` tras reinicio sigue pendiente del checkpoint físico.
 - [ ] Validar que el `deviceId` del payload corresponda al topic autenticado.
 - [ ] Validar tipos, severidades, tamaños y rangos antes de persistir.
-- [ ] Hacer idempotente la ingesta MQTT por `(deviceId, seq)`.
+- [x] Hacer idempotente la ingesta MQTT por `(deviceId, seq)`. Comprobado con duplicados, enriquecimiento compatible y concurrencia en 2.1b–2.1c.
 - [ ] Preservar cancelaciones, acuses y notificaciones durante actualizaciones.
-- [ ] Implementar consultas acotadas para historiales y alertas, suficientes para el MVP.
+- [x] Implementar consultas acotadas para historiales y alertas, suficientes para el MVP del propietario. Índice cronológico local por propietario con ventanas de 100 incidentes y consultas separadas para críticos activos antiguos; autorización comprobada con Emulator. La lectura de contactos corresponde a Fase 3, cuya proyección aún no tiene productor operativo. Pendiente despliegue y validación con servicios reales.
 - [ ] Crear pruebas del bridge para duplicados, reconexión, orden invertido y payloads inválidos.
 - [ ] Mantener o ampliar escenarios reproducibles del simulador DEV para clasificación, incidentes, cancelaciones, `queued`, GNSS inválido, offline y duplicados.
 

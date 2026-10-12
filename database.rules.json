@@ -25,8 +25,8 @@
       ".write": false
     },
     "events": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('ownerVehicleId').isString() && root.child('vehicles').child(root.child('users').child(auth.uid).child('ownerVehicleId').val()).child('ownerId').val() === auth.uid && ((query.orderByChild === 'userId' && query.equalTo === auth.uid) || (query.orderByChild === 'vehicleId' && query.equalTo === root.child('users').child(auth.uid).child('ownerVehicleId').val()))",
-      ".indexOn": ["userId", "deviceId", "seq", "vehicleId"],
+      ".read": "auth != null && root.child('users').child(auth.uid).child('ownerVehicleId').isString() && root.child('vehicles').child(root.child('users').child(auth.uid).child('ownerVehicleId').val()).child('ownerId').val() === auth.uid && ((query.orderByChild === 'userId' && query.equalTo === auth.uid) || (query.orderByChild === 'vehicleId' && query.equalTo === root.child('users').child(auth.uid).child('ownerVehicleId').val()) || (query.orderByChild === 'criticalLegacyUserId' && query.equalTo === auth.uid) || (query.orderByChild === 'criticalVehicleId' && query.equalTo === root.child('users').child(auth.uid).child('ownerVehicleId').val()))",
+      ".indexOn": ["userId", "deviceId", "seq", "vehicleId", "criticalLegacyUserId", "criticalVehicleId"],
       "$eventId": {
         ".read": "auth != null && root.child('users').child(auth.uid).child('ownerVehicleId').isString() && root.child('vehicles').child(root.child('users').child(auth.uid).child('ownerVehicleId').val()).child('ownerId').val() === auth.uid && ((data.child('vehicleId').isString() && data.child('vehicleId').val() === root.child('users').child(auth.uid).child('ownerVehicleId').val()) || (!data.child('vehicleId').exists() && data.child('userId').val() === auth.uid))",
         ".write": false,
@@ -34,6 +34,22 @@
           ".write": false
         }
       }
+    },
+    "eventReadIndex": {
+      "vehicles": {
+        "$vehicleId": {
+          ".read": "auth != null && root.child('users').child(auth.uid).child('ownerVehicleId').val() === $vehicleId && root.child('vehicles').child($vehicleId).child('ownerId').val() === auth.uid",
+          ".write": false
+        }
+      },
+      "users": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid && root.child('users').child(auth.uid).child('ownerVehicleId').isString() && root.child('vehicles').child(root.child('users').child(auth.uid).child('ownerVehicleId').val()).child('ownerId').val() === auth.uid",
+          ".write": false
+        }
+      },
+      ".read": false,
+      ".write": false
     },
     "vehicleContacts": {
       "$vehicleId": {

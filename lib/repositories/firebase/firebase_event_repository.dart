@@ -10,15 +10,14 @@ import '../event_repository.dart';
 
 /// Firebase-backed EventRepository. events/{deviceId_seq} is a flat
 /// collection written by the backend bridge (see docs/device_contract.md);
-/// `userId` is denormalized and indexed so per-user queries stay cheap.
+/// `userId` is denormalized for authorized owner queries.
 ///
-/// watchCriticalEvent derives the active critical event by filtering the
-/// same per-user event stream client-side rather than reading a separate
-/// RTDB node — a small bandwidth trade-off (downloading a user's event
-/// history instead of a single pointer value) for not requiring the
-/// bridge to also maintain a dedicated "critical pointer" node.
+/// Each feed query is bounded. Separate critical indexes keep older active
+/// emergencies visible when they fall outside the recent event window.
 class FirebaseEventRepository implements EventRepository {
+  static const int eventQueryLimit = 100;
   final DatabaseReference _eventsRef;
+  final DatabaseReference _readIndexRef;
   final DatabaseReference _userIncidentStateRef;
   // The minimal per-user rules have been validated and deployed.
   final bool readUserIncidentState;
@@ -27,18 +26,24 @@ class FirebaseEventRepository implements EventRepository {
     FirebaseDatabase? database,
     this.readUserIncidentState = true,
   }) : _eventsRef = (database ?? FirebaseDatabase.instance).ref('events'),
+       _readIndexRef = (database ?? FirebaseDatabase.instance).ref('eventReadIndex'),
        _userIncidentStateRef = (database ?? FirebaseDatabase.instance).ref(
          'userIncidentState',
        );
 
   @override
   Stream<List<AccidentEvent>> watchEvents(String userId, {String? vehicleId}) {
-    final userEvents = _watchRawEvents('userId', userId);
+    final userEvents = _watchRecentEvents('users', userId);
+    final legacyCritical = _watchRawEvents('criticalLegacyUserId', userId);
     final events = vehicleId == null
-        ? userEvents.map(_parseAndSortEvents)
+        ? combineEventStreams(userEvents, legacyCritical)
         : combineEventStreams(
             userEvents,
-            _watchRawEvents('vehicleId', vehicleId),
+            _watchRecentEvents('vehicles', vehicleId),
+            additionalEvents: [
+              legacyCritical,
+              _watchRawEvents('criticalVehicleId', vehicleId),
+            ],
           );
     if (!readUserIncidentState) return events;
     final states = _userIncidentStateRef.child(userId).onValue.map((event) {
@@ -145,57 +150,111 @@ class FirebaseEventRepository implements EventRepository {
     String child,
     String value,
   ) {
-    return _eventsRef.orderByChild(child).equalTo(value).onValue.map((event) {
-      final snapshot = event.snapshot;
-      if (!snapshot.exists || snapshot.value == null) {
-        return <String, Map<String, dynamic>>{};
-      }
+    return _eventsRef
+        .orderByChild(child)
+        .equalTo(value)
+        .limitToLast(eventQueryLimit)
+        .onValue
+        .map((event) {
+          final snapshot = event.snapshot;
+          if (!snapshot.exists || snapshot.value == null) {
+            return <String, Map<String, dynamic>>{};
+          }
 
-      final raw = Map<String, dynamic>.from(snapshot.value as Map);
-      return raw.map(
-        (key, value) => MapEntry(key, Map<String, dynamic>.from(value as Map)),
-      );
-    });
+          final raw = Map<String, dynamic>.from(snapshot.value as Map);
+          return raw.map(
+            (key, value) =>
+                MapEntry(key, Map<String, dynamic>.from(value as Map)),
+          );
+        });
+  }
+
+  Stream<Map<String, Map<String, dynamic>>> _watchRecentEvents(
+    String scope,
+    String id,
+  ) {
+    return _readIndexRef
+        .child(scope)
+        .child(id)
+        .orderByKey()
+        .limitToLast(eventQueryLimit)
+        .onValue
+        .asyncMap((event) async {
+          final value = event.snapshot.value;
+          if (value == null) return <String, Map<String, dynamic>>{};
+          if (value is! Map) {
+            throw const FormatException('Invalid event read index');
+          }
+          final pointers = Map<String, dynamic>.from(value);
+          final keys = <String>[];
+          for (final pointer in pointers.values) {
+            if (pointer is! Map || pointer['eventKey'] is! String) {
+              throw const FormatException('Invalid event read pointer');
+            }
+            keys.add(pointer['eventKey'] as String);
+          }
+          final snapshots = await Future.wait(
+            keys.map((key) => _eventsRef.child(key).get()),
+          );
+          final rows = <String, Map<String, dynamic>>{};
+          for (var i = 0; i < keys.length; i++) {
+            if (snapshots[i].value case final Map raw) {
+              rows[keys[i]] = Map<String, dynamic>.from(raw);
+            }
+          }
+          return rows;
+        });
   }
 
   @visibleForTesting
   static Stream<List<AccidentEvent>> combineEventStreams(
     Stream<Map<String, Map<String, dynamic>>> userEvents,
-    Stream<Map<String, Map<String, dynamic>>> vehicleEvents,
-  ) {
+    Stream<Map<String, Map<String, dynamic>>> vehicleEvents, {
+    List<Stream<Map<String, Map<String, dynamic>>>> additionalEvents = const [],
+  }) {
     late StreamController<List<AccidentEvent>> controller;
-    StreamSubscription<Map<String, Map<String, dynamic>>>? userSubscription;
-    StreamSubscription<Map<String, Map<String, dynamic>>>? vehicleSubscription;
-    var latestUserEvents = <String, Map<String, dynamic>>{};
-    var latestVehicleEvents = <String, Map<String, dynamic>>{};
+    final sources = [userEvents, vehicleEvents, ...additionalEvents];
+    final latest = List.generate(
+      sources.length,
+      (_) => <String, Map<String, dynamic>>{},
+    );
+    final subscriptions =
+        <StreamSubscription<Map<String, Map<String, dynamic>>>>[];
 
     void emitMergedEvents() {
-      final merged = _mergeRawEvents(latestUserEvents, latestVehicleEvents);
+      var merged = <String, Map<String, dynamic>>{};
+      for (final source in latest) {
+        merged = _mergeRawEvents(merged, source);
+      }
       controller.add(_parseAndSortEvents(merged));
     }
 
     controller = StreamController<List<AccidentEvent>>(
       onListen: () {
-        userSubscription = userEvents.listen((events) {
-          latestUserEvents = events;
-          emitMergedEvents();
-        }, onError: controller.addError);
-        vehicleSubscription = vehicleEvents.listen((events) {
-          latestVehicleEvents = events;
-          emitMergedEvents();
-        }, onError: controller.addError);
+        for (var i = 0; i < sources.length; i++) {
+          final index = i;
+          subscriptions.add(
+            sources[i].listen((events) {
+              latest[index] = events;
+              emitMergedEvents();
+            }, onError: controller.addError),
+          );
+        }
       },
       onPause: () {
-        userSubscription?.pause();
-        vehicleSubscription?.pause();
+        for (final subscription in subscriptions) {
+          subscription.pause();
+        }
       },
       onResume: () {
-        userSubscription?.resume();
-        vehicleSubscription?.resume();
+        for (final subscription in subscriptions) {
+          subscription.resume();
+        }
       },
       onCancel: () async {
-        await userSubscription?.cancel();
-        await vehicleSubscription?.cancel();
+        for (final subscription in subscriptions) {
+          await subscription.cancel();
+        }
       },
     );
 
