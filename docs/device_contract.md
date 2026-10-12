@@ -79,6 +79,12 @@ El bridge comprueba que `id` coincida exactamente con `{id}` del topic `sda/{id}
 
 La igualdad entre payload y topic valida la identidad **declarada**, pero no autentica al dispositivo que publicó. El bridge se conecta como consumidor y se suscribe a topics con comodín. Queda por verificar con el broker real que las credenciales del SDA solo puedan publicar en los topics de su identidad aprovisionada, que otras credenciales no puedan suplantarla y que el permiso de lectura del bridge sea el esperado. Sin esa evidencia de ACL y credenciales no se afirma autenticidad del emisor.
 
+### Reconexión del consumidor MQTT
+
+El bridge solicita una sesión persistente (`clean: false`) con `clientId` estable, reintenta la conexión cada 5 segundos y vuelve a solicitar sus suscripciones al conectarse. Una prueba con broker MQTT 3.1.1 local simulado comprobó la segunda conexión con sesión reanudada, la recepción de un evento que el broker de prueba mantuvo pendiente durante la desconexión, de otro evento publicado tras reconectar y la idempotencia de una copia retransmitida. Ese broker de prueba controla su propia cola: **no demuestra** que HiveMQ real conserve, reentregue o retenga durante un plazo concreto los mensajes pendientes. Tampoco demuestra el comportamiento del firmware tras perder la conexión.
+
+Antes de afirmar recuperación operativa, falta comprobar con HiveMQ real el valor `sessionPresent`, la conservación y entrega de mensajes QoS 1 publicados mientras el bridge está desconectado, el efecto de una sesión ausente o vencida y el comportamiento del SDA ante reconexión y retransmisión. La prueba local de PUBACK mostró además que el acuse MQTT puede preceder a la escritura RTDB; un fallo de persistencia posterior no tiene reentrega garantizada por esta evidencia.
+
 ### Evento
 
 Un evento puede contener, según el tipo y la disponibilidad de sensores:

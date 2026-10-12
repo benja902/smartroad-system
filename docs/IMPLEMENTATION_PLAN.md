@@ -69,6 +69,8 @@ La identidad del SDA se confirmó con una prueba física y eventos reales para s
 
 **Identidad MQTT y límites de entrada — incremento aprobado y cerrado en software local.** El bridge comprueba la coincidencia `id`–topic y la estructura antes de persistir, rechaza comodines MQTT en el identificador y aplica un límite defensivo de 64 KiB antes de analizar el JSON. La autenticidad del dispositivo emisor continúa pendiente de comprobar con las ACL y credenciales de HiveMQ real; el límite de procesamiento no se atribuye al firmware.
 
+**Reconexión MQTT — verificación local cerrada.** Una prueba con broker local controlado comprobó sesión persistente solicitada con `clientId` estable, reconexión, recepción de un mensaje pendiente y otro posterior, y deduplicación de una retransmisión. La cola y la sesión reanudada fueron provistas por el broker de prueba; la retención y reentrega de HiveMQ real, el comportamiento del firmware y la recuperación tras un fallo de RTDB continúan pendientes de validación operativa.
+
 - [ ] Definir el modelo canónico que recibirán Flutter, MQTT y RockBLOCK.
 - [ ] Separar tiempo del dispositivo, tiempo de recepción y tiempo de actualización.
 - [ ] Representar explícitamente `queued`, fuente de transporte y calidad de datos.
