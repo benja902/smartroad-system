@@ -73,6 +73,12 @@ La severidad recibida forma parte del evento. Las reglas sobre destinatarios per
 - El manual indica que `seq` persiste entre reinicios. Este comportamiento debe validarse con el prototipo físico antes de depender de él como garantía absoluta.
 - `ts` es la fecha/hora del dispositivo cuando existe una hora válida. Un valor ausente o no válido no debe sustituirse silenciosamente por una hora inventada; el backend debe conservar además su propia hora de recepción.
 
+### Validación local de eventos y origen pendiente
+
+El bridge comprueba que `id` coincida exactamente con `{id}` del topic `sda/{id}/event`, que la identidad forme una clave RTDB segura y un segmento de topic publicable (sin `+` ni `#`), y que el JSON sea un objeto con identidad, secuencia y tipo válidos. Antes de decodificar o persistir, rechaza payloads de evento superiores a **64 KiB**. Este es un límite defensivo de procesamiento del bridge, no un tamaño máximo atribuido al firmware ni al broker; MQTT.js ya recibió el mensaje cuando se aplica. Los bloques opcionales malformados se descartan según la política aprobada de 2.1b, sin aceptar identidad o referencias obligatorias inválidas.
+
+La igualdad entre payload y topic valida la identidad **declarada**, pero no autentica al dispositivo que publicó. El bridge se conecta como consumidor y se suscribe a topics con comodín. Queda por verificar con el broker real que las credenciales del SDA solo puedan publicar en los topics de su identidad aprovisionada, que otras credenciales no puedan suplantarla y que el permiso de lectura del bridge sea el esperado. Sin esa evidencia de ACL y credenciales no se afirma autenticidad del emisor.
+
 ### Evento
 
 Un evento puede contener, según el tipo y la disponibilidad de sensores:

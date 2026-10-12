@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { MqttEventValidationError, normalizeMqttEvent } from '../mqtt_event_normalizer.js';
+import {
+  MAX_MQTT_EVENT_BYTES, MqttEventValidationError, normalizeMqttEvent,
+} from '../mqtt_event_normalizer.js';
 
 const topic = 'sda/SDA-TEST/event';
 const message = (overrides = {}) => JSON.stringify({ id: 'SDA-TEST', seq: 1, type: 'crash', ...overrides });
@@ -49,9 +51,23 @@ test('A04: topic identity must match payload and be safe as an RTDB key', () => 
       id, seq: 1, type: 'crash',
     })).deviceId, id);
   }
-  for (const id of ['SDA.TEST', 'SDA#TEST', 'SDA/TEST']) {
+  for (const id of ['SDA.TEST', 'SDA#TEST', 'SDA+TEST', 'SDA/TEST']) {
     rejects(`sda/${id}/event`, JSON.stringify({ id, seq: 1, type: 'crash' }), 'INVALID_TOPIC');
   }
+});
+
+test('bridge byte limit is checked before JSON parsing, without changing identity checks', () => {
+  const valid = message();
+  const boundary = valid + ' '.repeat(MAX_MQTT_EVENT_BYTES - Buffer.byteLength(valid));
+  assert.equal(Buffer.byteLength(boundary), MAX_MQTT_EVENT_BYTES);
+  assert.equal(normalizeMqttEvent(topic, Buffer.from(boundary)).event.seq, 1);
+  rejects(topic, Buffer.from(`${boundary} `), 'PAYLOAD_TOO_LARGE');
+  rejects(topic, `${boundary} `, 'PAYLOAD_TOO_LARGE');
+  const unicode = message({ vehicle_label: 'á'.repeat(MAX_MQTT_EVENT_BYTES / 2) });
+  assert.ok(unicode.length < MAX_MQTT_EVENT_BYTES);
+  rejects(topic, unicode, 'PAYLOAD_TOO_LARGE');
+  rejects(topic, Buffer.alloc(MAX_MQTT_EVENT_BYTES + 1, 0x78), 'PAYLOAD_TOO_LARGE');
+  rejects(topic, message({ id: 'OTHER' }), 'INVALID_ID');
 });
 
 test('A05: unknown type remains diagnostic even when severity is grave', () => {

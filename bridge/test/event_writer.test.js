@@ -6,7 +6,7 @@ import {
   reconcileCriticalReadIndex,
   reconcileChronologicalReadIndex,
 } from '../event_writer.js';
-import { MqttEventValidationError } from '../mqtt_event_normalizer.js';
+import { MAX_MQTT_EVENT_BYTES, MqttEventValidationError } from '../mqtt_event_normalizer.js';
 
 const deviceId = 'SDA-TEST';
 const eventPath = 'events/SDA-TEST_1';
@@ -433,10 +433,16 @@ test('A01: MQTT integration writes one associated row and strips injected backen
 
 test('A02–A04/C06: invalid required data cannot reach persistence; partial event can', options, async () => {
   const { db } = fixture();
-  const context = { db, resolveAssociation: async () => null, serverTimestamp };
+  let associationReads = 0;
+  const context = { db, resolveAssociation: async () => {
+    associationReads++;
+    return null;
+  }, serverTimestamp };
   for (const [topic, payload] of [
     ['sda/SDA-TEST/event', '{'],
+    ['sda/SDA-TEST/event', Buffer.alloc(MAX_MQTT_EVENT_BYTES + 1, 0x78)],
     ['sda/SDA-TEST/event', JSON.stringify({ id: 'OTHER', seq: 1, type: 'sos' })],
+    ['sda/SDA+TEST/event', JSON.stringify({ id: 'SDA+TEST', seq: 1, type: 'sos' })],
     ['sda/SDA-TEST/event', JSON.stringify({ id: deviceId, seq: '1', type: 'sos' })],
     ['sda/SDA-TEST/event', JSON.stringify({ id: deviceId, seq: 1 })],
     ['sda/SDA-TEST/event', JSON.stringify({ id: deviceId, seq: 2, type: 'cancel' })],
@@ -444,6 +450,7 @@ test('A02–A04/C06: invalid required data cannot reach persistence; partial eve
     await assert.rejects(ingestMqttEvent(topic, payload, context), MqttEventValidationError);
   }
   assert.equal(db.writes.length, 0);
+  assert.equal(associationReads, 0);
   await ingestMqttEvent('sda/SDA-TEST/event', JSON.stringify({
     id: deviceId, seq: 1, type: 'rollover',
   }), context);

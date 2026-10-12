@@ -9,8 +9,10 @@ const eventFields = [
   'vehicle_label', 'contact_phone', 'detection', 'position', 'device',
   'queued', 'cancels_seq', 'reason', 'elapsed_s',
 ];
-const invalidKeyCharacters = /[.#$\/\[\]\u0000-\u001f\u007f]/u;
+const invalidKeyCharacters = /[.#+$\/\[\]\u0000-\u001f\u007f]/u;
 const decoder = new TextDecoder('utf-8', { fatal: true });
+// Bridge processing limit, not a claimed firmware or broker payload limit.
+export const MAX_MQTT_EVENT_BYTES = 64 * 1024;
 
 export class MqttEventValidationError extends Error {
   constructor(code, message) {
@@ -107,6 +109,11 @@ function checkOptional(event, field, predicate) {
 function parsePayload(payload) {
   let json;
   try {
+    if ((Buffer.isBuffer(payload) && payload.length > MAX_MQTT_EVENT_BYTES) ||
+        (typeof payload === 'string' &&
+          Buffer.byteLength(payload, 'utf8') > MAX_MQTT_EVENT_BYTES)) {
+      fail('PAYLOAD_TOO_LARGE', 'Event payload exceeds bridge processing limit');
+    }
     json = Buffer.isBuffer(payload) ? decoder.decode(payload) : payload;
     if (typeof json !== 'string') fail('INVALID_JSON', 'Event payload must be JSON');
     json = JSON.parse(json);

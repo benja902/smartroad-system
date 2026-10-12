@@ -63,6 +63,8 @@ La identidad del SDA se confirmó con una prueba física y eventos reales para s
 
 **Consultas acotadas del propietario — incremento aprobado y cerrado en software local.** El índice cronológico y las consultas separadas de críticos antiguos tienen pruebas de bridge, reglas RTDB y Flutter; la recuperación programada del índice fallido quedó comprobada sin reiniciar el bridge (64/64 pruebas del bridge con Emulator, 34/34 de reglas y 67/67 Flutter dirigidas). Se mantienen los límites de 100 filas por rama, la posible ventana incompleta hasta terminar la conciliación y la validación pendiente con servicios reales. La lectura de contactos sigue en Fase 3.
 
+**Identidad MQTT y límites de entrada — incremento aprobado y cerrado en software local.** El bridge comprueba la coincidencia `id`–topic y la estructura antes de persistir, rechaza comodines MQTT en el identificador y aplica un límite defensivo de 64 KiB antes de analizar el JSON. La autenticidad del dispositivo emisor continúa pendiente de comprobar con las ACL y credenciales de HiveMQ real; el límite de procesamiento no se atribuye al firmware.
+
 - [ ] Definir el modelo canónico que recibirán Flutter, MQTT y RockBLOCK.
 - [ ] Separar tiempo del dispositivo, tiempo de recepción y tiempo de actualización.
 - [ ] Representar explícitamente `queued`, fuente de transporte y calidad de datos.
@@ -70,8 +72,8 @@ La identidad del SDA se confirmó con una prueba física y eventos reales para s
 - [x] Soportar cancelaciones que lleguen antes o después del evento original. Comprobado en 2.1c con duplicados, concurrencia y recuperación local.
 - [x] Definir el tratamiento de `ts` ausente, inválido o igual a cero. Comprobado para MQTT y lectura Flutter en 2.1; la unidad numérica real del firmware sigue pendiente de verificación física.
 - [x] Definir la política ante reutilización inesperada de `seq`. Las colisiones incompatibles se rechazan sin sobrescribir; la persistencia real de `seq` tras reinicio sigue pendiente del checkpoint físico.
-- [ ] Validar que el `deviceId` del payload corresponda al topic autenticado.
-- [ ] Validar tipos, severidades, tamaños y rangos antes de persistir.
+- [ ] Validar que el `deviceId` del payload corresponda al topic autenticado. Coincidencia declarada `id`–topic comprobada localmente; falta verificar la autorización de publicación por dispositivo en HiveMQ real.
+- [x] Validar tipos, severidades, tamaños y rangos antes de persistir. Validador MQTT y límite defensivo de 64 KiB comprobados localmente; no equivalen a una garantía sobre el tamaño emitido por el firmware.
 - [x] Hacer idempotente la ingesta MQTT por `(deviceId, seq)`. Comprobado con duplicados, enriquecimiento compatible y concurrencia en 2.1b–2.1c.
 - [ ] Preservar cancelaciones, acuses y notificaciones durante actualizaciones.
 - [x] Implementar consultas acotadas para historiales y alertas, suficientes para el MVP del propietario. Índice cronológico local por propietario con ventanas de 100 incidentes y consultas separadas para críticos activos antiguos; autorización comprobada con Emulator. La lectura de contactos corresponde a Fase 3, cuya proyección aún no tiene productor operativo. Pendiente despliegue y validación con servicios reales.
