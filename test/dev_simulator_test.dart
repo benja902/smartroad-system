@@ -11,6 +11,7 @@ import 'package:smartroad/repositories/mock/mock_auth_repository.dart';
 import 'package:smartroad/repositories/mock/mock_device_repository.dart';
 import 'package:smartroad/repositories/mock/mock_event_repository.dart';
 import 'package:smartroad/repositories/mock/mock_vehicle_repository.dart';
+import 'package:smartroad/repositories/mock/mock_data_seed.dart';
 import 'package:smartroad/repositories/vehicle_repository.dart';
 
 import 'test_helpers.dart';
@@ -54,6 +55,42 @@ void main() {
     // Triggering a grave rollover from /dev must force navigation to the
     // critical route immediately, same as if the hardware had reported it.
     expect(find.text('VOLCADURA DETECTADA'), findsOneWidget);
+  });
+
+  testWidgets('DEV panel reproduces no GNSS fix and duplicate without another row', (tester) async {
+    final key = GlobalKey();
+    await tester.pumpWidget(mockAppProviders(child: UrbesApp(key: key, includeDevRoute: true)));
+    await tester.pumpAndSettle();
+    final context = key.currentContext!;
+    final deviceRepo = context.read<DeviceRepository>() as MockDeviceRepository;
+    final eventRepo = context.read<EventRepository>() as MockEventRepository;
+
+    await tester.tap(find.byTooltip('Panel de desarrollo'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Dispositivo offline'));
+    await tester.tap(find.text('Dispositivo offline'));
+    await tester.pumpAndSettle();
+    expect((await deviceRepo.getStatus(MockDataSeed.deviceId)).online, isFalse);
+    await tester.ensureVisible(find.text('GNSS offline'));
+    await tester.tap(find.text('GNSS offline'));
+    await tester.pumpAndSettle();
+    expect((await deviceRepo.getStatus(MockDataSeed.deviceId)).gnss?.fix, isFalse);
+
+    await tester.ensureVisible(find.text('Choque leve'));
+    await tester.tap(find.text('Choque leve'));
+    await tester.pumpAndSettle();
+    final first = (await eventRepo.watchEvents(MockDataSeed.userId).first).single;
+    expect(first.position, isNull);
+
+    await tester.scrollUntilVisible(
+      find.text('Retransmitir último evento (duplicado)'), 250,
+    );
+    await tester.tap(find.text('Retransmitir último evento (duplicado)'));
+    await tester.pumpAndSettle();
+    final repeated = await eventRepo.watchEvents(MockDataSeed.userId).first;
+    expect(repeated, hasLength(1));
+    expect(repeated.single.dedupKey, first.dedupKey);
+    expect(repeated.single.receivedAt, first.receivedAt);
   });
 
   testWidgets('Production build never shows the "Volver a /dev" escape hatch, even during an emergency', (tester) async {

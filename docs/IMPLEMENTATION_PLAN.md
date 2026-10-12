@@ -73,9 +73,11 @@ La identidad del SDA se confirmó con una prueba física y eventos reales para s
 
 **Consistencia del incidente — incremento aprobado y cerrado en software local.** El contrato MQTT mantiene la identidad `(deviceId, seq)`, la primera recepción y la evidencia de cancelación/reconocimiento; incorpora `updatedAt` únicamente ante información material nueva. Flutter conserva como ausentes los tiempos de servidor que faltan en históricos, y mantiene `queued` y los datos de calidad GNSS existentes. Se comprobaron 54/54 pruebas dirigidas del bridge, 7/7 con Database Emulator, 29/29 Flutter de modelo/repositorio y 35/35 de presentación/DEV; el análisis estático de los archivos Flutter afectados no encontró problemas. La unidad de `ts` del firmware real sigue pendiente de verificación física. El origen múltiple MQTT–Iridium y la calidad CEP siguen en Fase 7, donde se decidirá su representación sin anticipar el webhook.
 
-- [ ] Definir el modelo canónico que recibirán Flutter, MQTT y RockBLOCK.
+**Escenarios DEV — incremento local listo para revisión.** El panel y los mocks existentes reproducen clasificación, incidentes, cancelación, `queued`, GNSS sin posición válida, dispositivo offline y retransmisión idempotente. Las pruebas dirigidas del mock y del panel pasaron sin usar Firebase, broker ni SDA. Esto completa la cobertura local de Fase 2 para MQTT/Flutter/DEV; no cierra las casillas de identidad autenticada por HiveMQ, modelo y procedencia de Iridium/CEP, notificaciones FCM ni checkpoints de firmware físico.
+
+- [ ] Definir el modelo canónico que recibirán Flutter, MQTT y RockBLOCK. MQTT/Flutter están cubiertos localmente; la representación de aportes RockBLOCK se decide en Fase 7.
 - [x] Separar tiempo del dispositivo, tiempo de recepción y tiempo de actualización. `ts` permanece independiente; `receivedAt` es la primera recepción y `updatedAt` solo marca incorporaciones materiales posteriores. Su ausencia histórica permanece explícita.
-- [ ] Representar explícitamente `queued`, fuente de transporte y calidad de datos.
+- [ ] Representar explícitamente `queued`, fuente de transporte y calidad de datos. `queued` y calidad GNSS están cubiertos para MQTT; procedencia múltiple y calidad CEP dependen de Fase 7.
 - [x] Definir reglas de fusión para incidentes parciales y enriquecimiento posterior. Política MQTT aprobada y comprobada en 2.1b; la convergencia Iridium↔MQTT sigue en Fase 7.
 - [x] Soportar cancelaciones que lleguen antes o después del evento original. Comprobado en 2.1c con duplicados, concurrencia y recuperación local.
 - [x] Definir el tratamiento de `ts` ausente, inválido o igual a cero. Comprobado para MQTT y lectura Flutter en 2.1; la unidad numérica real del firmware sigue pendiente de verificación física.
@@ -83,10 +85,10 @@ La identidad del SDA se confirmó con una prueba física y eventos reales para s
 - [ ] Validar que el `deviceId` del payload corresponda al topic autenticado. Coincidencia declarada `id`–topic comprobada localmente; falta verificar la autorización de publicación por dispositivo en HiveMQ real.
 - [x] Validar tipos, severidades, tamaños y rangos antes de persistir. Validador MQTT y límite defensivo de 64 KiB comprobados localmente; no equivalen a una garantía sobre el tamaño emitido por el firmware.
 - [x] Hacer idempotente la ingesta MQTT por `(deviceId, seq)`. Comprobado con duplicados, enriquecimiento compatible y concurrencia en 2.1b–2.1c.
-- [ ] Preservar cancelaciones, acuses y notificaciones durante actualizaciones.
+- [ ] Preservar cancelaciones, acuses y notificaciones durante actualizaciones. Cancelación y reconocimiento individual están comprobados; el marcador y la emisión FCM pertenecen a Fase 4 y su convergencia con Iridium a Fase 7.
 - [x] Implementar consultas acotadas para historiales y alertas, suficientes para el MVP del propietario. Índice cronológico local por propietario con ventanas de 100 incidentes y consultas separadas para críticos activos antiguos; autorización comprobada con Emulator. La lectura de contactos corresponde a Fase 3, cuya proyección aún no tiene productor operativo. Pendiente despliegue y validación con servicios reales.
-- [ ] Crear pruebas del bridge para duplicados, reconexión, orden invertido y payloads inválidos.
-- [ ] Mantener o ampliar escenarios reproducibles del simulador DEV para clasificación, incidentes, cancelaciones, `queued`, GNSS inválido, offline y duplicados.
+- [x] Crear pruebas del bridge para duplicados, reconexión, orden invertido y payloads inválidos. Cubiertos por pruebas locales de normalización, writer, cancelaciones y broker controlado; la reentrega de HiveMQ real permanece pendiente de Fase 8/10.
+- [x] Mantener o ampliar escenarios reproducibles del simulador DEV para clasificación, incidentes, cancelaciones, `queued`, GNSS inválido, offline y duplicados. Panel y mocks existentes, con pruebas dirigidas; no sustituye validación de `main.dart` con servicios y hardware reales.
 
 ## Fase 3 — Roles y contactos de emergencia
 

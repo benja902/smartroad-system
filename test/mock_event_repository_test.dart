@@ -24,6 +24,47 @@ void main() {
       expect(critical, isNull);
     });
 
+    test('DEV severity scenarios classify without changing incident identity', () {
+      final repo = MockEventRepository();
+      final leve = repo.triggerCrash(severity: AccidentSeverity.leve);
+      final moderado = repo.triggerCrash(severity: AccidentSeverity.moderado);
+      final grave = repo.triggerRollover(severity: AccidentSeverity.grave);
+      final queued = repo.triggerCrash(severity: AccidentSeverity.grave, queued: true);
+      expect([leve, moderado, grave, queued].map(classify), [
+        AlertPresentation.informative, AlertPresentation.attention,
+        AlertPresentation.activeEmergency, AlertPresentation.deferred,
+      ]);
+      expect({leve.dedupKey, moderado.dedupKey, grave.dedupKey, queued.dedupKey}, hasLength(4));
+      expect(queued.ts!.isBefore(queued.receivedAt!), isTrue);
+    });
+
+    test('GNSS without fix leaves a partial incident without fabricated position', () {
+      final repo = MockEventRepository();
+      final event = repo.triggerCrash(
+        severity: AccidentSeverity.grave, positionAvailable: false,
+      );
+      expect(event.position, isNull);
+      expect(classify(event), AlertPresentation.activeEmergency);
+    });
+
+    test('retransmission preserves key, first receipt, cancellation and personal state', () async {
+      final repo = MockEventRepository();
+      final original = repo.triggerCrash();
+      await repo.acknowledge(original.dedupKey, userId: 'user-1');
+      repo.triggerCancel(original.seq);
+      final before = await repo.watchEvents('user-1').first;
+      final cancelled = before.firstWhere((event) => event.seq == original.seq);
+      repo.retransmit(original.dedupKey);
+      final after = await repo.watchEvents('user-1').first;
+      final repeated = after.firstWhere((event) => event.seq == original.seq);
+      expect(after, hasLength(before.length));
+      expect(after.map((event) => event.dedupKey), before.map((event) => event.dedupKey));
+      expect(repeated.receivedAt, cancelled.receivedAt);
+      expect(repeated.cancelledBySeq, cancelled.cancelledBySeq);
+      expect(repeated.cancelledAt, cancelled.cancelledAt);
+      expect(repeated.acknowledged, isTrue);
+    });
+
     test('triggerSos forces the critical screen with no severity involved', () {
       final repo = MockEventRepository();
       final event = repo.triggerSos();

@@ -30,6 +30,7 @@ class DevSimulatorScreen extends StatelessWidget {
     final status = context.watch<DeviceStatusProvider>().status;
     final criticalEvent = context.watch<EventProvider>().criticalEvent;
     final events = context.watch<EventProvider>().events;
+    final positionAvailable = status?.gnss?.fix == true;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Panel de desarrollo')),
@@ -90,15 +91,15 @@ class DevSimulatorScreen extends StatelessWidget {
                 _SectionCard(
                   title: 'Disparar choque / vuelco (por severidad)',
                   children: [
-                    _ActionButton(label: 'Choque leve', onPressed: () => eventRepo.triggerCrash(severity: AccidentSeverity.leve)),
-                    _ActionButton(label: 'Choque moderado', onPressed: () => eventRepo.triggerCrash(severity: AccidentSeverity.moderado)),
-                    _ActionButton(label: 'Choque grave', onPressed: () => eventRepo.triggerCrash(severity: AccidentSeverity.grave)),
-                    _ActionButton(label: 'Vuelco grave', onPressed: () => eventRepo.triggerRollover(severity: AccidentSeverity.grave)),
+                    _ActionButton(label: 'Choque leve', onPressed: () => eventRepo.triggerCrash(severity: AccidentSeverity.leve, positionAvailable: positionAvailable)),
+                    _ActionButton(label: 'Choque moderado', onPressed: () => eventRepo.triggerCrash(severity: AccidentSeverity.moderado, positionAvailable: positionAvailable)),
+                    _ActionButton(label: 'Choque grave', onPressed: () => eventRepo.triggerCrash(severity: AccidentSeverity.grave, positionAvailable: positionAvailable)),
+                    _ActionButton(label: 'Vuelco grave', onPressed: () => eventRepo.triggerRollover(severity: AccidentSeverity.grave, positionAvailable: positionAvailable)),
                     _ActionButton(
                       label: 'Choque grave DIFERIDO (queued)',
-                      onPressed: () => eventRepo.triggerCrash(severity: AccidentSeverity.grave, queued: true),
+                      onPressed: () => eventRepo.triggerCrash(severity: AccidentSeverity.grave, queued: true, positionAvailable: positionAvailable),
                     ),
-                    _ActionButton(label: 'SOS', onPressed: eventRepo.triggerSos),
+                    _ActionButton(label: 'SOS', onPressed: () => eventRepo.triggerSos(positionAvailable: positionAvailable)),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -136,6 +137,10 @@ class DevSimulatorScreen extends StatelessWidget {
                 _SectionCard(
                   title: 'Eventos registrados (${events.length})',
                   children: [
+                    _ActionButton(
+                      label: 'Retransmitir último evento (duplicado)',
+                      onPressed: events.isEmpty ? null : () => eventRepo.retransmit(events.last.dedupKey),
+                    ),
                     if (events.isEmpty)
                       Text('Sin eventos todavía.', style: AppTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant))
                     else

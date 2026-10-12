@@ -102,6 +102,7 @@ class MockEventRepository implements EventRepository {
     required AccidentEventType type,
     required AccidentSeverity severity,
     bool queued = false,
+    bool positionAvailable = true,
     String? vehicleId,
   }) {
     final seq = _nextSeq++;
@@ -129,7 +130,7 @@ class MockEventRepository implements EventRepository {
               axisPeak: 'y',
               rollover: type == AccidentEventType.rollover,
             ),
-      position: MockDataSeed.initialPosition,
+      position: positionAvailable ? MockDataSeed.initialPosition : null,
       queued: queued,
       receivedAt: now,
       userId: MockDataSeed.userId,
@@ -143,12 +144,14 @@ class MockEventRepository implements EventRepository {
   AccidentEvent triggerCrash({
     AccidentSeverity severity = AccidentSeverity.grave,
     bool queued = false,
+    bool positionAvailable = true,
     String? vehicleId,
   }) {
     return _triggerAccident(
       type: AccidentEventType.crash,
       severity: severity,
       queued: queued,
+      positionAvailable: positionAvailable,
       vehicleId: vehicleId,
     );
   }
@@ -156,21 +159,24 @@ class MockEventRepository implements EventRepository {
   AccidentEvent triggerRollover({
     AccidentSeverity severity = AccidentSeverity.grave,
     bool queued = false,
+    bool positionAvailable = true,
     String? vehicleId,
   }) {
     return _triggerAccident(
       type: AccidentEventType.rollover,
       severity: severity,
       queued: queued,
+      positionAvailable: positionAvailable,
       vehicleId: vehicleId,
     );
   }
 
-  AccidentEvent triggerSos({bool queued = false, String? vehicleId}) {
+  AccidentEvent triggerSos({bool queued = false, bool positionAvailable = true, String? vehicleId}) {
     return _triggerAccident(
       type: AccidentEventType.sos,
       severity: AccidentSeverity.none,
       queued: queued,
+      positionAvailable: positionAvailable,
       vehicleId: vehicleId,
     );
   }
@@ -229,6 +235,14 @@ class MockEventRepository implements EventRepository {
     _events[event.dedupKey] = event;
     _emit();
     return event;
+  }
+
+  /// DEV retransmission: same key and evidence, with no new incident or clock.
+  void retransmit(String dedupKey) {
+    if (!_events.containsKey(dedupKey)) {
+      throw StateError('The event does not exist');
+    }
+    _emit();
   }
 
   @override
