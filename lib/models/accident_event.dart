@@ -8,6 +8,7 @@ DateTime? _parseEventTimestamp(Object? value) {
   if (value == null) return null;
   if (value is String) return DateTime.tryParse(value);
   if (value is num) {
+    if (value == 0 || !value.isFinite) return null;
     try {
       return DateTime.fromMillisecondsSinceEpoch(value.toInt());
     } on Error {
@@ -15,6 +16,28 @@ DateTime? _parseEventTimestamp(Object? value) {
     }
   }
   return null;
+}
+
+// Historical rows may contain malformed optional snapshots from the old bridge.
+T? _parseOptionalBlock<T>(Object? value, T Function(Map<String, dynamic>) parse) {
+  if (value is! Map) return null;
+  try {
+    return parse(Map<String, dynamic>.from(value));
+  } on TypeError {
+    return null;
+  } on FormatException {
+    return null;
+  }
+}
+
+GnssPosition _parseEventPosition(Map<String, dynamic> json) {
+  final lat = json['lat'];
+  final lon = json['lon'];
+  if (lat is! num || lon is! num || !lat.isFinite || !lon.isFinite ||
+      lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    throw const FormatException('Invalid event position');
+  }
+  return GnssPosition.fromJson(json);
 }
 
 /// An accident-system event, shaped to match exactly what the firmware
@@ -146,15 +169,9 @@ class AccidentEvent {
       vehicleLabel: json['vehicle_label'] as String?,
       contactPhone: json['contact_phone'] as String?,
       severity: AccidentSeverity.parse(json['severity'] as String?),
-      detection: json['detection'] == null
-          ? null
-          : DetectionData.fromJson(Map<String, dynamic>.from(json['detection'] as Map)),
-      position: json['position'] == null
-          ? null
-          : GnssPosition.fromJson(Map<String, dynamic>.from(json['position'] as Map)),
-      device: json['device'] == null
-          ? null
-          : EventDeviceSnapshot.fromJson(Map<String, dynamic>.from(json['device'] as Map)),
+      detection: _parseOptionalBlock(json['detection'], DetectionData.fromJson),
+      position: _parseOptionalBlock(json['position'], _parseEventPosition),
+      device: _parseOptionalBlock(json['device'], EventDeviceSnapshot.fromJson),
       queued: json['queued'] as bool? ?? false,
       cancelsSeq: (json['cancels_seq'] as num?)?.toInt(),
       reason: json['reason'] as String?,

@@ -41,6 +41,14 @@ void main() {
       expect(classify(_event(type: AccidentEventType.cancel)), AlertPresentation.cancellation);
     });
 
+    test('unknown type stays diagnostic even with grave severity', () {
+      for (final severity in [AccidentSeverity.grave, AccidentSeverity.moderado]) {
+        final event = _event(type: AccidentEventType.unknown, severity: severity);
+        expect(classify(event), AlertPresentation.technical);
+        expect(shouldForceCriticalScreen(event), isFalse);
+      }
+    });
+
     test('cancelledBySeq wins over everything else for crash/rollover/sos', () {
       expect(
         classify(_event(severity: AccidentSeverity.grave, cancelledBySeq: 99)),

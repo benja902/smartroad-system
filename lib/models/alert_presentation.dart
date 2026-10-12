@@ -6,7 +6,7 @@ import 'accident_severity.dart';
 /// never stored. See the plan's classification table
 /// (docs de fase de alineación con el firmware) for the full rationale.
 enum AlertPresentation {
-  /// test/power_loss/low_battery/booted — never mixed with the accident
+  /// test/power_loss/low_battery/booted and unknown types — never mixed with the accident
   /// feed, never affects the critical event.
   technical,
 
@@ -39,14 +39,15 @@ AlertPresentation classify(AccidentEvent event) {
   if (event.type == AccidentEventType.test ||
       event.type == AccidentEventType.powerLoss ||
       event.type == AccidentEventType.lowBattery ||
-      event.type == AccidentEventType.booted) {
+      event.type == AccidentEventType.booted ||
+      event.type == AccidentEventType.unknown) {
     return AlertPresentation.technical;
   }
   if (event.type == AccidentEventType.cancel) {
     return AlertPresentation.cancellation;
   }
 
-  // type ∈ {crash, rollover, sos, unknown} from here.
+  // Only crash, rollover and sos can reach incident presentation.
   if (event.cancelledBySeq != null) return AlertPresentation.cancelled;
   if (event.acknowledged) return AlertPresentation.attended;
   if (event.queued) return AlertPresentation.deferred;

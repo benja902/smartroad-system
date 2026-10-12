@@ -231,6 +231,9 @@ class FirebaseEventRepository implements EventRepository {
             entry.value['cancelledAt'] == null) {
           combined['cancelledAt'] = current['cancelledAt'];
         }
+        if (current['queued'] == true || entry.value['queued'] == true) {
+          combined['queued'] = true;
+        }
         if (current['acknowledged'] == true ||
             entry.value['acknowledged'] == true) {
           combined['acknowledged'] = true;
