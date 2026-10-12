@@ -51,6 +51,7 @@ beforeEach(async () => {
         technical: { userId: 'owner', vehicleId: 'owned', type: 'status', seq: 4 },
         unrelated: { userId: 'other-owner', vehicleId: 'other', type: 'sos', seq: 5 },
         mistagged: { userId: 'pending', vehicleId: 'owned', type: 'sos', seq: 6 },
+        unassociated: { id: 'SDA-UNKNOWN', type: 'crash', severity: 'grave', seq: 7, receivedAt: 1000 },
       },
       vehicleContacts: {
         owned: {
@@ -91,6 +92,29 @@ test('owner cannot list all vehicles or events, query another owner, or read ano
   await assertFails(db('owner').ref('events').orderByChild('vehicleId').equalTo('other').once('value'));
   await assertFails(db('owner').ref('events/unrelated').once('value'));
   await assertFails(db('owner').ref('vehicles/other').once('value'));
+});
+
+test('A06: incident without association is invisible in app queries and direct reads', async () => {
+  await env.withSecurityRulesDisabled(async context => {
+    assert.equal((await context.database().ref('events/unassociated').once('value')).exists(), true);
+  });
+
+  for (const [uid, vehicleId] of [['owner', 'owned'], ['other-owner', 'other']]) {
+    const historical = await assertSucceeds(db(uid).ref('events')
+      .orderByChild('userId').equalTo(uid).once('value'));
+    const current = await assertSucceeds(db(uid).ref('events')
+      .orderByChild('vehicleId').equalTo(vehicleId).once('value'));
+    assert.equal(historical.hasChild('unassociated'), false);
+    assert.equal(current.hasChild('unassociated'), false);
+    await assertFails(db(uid).ref('events/unassociated').once('value'));
+  }
+  for (const uid of ['stranger', null]) {
+    await assertFails(db(uid).ref('events/unassociated').once('value'));
+    await assertFails(db(uid).ref('events').orderByChild('userId').equalTo('owner').once('value'));
+    await assertFails(db(uid).ref('events').orderByChild('vehicleId').equalTo('owned').once('value'));
+  }
+  await assertFails(db('owner').ref('userIncidentState/owner/unassociated')
+    .set({ acknowledged: true }));
 });
 
 test('only the owner can read the active linked SDA, never the registry or an old device', async () => {

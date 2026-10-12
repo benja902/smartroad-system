@@ -15,7 +15,9 @@ import mqtt from 'mqtt';
 import http from 'node:http';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getDatabase, ServerValue } from 'firebase-admin/database';
-import { persistEvent } from './event_writer.js';
+import { ingestMqttEvent } from './event_writer.js';
+import { MqttEventValidationError } from './mqtt_event_normalizer.js';
+import { AssociationLookupError, resolveAssociation } from './association_resolver.js';
 // Carga las variables locales desde .env
 loadEnvFile('.env');
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -37,8 +39,8 @@ if (!HOST || !PASS) {
   process.exit(1);
 }
 
-// clean:false + clientId fijo: el broker retiene los mensajes QoS 1
-// publicados mientras el puente estuvo caído y los entrega al reconectar.
+// clean:false solicita una sesión persistente al broker. La relación entre
+// acuse MQTT y escritura RTDB aún requiere la prueba local de 2.1c.
 const cliente = mqtt.connect(`mqtts://${HOST}:8883`, {
   clientId: 'puente-urbes-sda-1',
   username: USER,
@@ -60,31 +62,6 @@ cliente.on('connect', () => {
 cliente.on('error', (e) => console.error('mqtt error:', e.message));
 cliente.on('reconnect', () => console.log('mqtt reconectando...'));
 
-// Cache en memoria: deviceId -> { vehicleId, userId }. Evita una consulta
-// a vehicles/ por cada evento; se refresca si no se encuentra.
-const associationCache = new Map();
-
-async function resolveAssociation(deviceId) {
-  if (associationCache.has(deviceId)) return associationCache.get(deviceId);
-
-  const snapshot = await db
-    .ref('vehicles')
-    .orderByChild('deviceId')
-    .equalTo(deviceId)
-    .limitToFirst(1)
-    .get();
-
-  if (!snapshot.exists()) {
-    console.warn(`sin vehículo registrado para deviceId=${deviceId}, evento sin asociación`);
-    return null;
-  }
-
-  const [[vehicleId, vehicle]] = Object.entries(snapshot.val());
-  const association = { vehicleId, userId: vehicle.ownerId ?? null };
-  associationCache.set(deviceId, association);
-  return association;
-}
-
 cliente.on('message', async (topico, cuerpo) => {
   const partes = topico.split('/');
   const deviceId = partes[1];
@@ -99,6 +76,16 @@ cliente.on('message', async (topico, cuerpo) => {
       return;
     }
 
+    if (hoja === 'event') {
+      const { written } = await ingestMqttEvent(topico, cuerpo, {
+        db, resolveAssociation: (id) => resolveAssociation(db, id),
+        serverTimestamp: ServerValue.TIMESTAMP,
+        prefix: PREFIX, reportDiagnostic: (code) => console.warn('diagnóstico MQTT:', code),
+      });
+      console.log(written ? 'evento guardado' : 'evento duplicado');
+      return;
+    }
+
     const datos = JSON.parse(cuerpo.toString());
 
     if (hoja === 'status') {
@@ -110,23 +97,17 @@ cliente.on('message', async (topico, cuerpo) => {
       await db.ref(`devices/${deviceId}`).update({ ...resto, lastSeen: ServerValue.TIMESTAMP });
     } else if (hoja === 'position') {
       await db.ref(`devices/${deviceId}`).update({ gnss: datos.position, lastSeen: ServerValue.TIMESTAMP });
-    } else if (hoja === 'event') {
-      await guardarEvento(deviceId, datos);
     }
   } catch (e) {
-    console.error('mensaje descartado', topico, e.message);
+    if (e instanceof MqttEventValidationError) {
+      console.warn('mensaje MQTT inválido:', e.code);
+    } else if (e instanceof AssociationLookupError) {
+      console.error('consulta administrativa fallida:', e.code);
+    } else {
+      console.error('procesamiento MQTT fallido:', e.name);
+    }
   }
 });
-
-async function guardarEvento(deviceId, ev) {
-  const { dedupKey, userId } = await persistEvent(deviceId, ev, {
-    db,
-    resolveAssociation,
-    serverTimestamp: ServerValue.TIMESTAMP,
-  });
-
-  console.log(`evento guardado: ${dedupKey} (${ev.type}, userId=${userId ?? 'desconocido'})`);
-}
 
 // Sonda de salud para Cloud Run.
 http

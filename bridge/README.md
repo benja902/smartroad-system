@@ -2,7 +2,7 @@
 
 ## Estado actual
 
-Este servicio Node.js es independiente de Flutter. `index.js` mantiene una conexión MQTT TLS con sesión persistente y consume `availability`, `status`, `position` y `event`; `event_writer.js` escribe eventos en `events/{deviceId}_{seq}` y proyecta evidencia de cancelaciones. Hoy se ha ejecutado localmente; **no hay despliegue cloud validado**. El webhook de Ground Control/Iridium es otro componente aún pendiente. El escritor actual no valida de forma integral payloads, identidad `id` frente al topic ni colisiones reales de `seq`; ver `docs/PHASE2_INCIDENT_SPEC.md`.
+Este servicio Node.js es independiente de Flutter. `index.js` mantiene una conexión MQTT TLS con sesión persistente y consume `availability`, `status`, `position` y `event`; el validador contrasta `id` con el topic y `event_writer.js` conserva eventos en `events/{deviceId}_{seq}` mediante transacciones. Los bloques opcionales malformados se descartan con diagnósticos de código fijo. La recuperación de cancelaciones y el acuse MQTT ante fallos siguen pendientes de 2.1c; la clasificación Flutter de tipos desconocidos, de 2.1d. **No hay despliegue cloud validado** ni webhook Ground Control/Iridium.
 
 ## Ejecución local
 
@@ -26,7 +26,7 @@ Desde la raíz del repositorio, en primer plano:
 npm --prefix bridge test
 ```
 
-El runner nativo de Node muestra progreso con `--test-reporter=spec`; `-r expanded` corresponde a Flutter. Si pasan 60 segundos sin salida, detener con `Ctrl+C` e informar el último punto conocido. Las pruebas importan solo `event_writer.js` con base y asociaciones ficticias; no cargan `.env`, no inician Firebase/MQTT y no necesitan SDA. El 2 de octubre de 2026 pasaron 12 casos de preservación de cancelaciones, retransmisión y descarte de campos de estado. Esas pruebas no cubren todavía la validación integral ni la idempotencia robusta de Fase 2.
+El runner nativo de Node muestra progreso con `--test-reporter=spec`; `-r expanded` corresponde a Flutter. Si pasan 60 segundos sin salida, detener con `Ctrl+C` e informar el último punto conocido. La suite ordinaria usa base y asociaciones ficticias; no carga `.env`, MQTT ni SDA. La prueba con Firebase Admin se omite salvo dentro de Database Emulator con `FIREBASE_DATABASE_EMULATOR_HOST=127.0.0.1:19000` y `GCLOUD_PROJECT=demo-smartroad-bridge`. No emplear un proyecto real para esa prueba.
 
 ## Despliegue cloud: futuro, no receta ejecutable actual
 
@@ -34,4 +34,4 @@ La Fase 8 del plan decidirá topología, Secret Manager, identidad de servicio, 
 
 ## Límites
 
-No utiliza Firestore. No publica comandos `ping`, `position` ni `diag` hacia el SDA. No implementa FCM, webhook Iridium, consultas de contacto ni políticas de Fase 2. La referencia técnica del dispositivo es `docs/device_contract.md` y, ante discrepancia de firmware, `manual-sda (4).html`.
+No utiliza Firestore. No publica comandos `ping`, `position` ni `diag` hacia el SDA. No implementa FCM, webhook Iridium ni consultas de contacto. La referencia técnica del dispositivo es `docs/device_contract.md` y, ante discrepancia de firmware, `manual-sda (4).html`.
