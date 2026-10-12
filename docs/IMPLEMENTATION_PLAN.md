@@ -6,6 +6,10 @@ El orden de las fases expresa la secuencia principal, pero los checkpoints físi
 
 **Principio global:** preservar y evolucionar el flujo funcional existente. No reemplazar componentes que ya funcionan salvo que una necesidad explícita del MVP lo requiera. Preferir cambios incrementales sobre reescrituras.
 
+**Alcance congelado del MVP:** se mantienen íntegros el alcance aprobado en `MVP_SCOPE.md` y las Fases 0–10 de este plan, incluidos contactos autorizados, FCM, contingencia RockBLOCK/Iridium, despliegue cloud, APK y validación física. El MVP es un **prototipo experimental**, no un servicio de respuesta a emergencias ni una garantía de entrega o atención. Los defectos que comprometen detección, ingesta, autorización, notificación o presentación del flujo principal se corrigen en las fases existentes con el cambio mínimo verificable, sin crear subsistemas adicionales.
+
+**Separación y trabajo diferido:** la identidad y los datos del incidente, la cancelación física del SDA y el reconocimiento individual por usuario siguen siendo conceptos independientes. El cierre administrativo del seguimiento familiar, su reapertura y el historial de esas acciones, así como una política integral de antigüedad de 48 horas, quedan diferidos y no bloquean el MVP. Esto no impide corregir en las Fases 2 y 5 que una alerta crítica antigua vuelva a interrumpir al usuario. El portal institucional de entidades de rescate y su seguimiento de intervenciones permanecen como ampliaciones futuras. No crear ahora nodos, campos, servicios ni abstracciones para estas funciones diferidas o futuras.
+
 ## Fase 0 — Línea base y documentación
 
 - [x] Auditar estáticamente el repositorio, la aplicación Flutter, el bridge y la documentación existente.
