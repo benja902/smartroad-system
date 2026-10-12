@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { EventCollisionError, ingestMqttEvent, persistEvent } from '../event_writer.js';
+import {
+  CancellationConflictError, CancellationProjectionError, EventCollisionError,
+  ingestMqttEvent, persistEvent, reconcileStoredCancellations,
+} from '../event_writer.js';
 import { MqttEventValidationError } from '../mqtt_event_normalizer.js';
 
 const deviceId = 'SDA-TEST';
@@ -14,10 +17,15 @@ class MemoryDatabase {
   nodes = new Map();
   writes = [];
   clock = 1000;
+  failProjectionOnce = false;
 
   ref(path) {
     return {
       transaction: async (update) => {
+        if (this.failProjectionOnce && path === eventPath) {
+          this.failProjectionOnce = false;
+          throw new Error('simulated projection failure');
+        }
         const current = structuredClone(this.nodes.get(path) ?? null);
         const next = update(current);
         if (next === undefined) {
@@ -41,6 +49,12 @@ class MemoryDatabase {
         }
         this.nodes.set(path, current);
       },
+      get: async () => ({
+        val: () => this.nodes.has(path) ? this.read(path) : Object.fromEntries(
+          [...this.nodes]
+            .filter(([key]) => key.startsWith(`${path}/`))
+            .map(([key, value]) => [key.slice(path.length + 1), structuredClone(value)])),
+      }),
     };
   }
 
@@ -109,6 +123,117 @@ for (const type of ['crash', 'rollover', 'sos']) {
     assert.equal(db.nodes.size, 2);
   });
 }
+
+test('C01/C03: later cancel keeps its row and first cancelledAt after duplicate deliveries', options, async () => {
+  const { db, write } = fixture();
+  await write(incident());
+  await write(cancellation);
+  const cancelRow = db.read('events/SDA-TEST_2');
+  const original = db.read(eventPath);
+  assert.equal(original.cancelledAt, cancelRow.receivedAt);
+  assert.equal(original.cancelledBySeq, 2);
+  assert.equal(original.receivedAt, 1001);
+  const duplicate = await write(cancellation);
+  assert.equal(duplicate.written, false);
+  assert.deepEqual(db.read('events/SDA-TEST_2'), cancelRow);
+  assert.deepEqual(db.read(eventPath), original);
+});
+
+test('C02: early cancel has no original receivedAt and completion does not reactivate it', options, async () => {
+  const { db, write } = fixture();
+  await write(cancellation);
+  const cancelRow = db.read('events/SDA-TEST_2');
+  const placeholder = db.read(eventPath);
+  assert.equal(placeholder.receivedAt, undefined);
+  assert.equal(placeholder.cancelledAt, cancelRow.receivedAt);
+  await write(incident());
+  const completed = db.read(eventPath);
+  assert.equal(completed.cancelledAt, cancelRow.receivedAt);
+  assert.equal(completed.cancelledBySeq, 2);
+  assert.ok(completed.receivedAt > cancelRow.receivedAt);
+  assert.equal(completed.type, 'crash');
+  assert.equal(completed.status, undefined);
+});
+
+test('C04: concurrent incompatible cancellations retain the first projection and both rows', options, async () => {
+  const { db, write } = fixture();
+  await write(incident());
+  const other = { ...cancellation, seq: 3 };
+  const results = await Promise.allSettled([write(cancellation), write(other)]);
+  assert.equal(results.filter(({ status }) => status === 'fulfilled').length, 1);
+  assert.equal(results.filter(({ reason }) => reason instanceof CancellationConflictError).length, 1);
+  assert.equal(db.read(eventPath).cancelledBySeq, 2);
+  assert.equal(db.read(eventPath).cancelledAt, db.read('events/SDA-TEST_2').receivedAt);
+  assert.equal(db.read('events/SDA-TEST_3').type, 'cancel');
+});
+
+test('C04: a reused cancel seq cannot change its original reference', options, async () => {
+  const { db, write } = fixture();
+  await write(cancellation);
+  const firstRow = db.read('events/SDA-TEST_2');
+  const firstOriginal = db.read(eventPath);
+  await assert.rejects(write({ ...cancellation, cancels_seq: 4 }), EventCollisionError);
+  assert.deepEqual(db.read('events/SDA-TEST_2'), firstRow);
+  assert.deepEqual(db.read(eventPath), firstOriginal);
+  assert.equal(db.read('events/SDA-TEST_4'), undefined);
+});
+
+test('C05: failed projection is visible; restart scan repairs it once without moving dates', options, async () => {
+  const { db, write } = fixture();
+  await write(incident());
+  db.failProjectionOnce = true;
+  await assert.rejects(write(cancellation), CancellationProjectionError);
+  const cancelRow = db.read('events/SDA-TEST_2');
+  assert.equal(cancelRow.type, 'cancel');
+  assert.equal(db.read(eventPath).cancelledAt, undefined);
+  const first = await reconcileStoredCancellations(db);
+  assert.deepEqual(first, { scanned: 1, projected: 1 });
+  const repaired = db.read(eventPath);
+  assert.equal(repaired.cancelledAt, cancelRow.receivedAt);
+  assert.equal(repaired.cancelledBySeq, 2);
+  assert.deepEqual(await reconcileStoredCancellations(db), { scanned: 1, projected: 0 });
+  assert.deepEqual(db.read(eventPath), repaired);
+});
+
+test('C05: duplicate cancel delivery also repairs a partial write', options, async () => {
+  const { db, write } = fixture();
+  db.failProjectionOnce = true;
+  await assert.rejects(write(cancellation), CancellationProjectionError);
+  const cancelRow = db.read('events/SDA-TEST_2');
+  const retried = await write(cancellation);
+  assert.equal(retried.written, true);
+  assert.equal(db.read(eventPath).cancelledAt, cancelRow.receivedAt);
+  assert.equal(db.read(eventPath).receivedAt, undefined);
+  assert.deepEqual(db.read('events/SDA-TEST_2'), cancelRow);
+});
+
+test('C05: recovery skips a stored cancel with an unsafe RTDB identifier', options, async () => {
+  const { db } = fixture();
+  db.nodes.set('events/SDA.TEST_2', {
+    id: 'SDA.TEST', seq: 2, type: 'cancel', cancels_seq: 1, receivedAt: 1001,
+  });
+  const diagnostics = [];
+  assert.deepEqual(await reconcileStoredCancellations(db, {
+    reportDiagnostic: (code) => diagnostics.push(code),
+  }), { scanned: 1, projected: 0 });
+  assert.deepEqual(diagnostics, ['INVALID_STORED_CANCEL']);
+  assert.equal(db.read('events/SDA.TEST_1'), undefined);
+});
+
+test('C05: direct persistence uses the same event-key restriction', options, async () => {
+  const { db } = fixture();
+  const context = {
+    db, serverTimestamp,
+    resolveAssociation: async () => ({ userId: 'owner-test', vehicleId: 'vehicle-test' }),
+  };
+  await assert.rejects(persistEvent('SDA.TEST', {
+    id: 'SDA.TEST', seq: 2, type: 'cancel', cancels_seq: 1,
+  }, context), /safe key/);
+  await assert.rejects(persistEvent('SDA-TEST', {
+    id: 'OTHER', seq: 2, type: 'cancel', cancels_seq: 1,
+  }, context), /safe key/);
+  assert.equal(db.writes.length, 0);
+});
 
 for (const acknowledged of [true, false]) {
   test(`historical acknowledged=${acknowledged} survives payload and timestamp changes`, options, async () => {

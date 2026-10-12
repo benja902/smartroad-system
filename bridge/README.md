@@ -2,7 +2,7 @@
 
 ## Estado actual
 
-Este servicio Node.js es independiente de Flutter. `index.js` mantiene una conexión MQTT TLS con sesión persistente y consume `availability`, `status`, `position` y `event`; el validador contrasta `id` con el topic y `event_writer.js` conserva eventos en `events/{deviceId}_{seq}` mediante transacciones. Los bloques opcionales malformados se descartan con diagnósticos de código fijo. La recuperación de cancelaciones y el acuse MQTT ante fallos siguen pendientes de 2.1c; la clasificación Flutter de tipos desconocidos, de 2.1d. **No hay despliegue cloud validado** ni webhook Ground Control/Iridium.
+Este servicio Node.js es independiente de Flutter. `index.js` mantiene una conexión MQTT TLS con sesión persistente y consume `availability`, `status`, `position` y `event`; el validador contrasta `id` con el topic y `event_writer.js` conserva eventos en `events/{deviceId}_{seq}` mediante transacciones. Los bloques opcionales malformados se descartan con diagnósticos de código fijo. La conciliación local de cancelaciones de 2.1c está aprobada; la clasificación Flutter de tipos desconocidos pertenece a 2.1d. **No hay despliegue cloud validado** ni webhook Ground Control/Iridium.
 
 ## Ejecución local
 
@@ -18,7 +18,7 @@ npm start
 
 `index.js` llama actualmente `loadEnvFile('.env')` sin condición. Por ello, aunque se definan variables de entorno en el sistema, el proceso falla si falta ese archivo en su directorio de trabajo. No interpretar una receta basada solo en `--set-env-vars` como suficiente.
 
-## Pruebas locales sin MQTT ni Firebase real
+## Pruebas locales sin broker ni Firebase reales
 
 Desde la raíz del repositorio, en primer plano:
 
@@ -26,7 +26,13 @@ Desde la raíz del repositorio, en primer plano:
 npm --prefix bridge test
 ```
 
-El runner nativo de Node muestra progreso con `--test-reporter=spec`; `-r expanded` corresponde a Flutter. Si pasan 60 segundos sin salida, detener con `Ctrl+C` e informar el último punto conocido. La suite ordinaria usa base y asociaciones ficticias; no carga `.env`, MQTT ni SDA. La prueba con Firebase Admin se omite salvo dentro de Database Emulator con `FIREBASE_DATABASE_EMULATOR_HOST=127.0.0.1:19000` y `GCLOUD_PROJECT=demo-smartroad-bridge`. No emplear un proyecto real para esa prueba.
+El runner nativo de Node muestra progreso con `--test-reporter=spec`; `-r expanded` corresponde a Flutter. Si pasan 60 segundos sin salida, detener con `Ctrl+C` e informar el último punto conocido. La suite usa dobles de base y asociación y un broker MQTT local ficticio para comprobar PUBACK; no carga `.env`, servicios reales ni SDA. Las pruebas con Firebase Admin se omiten salvo dentro de Database Emulator con `FIREBASE_DATABASE_EMULATOR_HOST=127.0.0.1:19000` y `GCLOUD_PROJECT=demo-smartroad-bridge`. No emplear un proyecto real para esas pruebas.
+
+## Cancelaciones y límite de entrega MQTT (2.1c local)
+
+La fila `cancel` conserva su propia primera `receivedAt`. Su proyección en el original usa ese valor ya confirmado como `cancelledAt`; los duplicados no lo mueven y las cancelaciones incompatibles no reemplazan la primera proyección. Al iniciar el bridge se revisan las filas `cancel` de `events` y se concilian con transacciones idempotentes. Si la segunda escritura falla mientras el proceso sigue activo, se informa el fallo y se reintenta la conciliación a los 30 segundos; tras reinicio se repite el barrido. Esto usa RTDB existente y el alcance previsto de un SDA. No hay transacción atómica entre las dos filas.
+
+Una prueba con un broker MQTT 3.1.1 **local y ficticio** confirma que MQTT.js envía PUBACK de QoS 1 antes de que termine el listener asíncrono y antes de conocer el resultado de RTDB. Si falla la escritura de la propia fila del evento, el bridge informa el error, pero esa entrega puede no repetirse: `clean:false` y QoS 1 no garantizan persistencia en RTDB ni recuperación tras una caída. Si la fila `cancel` sí quedó guardada, la conciliación anterior recupera su proyección sin depender de una nueva entrega MQTT. El comportamiento del broker productivo, de su sesión y del SDA físico no se ha probado aquí.
 
 ## Despliegue cloud: futuro, no receta ejecutable actual
 

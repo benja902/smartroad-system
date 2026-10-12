@@ -32,6 +32,16 @@ function isUsableSeq(value) {
   return Number.isSafeInteger(value) && value >= 0;
 }
 
+export function isUsableDeviceId(value) {
+  return typeof value === 'string' && value.length > 0 &&
+    !invalidKeyCharacters.test(value);
+}
+
+export function isUsableEventKey(deviceId, seq) {
+  return isUsableDeviceId(deviceId) && isUsableSeq(seq) &&
+    Buffer.byteLength(`${deviceId}_${seq}`, 'utf8') <= 768;
+}
+
 const finiteNumber = (value) => typeof value === 'number' && Number.isFinite(value);
 const latitude = (value) => finiteNumber(value) && value >= -90 && value <= 90;
 const longitude = (value) => finiteNumber(value) && value >= -180 && value <= 180;
@@ -120,8 +130,8 @@ export function normalizeMqttEvent(topic, payload, { prefix = 'sda', optionalBlo
     fail('INVALID_TOPIC', 'Expected an SDA event topic');
   }
   const [topicPrefix, deviceId, leaf] = topic.split('/');
-  if (topicPrefix !== prefix || leaf !== 'event' || !deviceId ||
-      invalidKeyCharacters.test(deviceId)) {
+  if (topicPrefix !== prefix || leaf !== 'event' ||
+      !isUsableDeviceId(deviceId)) {
     fail('INVALID_TOPIC', 'Expected an SDA event topic');
   }
 
@@ -129,8 +139,7 @@ export function normalizeMqttEvent(topic, payload, { prefix = 'sda', optionalBlo
   if (typeof raw.id !== 'string' || raw.id !== deviceId) {
     fail('INVALID_ID', 'Payload id does not match topic deviceId');
   }
-  if (!isUsableSeq(raw.seq) ||
-      Buffer.byteLength(`${deviceId}_${raw.seq}`, 'utf8') > 768) {
+  if (!isUsableEventKey(deviceId, raw.seq)) {
     fail('INVALID_SEQ', 'Event seq cannot form a valid RTDB key');
   }
   if (typeof raw.type !== 'string' || raw.type.trim() === '') {
@@ -138,7 +147,8 @@ export function normalizeMqttEvent(topic, payload, { prefix = 'sda', optionalBlo
   }
 
   if (raw.type === 'cancel') {
-    if (!isUsableSeq(raw.cancels_seq) || raw.cancels_seq === raw.seq) {
+    if (!isUsableEventKey(deviceId, raw.cancels_seq) ||
+        raw.cancels_seq === raw.seq) {
       fail('INVALID_CANCEL_REFERENCE', 'Cancel must reference another valid seq');
     }
   } else if (raw.cancels_seq !== undefined && raw.cancels_seq !== null) {

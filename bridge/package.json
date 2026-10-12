@@ -9,6 +9,6 @@
   },
   "scripts": {
     "start": "node index.js",
-    "test": "node --test --test-reporter=spec --test-concurrency=1 test/association_resolver.test.js test/event_writer.test.js test/event_writer_emulator.test.js test/mqtt_event_normalizer.test.js"
+    "test": "node --test --test-reporter=spec --test-concurrency=1 test/association_resolver.test.js test/event_writer.test.js test/event_writer_emulator.test.js test/mqtt_ack.test.js test/mqtt_event_normalizer.test.js"
   }
 }

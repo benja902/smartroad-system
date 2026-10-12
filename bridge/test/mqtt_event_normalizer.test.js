@@ -44,6 +44,14 @@ test('A04: topic identity must match payload and be safe as an RTDB key', () => 
   rejects('sda/SDA-TEST/other', message(), 'INVALID_TOPIC');
   rejects('sda/SDA-TEST/event/extra', message(), 'INVALID_TOPIC');
   rejects(`sda/${'A'.repeat(768)}/event`, JSON.stringify({ id: 'A'.repeat(768), seq: 1, type: 'sos' }), 'INVALID_SEQ');
+  for (const id of ['SDA:TEST', 'SDA-TEST', 'SDA_TEST']) {
+    assert.equal(normalizeMqttEvent(`sda/${id}/event`, JSON.stringify({
+      id, seq: 1, type: 'crash',
+    })).deviceId, id);
+  }
+  for (const id of ['SDA.TEST', 'SDA#TEST', 'SDA/TEST']) {
+    rejects(`sda/${id}/event`, JSON.stringify({ id, seq: 1, type: 'crash' }), 'INVALID_TOPIC');
+  }
 });
 
 test('A05: unknown type remains diagnostic even when severity is grave', () => {
@@ -59,6 +67,10 @@ test('C06: cancel must reference a different usable seq; originals cannot claim 
     rejects(topic, message({ seq: 1, type: 'cancel', cancels_seq }), 'INVALID_CANCEL_REFERENCE');
   }
   rejects(topic, message({ cancels_seq: 2 }), 'INVALID_CANCEL_REFERENCE');
+  const longId = 'A'.repeat(765);
+  rejects(`sda/${longId}/event`, JSON.stringify({
+    id: longId, seq: 2, type: 'cancel', cancels_seq: 1000,
+  }), 'INVALID_CANCEL_REFERENCE');
   assert.deepEqual(normalizeMqttEvent(topic, message({ seq: 2, type: 'cancel', cancels_seq: 1 })), {
     deviceId: 'SDA-TEST',
     kind: 'cancellation',
