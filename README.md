@@ -31,6 +31,18 @@ El bridge se ejecuta **solo localmente** desde `bridge/`; requiere dependencias 
 
 ## Validación sin servicios reales
 
+Para verificaciones locales dirigidas desde PowerShell o la terminal de VS Code, usar `scripts/verify.ps1` desde la raíz. Abrir la terminal con acceso de administrador para los comandos Flutter en este entorno. El script usa rutas de pruebas relativas al repositorio, proyectos `demo-*` y la configuración `firebase.emulator.json` para Database Emulator:
+
+```powershell
+pwsh -File scripts/verify.ps1 -Component bridge -TestPath bridge/test/mqtt_event_normalizer.test.js
+pwsh -File scripts/verify.ps1 -Component bridge -Emulator -TestPath bridge/test/event_writer_emulator.test.js
+pwsh -File scripts/verify.ps1 -Component flutter -TestPath test/accident_event_test.dart
+pwsh -File scripts/verify.ps1 -Component rules -TestPath test/rtdb_rules/user_incident_state.test.mjs
+pwsh -File scripts/verify.ps1 -Component all
+```
+
+Sin `-TestPath`, cada componente ejecuta su suite existente; `all` ejecuta bridge con Emulator, Flutter, reglas con Emulator y análisis Flutter. Los detalles completos de cada comando quedan en el directorio temporal `smartroad-verify`, cuya ruta se imprime junto al resultado. El script devuelve código distinto de cero si falla cualquier componente. Las pruebas se ejecutan en primer plano; si una herramienta no produce salida durante 60 segundos, detenerla con `Ctrl+C` y revisar el último punto y el log. Requiere las dependencias locales ya instaladas, Firebase CLI y Java 21 o superior (usa el JBR de Android Studio si Java predeterminado es 17). No instala paquetes ni inicia el bridge operativo.
+
 Ejecutar las pruebas en primer plano y observar su progreso. Si no hay salida durante 60 segundos, interrumpir y registrar el último punto conocido.
 
 ```powershell
