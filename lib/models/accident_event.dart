@@ -77,8 +77,11 @@ class AccidentEvent {
   final int? elapsedS;
 
   // --- Added by the backend/bridge (not from the firmware) ---
-  /// Server-side timestamp of when the bridge wrote this record.
-  final DateTime receivedAt;
+  /// First server receipt of the original. Older rows can lack this field.
+  final DateTime? receivedAt;
+
+  /// Last material enrichment, when recorded by the backend.
+  final DateTime? updatedAt;
 
   /// Denormalized from vehicles/{deviceId}.ownerId at write time, so the
   /// app can query a user's events cheaply without a client-side join.
@@ -117,6 +120,7 @@ class AccidentEvent {
     this.reason,
     this.elapsedS,
     required this.receivedAt,
+    this.updatedAt,
     required this.userId,
     this.vehicleId,
     this.cancelledBySeq,
@@ -150,6 +154,7 @@ class AccidentEvent {
       reason: reason,
       elapsedS: elapsedS,
       receivedAt: receivedAt,
+      updatedAt: updatedAt,
       userId: userId,
       vehicleId: vehicleId,
       cancelledBySeq: cancelledBySeq ?? this.cancelledBySeq,
@@ -176,9 +181,12 @@ class AccidentEvent {
       cancelsSeq: (json['cancels_seq'] as num?)?.toInt(),
       reason: json['reason'] as String?,
       elapsedS: (json['elapsed_s'] as num?)?.toInt(),
-      receivedAt: json['receivedAt'] == null
-          ? DateTime.now()
-          : DateTime.fromMillisecondsSinceEpoch((json['receivedAt'] as num).toInt()),
+      receivedAt: json['receivedAt'] is num
+          ? DateTime.fromMillisecondsSinceEpoch((json['receivedAt'] as num).toInt())
+          : null,
+      updatedAt: json['updatedAt'] is num
+          ? DateTime.fromMillisecondsSinceEpoch((json['updatedAt'] as num).toInt())
+          : null,
       userId: json['userId'] as String? ?? '',
       vehicleId: json['vehicleId'] as String?,
       cancelledBySeq: (json['cancelledBySeq'] as num?)?.toInt(),
@@ -207,7 +215,8 @@ class AccidentEvent {
       'cancels_seq': cancelsSeq,
       'reason': reason,
       'elapsed_s': elapsedS,
-      'receivedAt': receivedAt.millisecondsSinceEpoch,
+      'receivedAt': receivedAt?.millisecondsSinceEpoch,
+      'updatedAt': updatedAt?.millisecondsSinceEpoch,
       'userId': userId,
       'vehicleId': vehicleId,
       'cancelledBySeq': cancelledBySeq,

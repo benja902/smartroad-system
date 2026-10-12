@@ -21,6 +21,23 @@ Map<String, dynamic> _eventJson({
 
 void main() {
   group('AccidentEvent timestamp compatibility', () {
+    test('absent server times remain absent, including through personal state copy', () {
+      final event = AccidentEvent.fromJson('SDA-TEST_7', {
+        'id': 'SDA-TEST', 'seq': 7, 'type': 'sos', 'userId': 'owner',
+      });
+      expect(event.receivedAt, isNull);
+      expect(event.updatedAt, isNull);
+      expect(event.copyWith(acknowledged: true).toJson()['receivedAt'], isNull);
+    });
+
+    test('reads distinct first receipt and material update times', () {
+      final event = AccidentEvent.fromJson('SDA-TEST_7', {
+        ..._eventJson(), 'updatedAt': 1760000001000,
+      });
+      expect(event.receivedAt?.millisecondsSinceEpoch, 1760000000000);
+      expect(event.updatedAt?.millisecondsSinceEpoch, 1760000001000);
+      expect(event.copyWith(acknowledged: true).updatedAt, event.updatedAt);
+    });
     test('reads a valid ISO 8601 string', () {
       const rawTimestamp = '2026-08-22T15:55:27.000Z';
 
@@ -90,7 +107,7 @@ void main() {
 
       expect(event.ts, isNull);
       expect(event.ts ?? event.receivedAt, event.receivedAt);
-      expect(event.receivedAt.millisecondsSinceEpoch, 1760000000000);
+      expect(event.receivedAt?.millisecondsSinceEpoch, 1760000000000);
     });
   });
 

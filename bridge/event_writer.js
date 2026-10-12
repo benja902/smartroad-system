@@ -122,7 +122,7 @@ function addCompatibleFields(target, incoming, conflicts, path = '') {
   return changed;
 }
 
-async function projectCancellation(db, deviceId, cancelRow) {
+async function projectCancellation(db, deviceId, cancelRow, serverTimestamp) {
   const { seq, cancels_seq: originalSeq, receivedAt } = cancelRow;
   if (!Number.isFinite(receivedAt)) {
     throw new Error('Cancellation row has no valid first receipt');
@@ -139,18 +139,24 @@ async function projectCancellation(db, deviceId, cancelRow) {
     }
     const next = current ? structuredClone(current) : {};
     let changed = false;
+    let cancellationChanged = false;
     if (next.cancelledBySeq === undefined) {
       next.cancelledBySeq = seq;
       changed = true;
+      cancellationChanged = true;
     }
     if (next.cancelledAt === undefined) {
       next.cancelledAt = receivedAt;
       changed = true;
+      cancellationChanged = true;
     }
     changed = applyCriticalIndexFields(next) || changed;
     if (!changed) {
       outcome = 'duplicate';
       return undefined;
+    }
+    if (current?.type !== undefined && cancellationChanged && serverTimestamp !== undefined) {
+      next.updatedAt = serverTimestamp;
     }
     outcome = 'projected';
     return next;
@@ -165,7 +171,7 @@ async function projectCancellation(db, deviceId, cancelRow) {
 
 // A restart scans the existing events node once. For the MVP's single SDA this
 // avoids a new queue; a failed scan/projection is retried by the caller.
-export async function reconcileStoredCancellations(db, { reportDiagnostic } = {}) {
+export async function reconcileStoredCancellations(db, { reportDiagnostic, serverTimestamp } = {}) {
   const rows = (await db.ref('events').get()).val() ?? {};
   const cancellations = Object.entries(rows)
     .filter(([, row]) => isRecord(row) && row.type === 'cancel')
@@ -180,7 +186,7 @@ export async function reconcileStoredCancellations(db, { reportDiagnostic } = {}
       continue;
     }
     try {
-      if (await projectCancellation(db, row.id, row)) projected++;
+      if (await projectCancellation(db, row.id, row, serverTimestamp)) projected++;
     } catch (error) {
       if (!(error instanceof CancellationConflictError)) throw error;
       reportDiagnostic?.('CONFLICTING_CANCELLATION');
@@ -284,6 +290,7 @@ export async function persistEvent(deviceId, ev, {
       outcome = 'duplicate';
       return undefined;
     }
+    if (current?.type !== undefined && changed) next.updatedAt = serverTimestamp;
     outcome = 'written';
     return next;
   }, undefined, false);
@@ -310,7 +317,7 @@ export async function persistEvent(deviceId, ev, {
       // ServerValue.TIMESTAMP in a transaction snapshot may be a local
       // estimate. Read the committed row before copying its first receipt.
       const cancelRow = (await ref.get()).val();
-      projected = await projectCancellation(db, deviceId, cancelRow);
+      projected = await projectCancellation(db, deviceId, cancelRow, serverTimestamp);
     } catch (error) {
       if (error instanceof CancellationConflictError) {
         reportDiagnostic?.('CONFLICTING_CANCELLATION');

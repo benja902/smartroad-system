@@ -55,6 +55,7 @@ class _AttentionBannerState extends State<AttentionBanner> with SingleTickerProv
 
   void _updateElapsed() {
     final since = widget.event.ts ?? widget.event.receivedAt;
+    if (since == null) return;
     final seconds = DateTime.now().difference(since).inSeconds;
     setState(() => _elapsedSeconds = seconds < 0 ? 0 : seconds);
   }
@@ -67,6 +68,9 @@ class _AttentionBannerState extends State<AttentionBanner> with SingleTickerProv
   }
 
   String get _elapsedLabel {
+    if (widget.event.ts == null && widget.event.receivedAt == null) {
+      return 'Fecha no disponible';
+    }
     if (_elapsedSeconds < 60) return 'Hace $_elapsedSeconds s';
     final minutes = _elapsedSeconds ~/ 60;
     return 'Hace $minutes min';

@@ -38,6 +38,7 @@ async function recoverCancellations() {
   try {
     await reconcileStoredCancellations(db, {
       reportDiagnostic: (code) => console.warn('diagnóstico MQTT:', code),
+      serverTimestamp: ServerValue.TIMESTAMP,
     });
     await reconcileCriticalReadIndex(db);
     await reconcileChronologicalReadIndex(db);

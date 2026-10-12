@@ -41,6 +41,7 @@ class MemoryDatabase {
         const now = ++this.clock;
         const committed = structuredClone(next);
         if (committed.receivedAt?.['.sv'] === 'timestamp') committed.receivedAt = now;
+        if (committed.updatedAt?.['.sv'] === 'timestamp') committed.updatedAt = now;
         this.writes.push({ path, patch: structuredClone(next) });
         this.nodes.set(path, committed);
         return { committed: true, snapshot: { val: () => this.read(path) } };
@@ -528,7 +529,31 @@ test('B01/B02: duplicates and changed ts do not replace first receipt or earlier
   await write({ ...incident(), ts: null });
   assert.equal(db.read(eventPath).receivedAt, first.receivedAt);
   assert.equal(db.read(eventPath).ts, first.ts);
+  assert.equal(db.read(eventPath).updatedAt, undefined);
   assert.equal(eventCount(db), 1);
+});
+
+test('material enrichment sets updatedAt without changing first receipt or state', options, async () => {
+  const { db, write } = fixture();
+  await write({ id: deviceId, seq: 1, type: 'crash' });
+  const first = db.read(eventPath);
+  assert.equal(first.updatedAt, undefined);
+  await write({ id: deviceId, seq: 1, type: 'crash', queued: true,
+    position: { lat: -9.9, lon: -76.2 } });
+  const enriched = db.read(eventPath);
+  assert.equal(enriched.receivedAt, first.receivedAt);
+  assert.ok(enriched.updatedAt > first.receivedAt);
+  assert.equal(enriched.queued, true);
+  await write({ id: deviceId, seq: 1, type: 'crash', queued: true,
+    position: { lat: -9.9, lon: -76.2 } });
+  assert.deepEqual(db.read(eventPath), enriched);
+  await write({ id: deviceId, seq: 2, type: 'cancel', cancels_seq: 1 });
+  const cancelled = db.read(eventPath);
+  assert.equal(cancelled.receivedAt, first.receivedAt);
+  assert.equal(cancelled.cancelledBySeq, 2);
+  assert.ok(cancelled.updatedAt > enriched.updatedAt);
+  await write({ id: deviceId, seq: 2, type: 'cancel', cancels_seq: 1 });
+  assert.deepEqual(db.read(eventPath), cancelled);
 });
 
 test('B03/B04/H01: compatible additions preserve history and reject destructive null', options, async () => {

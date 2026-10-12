@@ -1,5 +1,6 @@
 /// Relative time formatting for status rows, e.g. "Hace 2 min".
-String formatRelativeTime(DateTime dateTime) {
+String formatRelativeTime(DateTime? dateTime) {
+  if (dateTime == null) return 'Fecha no disponible';
   final difference = DateTime.now().difference(dateTime);
 
   if (difference.inSeconds < 60) return 'Hace un momento';

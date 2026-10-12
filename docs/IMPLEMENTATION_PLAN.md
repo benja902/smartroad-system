@@ -71,8 +71,10 @@ La identidad del SDA se confirmó con una prueba física y eventos reales para s
 
 **Reconexión MQTT — verificación local cerrada.** Una prueba con broker local controlado comprobó sesión persistente solicitada con `clientId` estable, reconexión, recepción de un mensaje pendiente y otro posterior, y deduplicación de una retransmisión. La cola y la sesión reanudada fueron provistas por el broker de prueba; la retención y reentrega de HiveMQ real, el comportamiento del firmware y la recuperación tras un fallo de RTDB continúan pendientes de validación operativa.
 
+**Consistencia del incidente — incremento aprobado y cerrado en software local.** El contrato MQTT mantiene la identidad `(deviceId, seq)`, la primera recepción y la evidencia de cancelación/reconocimiento; incorpora `updatedAt` únicamente ante información material nueva. Flutter conserva como ausentes los tiempos de servidor que faltan en históricos, y mantiene `queued` y los datos de calidad GNSS existentes. Se comprobaron 54/54 pruebas dirigidas del bridge, 7/7 con Database Emulator, 29/29 Flutter de modelo/repositorio y 35/35 de presentación/DEV; el análisis estático de los archivos Flutter afectados no encontró problemas. La unidad de `ts` del firmware real sigue pendiente de verificación física. El origen múltiple MQTT–Iridium y la calidad CEP siguen en Fase 7, donde se decidirá su representación sin anticipar el webhook.
+
 - [ ] Definir el modelo canónico que recibirán Flutter, MQTT y RockBLOCK.
-- [ ] Separar tiempo del dispositivo, tiempo de recepción y tiempo de actualización.
+- [x] Separar tiempo del dispositivo, tiempo de recepción y tiempo de actualización. `ts` permanece independiente; `receivedAt` es la primera recepción y `updatedAt` solo marca incorporaciones materiales posteriores. Su ausencia histórica permanece explícita.
 - [ ] Representar explícitamente `queued`, fuente de transporte y calidad de datos.
 - [x] Definir reglas de fusión para incidentes parciales y enriquecimiento posterior. Política MQTT aprobada y comprobada en 2.1b; la convergencia Iridium↔MQTT sigue en Fase 7.
 - [x] Soportar cancelaciones que lleguen antes o después del evento original. Comprobado en 2.1c con duplicados, concurrencia y recuperación local.

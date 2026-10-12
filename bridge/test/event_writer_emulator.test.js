@@ -115,13 +115,20 @@ test('Database Emulator: transaction keeps first receipt and compatible enrichme
     assert.equal(results.filter((result) => result.written).length, 1);
     const first = (await ref.get()).val();
     assert.equal(typeof first.receivedAt, 'number');
+    assert.equal(first.updatedAt, undefined);
     assert.equal(first.userId, 'owner-test');
     await persistEvent('SDA-TEST', {
       ...original, position: { lat: -9.9, lon: -76.2 },
     }, context);
     const enriched = (await ref.get()).val();
     assert.equal(enriched.receivedAt, first.receivedAt);
+    assert.equal(typeof enriched.updatedAt, 'number');
+    assert.ok(enriched.updatedAt >= first.receivedAt);
     assert.deepEqual(enriched.position, { lat: -9.9, lon: -76.2 });
+    await persistEvent('SDA-TEST', {
+      ...original, position: { lat: -9.9, lon: -76.2 },
+    }, context);
+    assert.deepEqual((await ref.get()).val(), enriched);
     await ref.remove();
   } finally {
     await deleteApp(app);

@@ -316,7 +316,15 @@ class FirebaseEventRepository implements EventRepository {
         .map((entry) => AccidentEvent.fromJson(entry.key, entry.value))
         .toList();
     events.sort(
-      (a, b) => (a.ts ?? a.receivedAt).compareTo(b.ts ?? b.receivedAt),
+      (a, b) {
+        final aTime = a.ts ?? a.receivedAt;
+        final bTime = b.ts ?? b.receivedAt;
+        if (aTime == null || bTime == null) {
+          if (aTime == null && bTime == null) return a.dedupKey.compareTo(b.dedupKey);
+          return aTime == null ? -1 : 1;
+        }
+        return aTime.compareTo(bTime);
+      },
     );
     return events;
   }
