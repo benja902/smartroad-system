@@ -302,28 +302,49 @@ export async function persistEvent(deviceId, ev, {
   if (kind !== 'diagnostic' && !association) reportDiagnostic?.('NO_ASSOCIATION');
   if (conflicts.size) reportDiagnostic?.('CONFLICTING_FIELD');
 
-  // The canonical row is committed first. Reuse the bridge's bounded recovery
-  // timer if its owner pointer cannot be written; keep the failure visible.
-  try {
-    await syncReadIndex(db, dedupKey, (await ref.get()).val());
-  } catch (error) {
-    scheduleRecovery?.();
-    throw error;
-  }
-
   let projected = false;
   if (ev.type === 'cancel') {
+    let cancelRow;
     try {
-      // ServerValue.TIMESTAMP in a transaction snapshot may be a local
-      // estimate. Read the committed row before copying its first receipt.
-      const cancelRow = (await ref.get()).val();
+      // Read the committed server time once; the transaction snapshot may
+      // contain a local estimate of ServerValue.TIMESTAMP.
+      cancelRow = (await ref.get()).val();
+    } catch (error) {
+      scheduleRecovery?.();
+      throw error;
+    }
+
+    let projectionError;
+    try {
+      // The original and its read pointers must lead the cancel row's
+      // historical pointers so Flutter sees cancelledBySeq sooner.
       projected = await projectCancellation(db, deviceId, cancelRow, serverTimestamp);
     } catch (error) {
       if (error instanceof CancellationConflictError) {
         reportDiagnostic?.('CONFLICTING_CANCELLATION');
-        throw error;
+        projectionError = error;
+      } else {
+        projectionError = new CancellationProjectionError(error);
       }
-      throw new CancellationProjectionError(error);
+    }
+
+    let indexError;
+    try {
+      // The cancel row is durable even if projection failed or conflicted.
+      await syncReadIndex(db, dedupKey, cancelRow);
+    } catch (error) {
+      scheduleRecovery?.();
+      indexError = error;
+    }
+    if (projectionError) throw projectionError;
+    if (indexError) throw indexError;
+  } else {
+    // Reuse the bridge's bounded recovery timer if a pointer fails.
+    try {
+      await syncReadIndex(db, dedupKey, (await ref.get()).val());
+    } catch (error) {
+      scheduleRecovery?.();
+      throw error;
     }
   }
 

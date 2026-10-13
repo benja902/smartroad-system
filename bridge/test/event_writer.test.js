@@ -18,9 +18,11 @@ const options = { timeout: 5000 };
 class MemoryDatabase {
   nodes = new Map();
   writes = [];
+  reads = [];
   clock = 1000;
   failProjectionOnce = false;
   failUserIndexOnce = false;
+  failCancelIndexOnce = false;
 
   ref(path) {
     return {
@@ -35,6 +37,11 @@ class MemoryDatabase {
         }
         const current = structuredClone(this.nodes.get(path) ?? null);
         const next = update(current);
+        if (this.failCancelIndexOnce && next?.eventKey === 'SDA-TEST_2' &&
+            path.startsWith('eventReadIndex/')) {
+          this.failCancelIndexOnce = false;
+          throw new Error('simulated cancel index failure');
+        }
         if (next === undefined) {
           return { committed: false, snapshot: { val: () => this.read(path) } };
         }
@@ -57,12 +64,15 @@ class MemoryDatabase {
         }
         this.nodes.set(path, current);
       },
-      get: async () => ({
-        val: () => this.nodes.has(path) ? this.read(path) : Object.fromEntries(
-          [...this.nodes]
-            .filter(([key]) => key.startsWith(`${path}/`))
-            .map(([key, value]) => [key.slice(path.length + 1), structuredClone(value)])),
-      }),
+      get: async () => {
+        this.reads.push(path);
+        return {
+          val: () => this.nodes.has(path) ? this.read(path) : Object.fromEntries(
+            [...this.nodes]
+              .filter(([key]) => key.startsWith(`${path}/`))
+              .map(([key, value]) => [key.slice(path.length + 1), structuredClone(value)])),
+        };
+      },
     };
   }
 
@@ -256,6 +266,19 @@ test('C01/C03: later cancel keeps its row and first cancelledAt after duplicate 
   assert.deepEqual(db.read(eventPath), original);
 });
 
+test('cancel projects and indexes original before its own pointers with one committed cancel read', options, async () => {
+  const { db, write } = fixture();
+  await write(incident('sos'));
+  const firstWrite = db.writes.length;
+  await write(cancellation);
+  assert.deepEqual(db.writes.slice(firstWrite)
+    .filter(({ path }) => path.startsWith('eventReadIndex/'))
+    .map(({ patch }) => patch.eventKey),
+  ['SDA-TEST_1', 'SDA-TEST_1', 'SDA-TEST_2', 'SDA-TEST_2']);
+  assert.equal(db.reads.filter((path) => path === 'events/SDA-TEST_2').length, 1);
+  assert.equal(db.read(eventPath).cancelledBySeq, 2);
+});
+
 test('C02: early cancel has no original receivedAt and completion does not reactivate it', options, async () => {
   const { db, write } = fixture();
   await write(cancellation);
@@ -282,6 +305,7 @@ test('C04: concurrent incompatible cancellations retain the first projection and
   assert.equal(db.read(eventPath).cancelledBySeq, 2);
   assert.equal(db.read(eventPath).cancelledAt, db.read('events/SDA-TEST_2').receivedAt);
   assert.equal(db.read('events/SDA-TEST_3').type, 'cancel');
+  assert.equal([...db.nodes.values()].filter((row) => row?.eventKey === 'SDA-TEST_3').length, 2);
 });
 
 test('C04: a reused cancel seq cannot change its original reference', options, async () => {
@@ -302,6 +326,7 @@ test('C05: failed projection is visible; restart scan repairs it once without mo
   await assert.rejects(write(cancellation), CancellationProjectionError);
   const cancelRow = db.read('events/SDA-TEST_2');
   assert.equal(cancelRow.type, 'cancel');
+  assert.equal([...db.nodes.values()].filter((row) => row?.eventKey === 'SDA-TEST_2').length, 2);
   assert.equal(db.read(eventPath).cancelledAt, undefined);
   const first = await reconcileStoredCancellations(db);
   assert.deepEqual(first, { scanned: 1, projected: 1 });
@@ -310,6 +335,23 @@ test('C05: failed projection is visible; restart scan repairs it once without mo
   assert.equal(repaired.cancelledBySeq, 2);
   assert.deepEqual(await reconcileStoredCancellations(db), { scanned: 1, projected: 0 });
   assert.deepEqual(db.read(eventPath), repaired);
+});
+
+test('failed cancel pointer schedules recovery after original was projected', options, async () => {
+  const { db, write } = fixture();
+  await write(incident('sos'));
+  db.failCancelIndexOnce = true;
+  let schedules = 0;
+  await assert.rejects(persistEvent(deviceId, cancellation, {
+    db, serverTimestamp,
+    resolveAssociation: async () => ({ userId: 'owner-test', vehicleId: 'vehicle-test' }),
+    scheduleRecovery: () => { schedules++; },
+  }), /simulated cancel index failure/);
+  assert.equal(db.read(eventPath).cancelledBySeq, 2);
+  assert.equal(schedules, 1);
+  assert.deepEqual(await reconcileChronologicalReadIndex(db), { scanned: 2, updated: 1 });
+  assert.equal([...db.nodes.values()].filter((row) => row?.eventKey === 'SDA-TEST_2').length, 2);
+  assert.deepEqual(await reconcileChronologicalReadIndex(db), { scanned: 2, updated: 0 });
 });
 
 test('C05: duplicate cancel delivery also repairs a partial write', options, async () => {

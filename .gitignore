@@ -53,6 +53,7 @@ lib/firebase_options.dart
 
 # Private local database backups
 /.local_backups/*
+/.latency_logs/
 
 # Claude Code local settings
 .claude/
