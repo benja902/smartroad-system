@@ -191,6 +191,23 @@ test('only the owner can read the active linked SDA, never the registry or an ol
   await assertFails(db('active').ref('devices/SDA-OWNED').once('value'));
 });
 
+test('owner SDA read follows the active reciprocal vehicle association', async () => {
+  await env.withSecurityRulesDisabled(async context => {
+    await context.database().ref().update({
+      'vehicles/owned/deviceId': 'SDA-REPLACEMENT',
+      'deviceRegistry/SDA-REPLACEMENT': { vehicleId: 'owned', active: true },
+      'devices/SDA-REPLACEMENT': { online: true },
+    });
+  });
+  await assertFails(db('owner').ref('devices/SDA-OWNED').once('value'));
+  await assertSucceeds(db('owner').ref('devices/SDA-REPLACEMENT').once('value'));
+  await assertFails(db('active').ref('devices/SDA-REPLACEMENT').once('value'));
+  await env.withSecurityRulesDisabled(async context => {
+    await context.database().ref('deviceRegistry/SDA-REPLACEMENT/active').set(false);
+  });
+  await assertFails(db('owner').ref('devices/SDA-REPLACEMENT').once('value'));
+});
+
 test('owner can list contacts of their vehicle, not contacts of another vehicle', async () => {
   await assertSucceeds(db('owner').ref('vehicleContacts/owned').once('value'));
   await assertFails(db('owner').ref('vehicleContacts').once('value'));

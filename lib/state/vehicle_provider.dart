@@ -31,10 +31,16 @@ class VehicleProvider extends ChangeNotifier {
       return;
     }
 
-    _subscription = _vehicleRepository.watchPrimaryVehicle(userId).listen((vehicle) {
-      _vehicle = vehicle;
-      notifyListeners();
-    });
+    _subscription = _vehicleRepository.watchPrimaryVehicle(userId).listen(
+      (vehicle) {
+        _vehicle = vehicle;
+        notifyListeners();
+      },
+      onError: (Object _) {
+        _vehicle = null;
+        notifyListeners();
+      },
+    );
     notifyListeners();
   }
 

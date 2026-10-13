@@ -94,8 +94,8 @@ La identidad del SDA se confirmó con una prueba física y eventos reales para s
 
 ## Fase 3 — Roles y contactos de emergencia
 
-- [ ] Implementar la resolución de las relaciones autorizadas del usuario autenticado con cada vehículo.
-- [ ] Implementar lectura del vehículo y SDA asignados al propietario.
+- [ ] Implementar la resolución de las relaciones autorizadas del usuario autenticado con cada vehículo. **Avance 3.1 aprobado:** relación del propietario resuelta sin selección arbitraria; la resolución de contactos sigue pendiente.
+- [x] Implementar lectura del vehículo y SDA asignados al propietario. Fase 3.1 aprobada: pruebas dirigidas Flutter (5/5) y reglas RTDB con Emulator (17/17), análisis estático dirigido sin problemas y validación manual satisfactoria de `main.dart` con el propietario real.
 - [ ] Implementar la incorporación mínima de contactos mediante un flujo seguro y auditable.
 - [ ] Implementar aceptación o revocación de autorización.
 - [ ] Restringir al contacto a incidentes autorizados y críticos.

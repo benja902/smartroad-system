@@ -30,10 +30,16 @@ class DeviceStatusProvider extends ChangeNotifier {
       return;
     }
 
-    _subscription = _deviceRepository.watchStatus(deviceId).listen((status) {
-      _status = status;
-      notifyListeners();
-    });
+    _subscription = _deviceRepository.watchStatus(deviceId).listen(
+      (status) {
+        _status = status;
+        notifyListeners();
+      },
+      onError: (Object _) {
+        _status = null;
+        notifyListeners();
+      },
+    );
     notifyListeners();
   }
 
