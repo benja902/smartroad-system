@@ -11,8 +11,9 @@ import 'state/session_provider.dart';
 
 class UrbesApp extends StatefulWidget {
   final bool includeDevRoute;
+  final TransitionBuilder? devBuilder;
 
-  const UrbesApp({super.key, this.includeDevRoute = false});
+  const UrbesApp({super.key, this.includeDevRoute = false, this.devBuilder});
 
   @override
   State<UrbesApp> createState() => _UrbesAppState();
@@ -44,6 +45,7 @@ class _UrbesAppState extends State<UrbesApp> {
         title: 'URBES',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
+        builder: widget.devBuilder,
         routerConfig: _router,
       ),
     );

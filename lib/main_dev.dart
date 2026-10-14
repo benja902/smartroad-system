@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'app.dart';
+import 'screens/dev/brand_intro/dev_brand_intro.dart';
 import 'repositories/mock/mock_auth_repository.dart';
 import 'repositories/mock/mock_device_repository.dart';
 import 'repositories/mock/mock_event_repository.dart';
@@ -23,7 +25,13 @@ void main() {
       deviceRepository: MockDeviceRepository(),
       eventRepository: MockEventRepository(),
       vehicleRepository: MockVehicleRepository(),
-      child: const UrbesApp(includeDevRoute: true),
+      child: ChangeNotifierProvider(
+        create: (_) => DevBrandIntroController(),
+        child: UrbesApp(
+          includeDevRoute: true,
+          devBuilder: (context, child) => DevBrandIntroHost(child: child!),
+        ),
+      ),
     ),
   );
 }

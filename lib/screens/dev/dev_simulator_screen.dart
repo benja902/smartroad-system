@@ -13,6 +13,7 @@ import '../../repositories/mock/mock_device_repository.dart';
 import '../../repositories/mock/mock_event_repository.dart';
 import '../../state/device_status_provider.dart';
 import '../../state/event_provider.dart';
+import 'brand_intro/dev_brand_intro.dart';
 
 /// Development-only panel to demonstrate the whole system without
 /// hardware. Only reachable from main_dev.dart (never main.dart). Casts
@@ -31,6 +32,7 @@ class DevSimulatorScreen extends StatelessWidget {
     final criticalEvent = context.watch<EventProvider>().criticalEvent;
     final events = context.watch<EventProvider>().events;
     final positionAvailable = status?.gnss?.fix == true;
+    final brandIntro = context.read<DevBrandIntroController?>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Panel de desarrollo')),
@@ -41,6 +43,18 @@ class DevSimulatorScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.edgeMargin),
               children: [
+                _SectionCard(
+                  title: 'Identidad experimental',
+                  children: [
+                    _ActionButton(
+                      label: 'Reproducir intro URBES',
+                      onPressed: brandIntro == null || criticalEvent != null
+                          ? null
+                          : brandIntro.replay,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
                 Text(
                   'Simula el hardware y los eventos del sistema SDA sin necesidad de un equipo conectado.',
                   style: AppTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
