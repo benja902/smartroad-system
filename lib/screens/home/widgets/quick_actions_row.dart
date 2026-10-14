@@ -12,12 +12,15 @@ class QuickAction {
   final String subtitle;
   final VoidCallback onTap;
 
-  const QuickAction({required this.icon, required this.label, required this.subtitle, required this.onTap});
+  const QuickAction({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.onTap,
+  });
 }
 
-/// Row of quick-access actions. Uses Expanded so each tile shares the
-/// available width evenly regardless of screen size, instead of a fixed
-/// column width.
+/// Equal-width actions, stacked on small screens or with large text.
 class QuickActionsRow extends StatelessWidget {
   final List<QuickAction> actions;
 
@@ -25,14 +28,32 @@ class QuickActionsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var i = 0; i < actions.length; i++) ...[
-          if (i > 0) const SizedBox(width: AppSpacing.sm),
-          Expanded(child: _QuickActionTile(action: actions[i])),
-        ],
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final stacked =
+            constraints.maxWidth < 320 ||
+            MediaQuery.textScalerOf(context).scale(12) > 18;
+        if (stacked) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var i = 0; i < actions.length; i++) ...[
+                if (i > 0) const SizedBox(height: AppSpacing.sm),
+                _QuickActionTile(action: actions[i]),
+              ],
+            ],
+          );
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < actions.length; i++) ...[
+              if (i > 0) const SizedBox(width: AppSpacing.sm),
+              Expanded(child: _QuickActionTile(action: actions[i])),
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -48,10 +69,21 @@ class _QuickActionTile extends StatelessWidget {
       color: AppColors.surfaceCard,
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: InkWell(
+        overlayColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.pressed) ||
+              states.contains(WidgetState.focused) ||
+              states.contains(WidgetState.hovered)) {
+            return AppColors.chipBackground(AppColors.primary);
+          }
+          return null;
+        }),
         onTap: action.onTap,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.base),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.sm,
+            horizontal: AppSpacing.base,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.md),
             boxShadow: AppShadows.card,
@@ -61,22 +93,28 @@ class _QuickActionTile extends StatelessWidget {
               Container(
                 width: 40,
                 height: 40,
-                decoration: const BoxDecoration(color: AppColors.background, shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                  color: AppColors.background,
+                  shape: BoxShape.circle,
+                ),
                 child: Icon(action.icon, color: AppColors.primary),
               ),
               const SizedBox(height: AppSpacing.base),
               Text(
                 action.label,
                 textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.labelSm.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700),
+                style: AppTypography.labelSm.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 action.subtitle,
                 textAlign: TextAlign.center,
-                style: AppTypography.bodyMd.copyWith(fontSize: 10, color: AppColors.onSurfaceVariant),
+                style: AppTypography.labelSm.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
             ],
           ),

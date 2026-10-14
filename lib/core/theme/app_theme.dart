@@ -66,14 +66,29 @@ class AppTheme {
         ),
         labelStyle: AppTypography.labelSm,
       ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.surfaceCard,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.onSurfaceVariant,
-        type: BottomNavigationBarType.fixed,
-        showUnselectedLabels: true,
-        selectedLabelStyle: AppTypography.labelSm,
-        unselectedLabelStyle: AppTypography.labelSm,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        indicatorColor: AppColors.chipBackground(AppColors.primary),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(
+            color: states.contains(WidgetState.selected)
+                ? AppColors.primary
+                : AppColors.onSurfaceVariant,
+          ),
+        ),
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => AppTypography.labelSm.copyWith(
+            color: states.contains(WidgetState.selected)
+                ? AppColors.primary
+                : AppColors.onSurfaceVariant,
+            fontWeight: states.contains(WidgetState.selected)
+                ? FontWeight.w800
+                : FontWeight.w600,
+          ),
+        ),
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,

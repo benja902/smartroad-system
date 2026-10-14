@@ -12,6 +12,7 @@ import '../../state/event_provider.dart';
 import '../../state/session_provider.dart';
 import '../../state/vehicle_provider.dart';
 import '../../widgets/attention_banner.dart';
+import '../../widgets/screen_entrance.dart';
 import 'widgets/device_indicators_grid.dart';
 import 'widgets/location_map_placeholder.dart';
 import 'widgets/quick_actions_row.dart';
@@ -30,81 +31,114 @@ class HomeScreen extends StatelessWidget {
     final vehicle = context.watch<VehicleProvider>().vehicle;
     final eventProvider = context.read<EventProvider>();
 
-    final attentionEvents = events.where((e) => classify(e) == AlertPresentation.attention).toList();
-    final topAttentionEvent = attentionEvents.isEmpty ? null : attentionEvents.last;
+    final attentionEvents = events
+        .where((e) => classify(e) == AlertPresentation.attention)
+        .toList();
+    final topAttentionEvent = attentionEvents.isEmpty
+        ? null
+        : attentionEvents.last;
 
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: AppSpacing.contentMaxWidth),
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _Header(monitoring: deviceStatus?.online ?? false)),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.edgeMargin,
-                    AppSpacing.sm,
-                    AppSpacing.edgeMargin,
-                    AppSpacing.lg,
+    return ScreenEntrance(
+      builder: (context, entrance) => Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: AppSpacing.contentMaxWidth,
+              ),
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: _Header(monitoring: deviceStatus?.online ?? false),
                   ),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _WelcomeSection(userName: user?.name ?? 'Usuario'),
-                      const SizedBox(height: AppSpacing.md),
-                      UrbesStatusCard(
-                        operational: deviceStatus?.online ?? false,
-                        monitoring: deviceStatus?.online ?? false,
-                      ),
-                      if (topAttentionEvent != null) ...[
-                        const SizedBox(height: AppSpacing.md),
-                        AttentionBanner(
-                          event: topAttentionEvent,
-                          onAcknowledge: () => eventProvider.acknowledge(topAttentionEvent.dedupKey),
-                          onViewDetails: () => context.push('${AppRoutes.incidentDetail}/${topAttentionEvent.dedupKey}'),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.edgeMargin,
+                      AppSpacing.sm,
+                      AppSpacing.edgeMargin,
+                      AppSpacing.lg,
+                    ),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        EntranceSection(
+                          animation: entrance,
+                          fade: true,
+                          child: _WelcomeSection(
+                            userName: user?.name ?? 'Usuario',
+                          ),
                         ),
-                      ],
-                      const SizedBox(height: AppSpacing.md),
-                      if (deviceStatus != null) DeviceIndicatorsGrid(status: deviceStatus),
-                      const SizedBox(height: AppSpacing.md),
-                      VehicleSummaryCard(
-                        vehicle: vehicle,
-                        deviceConnected: deviceStatus?.online ?? false,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      LocationMapPlaceholder(
-                        position: deviceStatus?.gnss,
-                        onViewMap: () {},
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      QuickActionsRow(
-                        actions: [
-                          QuickAction(
-                            icon: Icons.group_outlined,
-                            label: 'Contactos de emergencia',
-                            subtitle: 'Gestionar',
-                            onTap: () => context.push(AppRoutes.contacts),
+                        const SizedBox(height: AppSpacing.md),
+                        EntranceSection(
+                          animation: entrance,
+                          start: 0.15,
+                          child: UrbesStatusCard(
+                            operational: deviceStatus?.online ?? false,
+                            monitoring: deviceStatus?.online ?? false,
                           ),
-                          QuickAction(
-                            icon: Icons.history_outlined,
-                            label: 'Historial',
-                            subtitle: 'Ver viajes',
-                            onTap: () => context.go(AppRoutes.history),
-                          ),
-                          QuickAction(
-                            icon: Icons.directions_car_outlined,
-                            label: 'Vehículo',
-                            subtitle: 'Detalles',
-                            onTap: () => context.go(AppRoutes.vehicle),
+                        ),
+                        if (topAttentionEvent != null) ...[
+                          const SizedBox(height: AppSpacing.md),
+                          AttentionBanner(
+                            event: topAttentionEvent,
+                            onAcknowledge: () => eventProvider.acknowledge(
+                              topAttentionEvent.dedupKey,
+                            ),
+                            onViewDetails: () => context.push(
+                              '${AppRoutes.incidentDetail}/${topAttentionEvent.dedupKey}',
+                            ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      RecentAlertsPreview(events: events),
-                    ]),
+                        const SizedBox(height: AppSpacing.md),
+                        if (deviceStatus != null)
+                          EntranceSection(
+                            animation: entrance,
+                            start: 0.25,
+                            child: DeviceIndicatorsGrid(status: deviceStatus),
+                          ),
+                        const SizedBox(height: AppSpacing.md),
+                        EntranceSection(
+                          animation: entrance,
+                          start: 0.25,
+                          child: VehicleSummaryCard(
+                            vehicle: vehicle,
+                            deviceConnected: deviceStatus?.online ?? false,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        LocationMapPlaceholder(
+                          position: deviceStatus?.gnss,
+                          onViewMap: () {},
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        QuickActionsRow(
+                          actions: [
+                            QuickAction(
+                              icon: Icons.group_outlined,
+                              label: 'Contactos de emergencia',
+                              subtitle: 'Gestionar',
+                              onTap: () => context.push(AppRoutes.contacts),
+                            ),
+                            QuickAction(
+                              icon: Icons.history_outlined,
+                              label: 'Historial',
+                              subtitle: 'Ver viajes',
+                              onTap: () => context.go(AppRoutes.history),
+                            ),
+                            QuickAction(
+                              icon: Icons.directions_car_outlined,
+                              label: 'Vehículo',
+                              subtitle: 'Detalles',
+                              onTap: () => context.go(AppRoutes.vehicle),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        RecentAlertsPreview(events: events),
+                      ]),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -121,12 +155,21 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.edgeMargin, vertical: AppSpacing.base),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.edgeMargin,
+        vertical: AppSpacing.base,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Icon(Icons.shield_outlined, color: AppColors.onSurfaceVariant),
-          Text('URBES', style: AppTypography.headlineMd.copyWith(color: AppColors.primary, fontWeight: FontWeight.w800)),
+          Text(
+            'URBES',
+            style: AppTypography.headlineMd.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           Stack(
             clipBehavior: Clip.none,
             children: [
@@ -138,7 +181,10 @@ class _Header extends StatelessWidget {
                   child: Container(
                     width: 8,
                     height: 8,
-                    decoration: const BoxDecoration(color: AppColors.success, shape: BoxShape.circle),
+                    decoration: const BoxDecoration(
+                      color: AppColors.success,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
             ],
@@ -165,12 +211,16 @@ class _WelcomeSection extends StatelessWidget {
             children: [
               Text(
                 'Hola, ${userName.split(' ').first}',
-                style: AppTypography.displayLgMobile.copyWith(color: AppColors.primary),
+                style: AppTypography.displayLgMobile.copyWith(
+                  color: AppColors.primary,
+                ),
               ),
               const SizedBox(height: AppSpacing.base),
               Text(
                 'Tu sistema URBES está funcionando correctamente',
-                style: AppTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+                style: AppTypography.bodyMd.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -178,7 +228,10 @@ class _WelcomeSection extends StatelessWidget {
         Container(
           width: 48,
           height: 48,
-          decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+          decoration: const BoxDecoration(
+            color: AppColors.primary,
+            shape: BoxShape.circle,
+          ),
           child: const Icon(Icons.person, color: AppColors.onPrimary),
         ),
       ],

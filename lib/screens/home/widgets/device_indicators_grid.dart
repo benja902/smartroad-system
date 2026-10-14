@@ -23,7 +23,10 @@ class DeviceIndicatorsGrid extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final tileWidth = (constraints.maxWidth - AppSpacing.sm) / 2;
+        final largeText = MediaQuery.textScalerOf(context).scale(12) > 18;
+        final tileWidth = largeText
+            ? constraints.maxWidth
+            : (constraints.maxWidth - AppSpacing.sm) / 2;
         return Wrap(
           spacing: AppSpacing.sm,
           runSpacing: AppSpacing.sm,
@@ -32,7 +35,9 @@ class DeviceIndicatorsGrid extends StatelessWidget {
               width: tileWidth,
               child: _IndicatorTile(
                 icon: Icons.router_outlined,
-                label: status.online ? 'Dispositivo conectado' : 'Dispositivo desconectado',
+                label: status.online
+                    ? 'Dispositivo conectado'
+                    : 'Dispositivo desconectado',
                 ok: status.online,
               ),
             ),
@@ -40,7 +45,9 @@ class DeviceIndicatorsGrid extends StatelessWidget {
               width: tileWidth,
               child: _IndicatorTile(
                 icon: Icons.signal_cellular_alt,
-                label: cellularOk ? (status.modem?.tech ?? 'Celular conectado') : 'Sin conexión celular',
+                label: cellularOk
+                    ? (status.modem?.tech ?? 'Celular conectado')
+                    : 'Sin conexión celular',
                 ok: cellularOk,
               ),
             ),
@@ -72,7 +79,11 @@ class _IndicatorTile extends StatelessWidget {
   final String label;
   final bool ok;
 
-  const _IndicatorTile({required this.icon, required this.label, required this.ok});
+  const _IndicatorTile({
+    required this.icon,
+    required this.label,
+    required this.ok,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -92,8 +103,6 @@ class _IndicatorTile extends StatelessWidget {
             child: Text(
               label,
               style: AppTypography.labelSm.copyWith(color: AppColors.primary),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

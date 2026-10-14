@@ -12,13 +12,27 @@ class StatusPill extends StatelessWidget {
   final String label;
   final Color color;
   final IconData? icon;
+  final bool wrapLabel;
 
-  const StatusPill({super.key, required this.label, required this.color, this.icon});
+  const StatusPill({
+    super.key,
+    required this.label,
+    required this.color,
+    this.icon,
+    this.wrapLabel = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final text = Text(
+      label,
+      style: AppTypography.labelSm.copyWith(color: color),
+    );
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.base),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.base,
+      ),
       decoration: BoxDecoration(
         color: AppColors.chipBackground(color),
         borderRadius: AppRadius.pillRadius,
@@ -30,10 +44,7 @@ class StatusPill extends StatelessWidget {
             Icon(icon, size: 14, color: color),
             const SizedBox(width: AppSpacing.base),
           ],
-          Text(
-            label,
-            style: AppTypography.labelSm.copyWith(color: color),
-          ),
+          if (wrapLabel) Flexible(child: text) else text,
         ],
       ),
     );
