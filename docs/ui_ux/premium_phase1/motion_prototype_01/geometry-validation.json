@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "samples": 1201,
+  "monotonic_heading": true,
+  "max_projected_step_world": 0.45059394592468754,
+  "max_heading_step_degrees": 0.27645185708557846,
+  "projection": "fixed orthographic",
+  "turn_duration_ms": 2000,
+  "notes": "Mathematical continuity, not a browser or Android FPS measurement."
+}

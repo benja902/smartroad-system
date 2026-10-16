@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'">
+<title>URBES · Motion Prototype 01</title><link rel="stylesheet" href="styles.css"><script defer src="assets.js"></script><script defer src="vehicle.js"></script><script defer src="prototype.js"></script></head>
+<body><main><header><p>URBES Premium Redesign · Motion Prototype 01</p><h1>Una curva. Una escena. Un acceso.</h1><p>Empieza por el giro aislado; después compara la construcción completa y la entrega al Login. Prototipo local de presentación, sin autenticación ni servicios reales.</p></header>
+<section class="studio"><div class="controls" aria-label="Controles de revisión"><h2>Revisión del movimiento</h2>
+<label for="mode">Recorrido de revisión</label><select id="mode"><option value="vehicle">1. Solo vehículo · 2 s</option><option value="full">2. Secuencia completa · 3,8 s</option><option value="delivery">3. Splash → Login · 0,9 s</option></select>
+<button id="play">Reproducir</button><button id="pause">Pausar</button><button id="restart">Reiniciar</button>
+<label for="speed">Velocidad</label><select id="speed"><option value="1">1×</option><option value=".5">0,5×</option><option value=".25">0,25×</option></select>
+<label for="seek">Posición de la secuencia</label><input id="seek" type="range" min="0" max="2000" step="1" value="0"><output id="readout">0 ms</output>
+<label class="check"><input id="reduce" type="checkbox">Omitir animaciones decorativas</label><button id="skip">Omitir introducción</button>
+<button id="critical">Simular prioridad de emergencia</button><button id="clear-critical" hidden>Salir de simulación crítica</button>
+<p id="status" role="status">Listo para revisar</p><p id="system-motion"></p><p>Sin reproducción automática. El movimiento reducido del sistema se respeta. Las interrupciones son demostraciones conceptuales del navegador.</p><p><a href="REVIEW.md">Tiempos, evidencia y límites</a> · <a href="turn-contact.png">Giro: vistas intermedias</a></p></div>
+<div class="preview"><div class="artboard"><svg id="stage" viewBox="0 0 620 430" aria-hidden="true"></svg>
+<div id="login" hidden inert><div class="login-title"><h2>Bienvenido.</h2><p>Consulta el estado de tu vehículo<br>y sus alertas.</p></div>
+<div class="login-fields"><label for="demo-email">Correo</label><input id="demo-email" type="text" value="pilot@example.invalid" readonly autocomplete="off"><label for="demo-password">Contraseña</label><div class="password"><input id="demo-password" type="password" value="demo" readonly autocomplete="off"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12Q12 0 22 12Q12 24 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></div></div>
+<div class="login-action"><button id="demo-submit" type="button">Iniciar sesión</button><p>Usa tu cuenta registrada.</p></div></div>
+<section id="critical-view" hidden><p>Simulación local</p><h2>Incidente crítico</h2><p>La escena decorativa se retira inmediatamente.</p></section></div><p class="caption">Ilustración derivada de composition_v2. Formulario ficticio, sin envío. Una reproducción fluida aquí no garantiza rendimiento Android.</p></div></section>
+</main></body></html>

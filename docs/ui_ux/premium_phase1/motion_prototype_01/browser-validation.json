@@ -1,0 +1,113 @@
+{
+  "passed": true,
+  "total": 26,
+  "results": [
+    {
+      "name": "Direct file opening; no autoplay",
+      "passed": true
+    },
+    {
+      "name": "Live rAF playback advances",
+      "passed": true
+    },
+    {
+      "name": "Pause retains time",
+      "passed": true
+    },
+    {
+      "name": "Reduced speed selected without restarting",
+      "passed": true
+    },
+    {
+      "name": "Restart resets progress",
+      "passed": true
+    },
+    {
+      "name": "Direct isometric opening without former road/emblem",
+      "passed": true
+    },
+    {
+      "name": "Supplied logo preserves its three paths and original fills",
+      "passed": true
+    },
+    {
+      "name": "One logo moves continuously to the header",
+      "passed": true
+    },
+    {
+      "name": "Full sequence hides form until delivery",
+      "passed": true
+    },
+    {
+      "name": "Fields stay unfocusable before their entry",
+      "passed": true
+    },
+    {
+      "name": "Login entry after reveal",
+      "passed": true
+    },
+    {
+      "name": "One persistent scene instance",
+      "passed": true
+    },
+    {
+      "name": "Replay starts a fresh finite sequence",
+      "passed": true
+    },
+    {
+      "name": "Skip immediately cancels playback",
+      "passed": true
+    },
+    {
+      "name": "Critical overrides active playback",
+      "passed": true
+    },
+    {
+      "name": "Critical resists skip/replay/reduced motion",
+      "passed": true
+    },
+    {
+      "name": "Clear critical delivers static target",
+      "passed": true
+    },
+    {
+      "name": "Reduced motion blocks decorative playback",
+      "passed": true
+    },
+    {
+      "name": "Disabling reduced motion never autoplays",
+      "passed": true
+    },
+    {
+      "name": "Background interruption never resumes",
+      "passed": true
+    },
+    {
+      "name": "Delivery-only mode ends in login",
+      "passed": true
+    },
+    {
+      "name": "Readonly fictional login never authenticates",
+      "passed": true
+    },
+    {
+      "name": "Repeated seeks do not accumulate geometry",
+      "passed": true
+    },
+    {
+      "name": "System reduced-motion preference is honored",
+      "passed": true
+    },
+    {
+      "name": "320px review has no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "Full real-time playback completes without seeking",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "live_raf_verified": true,
+  "android_performance_measured": false
+}
