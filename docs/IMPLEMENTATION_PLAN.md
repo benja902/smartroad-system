@@ -94,7 +94,7 @@ La identidad del SDA se confirmó con una prueba física y eventos reales para s
 
 ## Fase 3 — Roles y contactos de emergencia
 
-- [ ] Implementar la resolución de las relaciones autorizadas del usuario autenticado con cada vehículo. **Avance 3.1 aprobado:** relación del propietario resuelta sin selección arbitraria; la resolución de contactos sigue pendiente.
+- [ ] Implementar la resolución de las relaciones autorizadas del usuario autenticado con cada vehículo. **Avance 3.1 aprobado:** relación del propietario resuelta sin selección arbitraria; contactos cuentan con el avance local descrito abajo, pendiente de integración.
 - [x] Implementar lectura del vehículo y SDA asignados al propietario. Fase 3.1 aprobada: pruebas dirigidas Flutter (5/5) y reglas RTDB con Emulator (17/17), análisis estático dirigido sin problemas y validación manual satisfactoria de `main.dart` con el propietario real.
 - [ ] Implementar la incorporación mínima de contactos mediante un flujo seguro y auditable.
 - [ ] Implementar aceptación o revocación de autorización.
@@ -102,6 +102,8 @@ La identidad del SDA se confirmó con una prueba física y eventos reales para s
 - [ ] Impedir que el contacto administre vehículo, SDA o eventos técnicos.
 - [ ] Añadir pruebas de autorización positiva y negativa por rol.
 - [ ] Conectar roles y contactos a repositorios de producción sin eliminar ni mezclar los mocks del modo DEV.
+
+**Avance local de resolución de contactos — 16 de octubre de 2026.** `FirebaseContactRelationRepository` descubre candidatos mediante el índice propio y verifica la relación activa de cada contacto; invalida resultados ante revocación, eliminación o error. El índice no concede acceso a datos canónicos. Validación dirigida: **29/29 pruebas Flutter**, **37/37 pruebas de reglas RTDB** con datos ficticios en Database Emulator local y análisis estático de los dos archivos Dart sin problemas. No se modificaron ni publicaron reglas reales. El repositorio todavía no tiene consumidor de producción; incorporación/aceptación de contactos, lectura de incidentes y conexión al flujo de la app siguen pendientes. Este incremento no cierra la Fase 3 ni habilita cuentas reales.
 
 ## Fase 4 — Notificaciones FCM
 

@@ -245,6 +245,42 @@ test('active contact reads only the critical projection and their own relation',
   await assertFails(db('active').ref('vehicleContacts/owned/pending').once('value'));
 });
 
+test('contact discovery reads the own map and verifies only the own relationship', async () => {
+  const index = await assertSucceeds(db('active').ref('users/active/vehicleIds').once('value'));
+  assert.deepEqual(index.val(), { owned: true });
+  const relation = await assertSucceeds(db('active').ref('vehicleContacts/owned/active').once('value'));
+  assert.equal(relation.val().status, 'active');
+  await assertFails(db('active').ref('users/owner/vehicleIds').once('value'));
+  await assertFails(db('active').ref('vehicleContacts').once('value'));
+  await assertFails(db('active').ref('vehicleContacts/owned/pending').once('value'));
+  await assertFails(db(null).ref('users/active/vehicleIds').once('value'));
+});
+
+test('stale discovery indexes cannot override pending or revoked relationships', async () => {
+  await env.withSecurityRulesDisabled(async context => {
+    await context.database().ref().update({
+      'users/pending/vehicleIds': { owned: true },
+      'users/revoked/vehicleIds': { owned: true },
+    });
+  });
+  for (const uid of ['pending', 'revoked']) {
+    await assertSucceeds(db(uid).ref(`users/${uid}/vehicleIds`).once('value'));
+    await assertSucceeds(db(uid).ref(`vehicleContacts/owned/${uid}`).once('value'));
+    await assertFails(db(uid).ref('contactIncidents/owned').once('value'));
+    await assertFails(db(uid).ref('vehicles/owned').once('value'));
+    await assertFails(db(uid).ref('devices/SDA-OWNED').once('value'));
+    await assertFails(db(uid).ref('events/current').once('value'));
+  }
+  await assertSucceeds(db('active').ref('contactIncidents/owned').once('value'));
+  await env.withSecurityRulesDisabled(async context => {
+    await context.database().ref('vehicleContacts/owned/active').update({
+      status: 'revoked', revokedAt: 2000,
+    });
+  });
+  // Leave vehicleIds in place to demonstrate that the index is not authority.
+  await assertFails(db('active').ref('contactIncidents/owned').once('value'));
+});
+
 test('revoked, unrelated and unauthenticated users cannot read projections', async () => {
   for (const uid of ['revoked', 'stranger', null]) {
     await assertFails(db(uid).ref('contactIncidents/owned').once('value'));
