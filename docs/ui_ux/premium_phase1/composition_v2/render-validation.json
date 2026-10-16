@@ -1,0 +1,30 @@
+[
+  {
+    "board": "comparison",
+    "width": 1560,
+    "height": 1150,
+    "bytes": 180514,
+    "returncode": 0
+  },
+  {
+    "board": "directions",
+    "width": 1050,
+    "height": 1150,
+    "bytes": 109877,
+    "returncode": 0
+  },
+  {
+    "board": "storyboard",
+    "width": 1560,
+    "height": 850,
+    "bytes": 121509,
+    "returncode": 0
+  },
+  {
+    "board": "heading",
+    "width": 1560,
+    "height": 700,
+    "bytes": 132768,
+    "returncode": 0
+  }
+]

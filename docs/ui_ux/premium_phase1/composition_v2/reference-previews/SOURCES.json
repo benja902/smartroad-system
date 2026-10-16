@@ -1,0 +1,23 @@
+{
+  "amico-carpool.png": {
+    "author": "Storyset / Freepik",
+    "page": "https://storyset.com/illustration/carpool/amico",
+    "url": "https://stories.freepiklabs.com/storage/75082/carpool-amico-10237.png",
+    "sha256": "6bae130a51da82015cf39ba1d8e8f47394ee99cb534689d28a88a114b76f76f1",
+    "use": "internal reference only; not included in compositions or Flutter"
+  },
+  "drawkit-isotopia.png": {
+    "author": "DrawKit / designstripe",
+    "page": "https://www.drawkit.com/illustrations/isotopia-illustrations",
+    "url": "https://cdn.prod.website-files.com/682d1c6b3c16bb956eafd6aa/682d1c6b3c16bb956eafdca7_DrawKit%20Illustrations%20in%20Use-00134%202.png",
+    "sha256": "49a2721060b55f0c422a9966b6b2dff40cbcbe7e065f56b671484ec15a95266a",
+    "use": "internal reference only; not included in compositions or Flutter"
+  },
+  "drawkit-transport.png": {
+    "author": "DrawKit / designstripe",
+    "page": "https://www.drawkit.com/illustrations/travel-transport-isometric",
+    "url": "https://cdn.prod.website-files.com/682d1c6b3c16bb956eafd6aa/682d1c6b3c16bb956eafdb66_Cover_Travel_%26_Transport_Isometric_Illustrations_Banner-min.png",
+    "sha256": "b694a8540f536cc5d0096498f83efd45f02666b6907840a1acca9bc47ffc8009",
+    "use": "internal reference only; not included in compositions or Flutter"
+  }
+}

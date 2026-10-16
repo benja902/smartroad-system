@@ -1,0 +1,17 @@
+{
+  "svg_xml": 11,
+  "html_pages": 5,
+  "unique_ids": true,
+  "links_resolve": true,
+  "active_scripts_forms": false,
+  "scene_layers": [
+    "layer-ground",
+    "layer-road",
+    "layer-architecture",
+    "layer-landscape",
+    "layer-vehicle",
+    "layer-brand-sign"
+  ],
+  "flutter_tests_run": false,
+  "physical_device_used": false
+}
