@@ -1,0 +1,122 @@
+[
+  {
+    "pair": "Navy anterior / blanco",
+    "foreground": "#1B2B48",
+    "background": "#FFFFFF",
+    "ratio": 14.13,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Navy marca / blanco",
+    "foreground": "#031B3B",
+    "background": "#FFFFFF",
+    "ratio": 17.16,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Aqua original / blanco",
+    "foreground": "#14E0D3",
+    "background": "#FFFFFF",
+    "ratio": 1.66,
+    "target": 3,
+    "meets": false
+  },
+  {
+    "pair": "Aqua original / navy",
+    "foreground": "#14E0D3",
+    "background": "#031B3B",
+    "ratio": 10.32,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Texto primario / canvas",
+    "foreground": "#1B1B1E",
+    "background": "#F8F9FA",
+    "ratio": 16.3,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Texto secundario / canvas",
+    "foreground": "#44474D",
+    "background": "#F8F9FA",
+    "ratio": 8.84,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Interacción oscura / blanco",
+    "foreground": "#006D68",
+    "background": "#FFFFFF",
+    "ratio": 6.2,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Navy / contenedor aqua",
+    "foreground": "#031B3B",
+    "background": "#CCF7F3",
+    "ratio": 14.84,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Foco / canvas",
+    "foreground": "#006D68",
+    "background": "#F8F9FA",
+    "ratio": 5.88,
+    "target": 3,
+    "meets": true
+  },
+  {
+    "pair": "Borde de control / blanco",
+    "foreground": "#75777E",
+    "background": "#FFFFFF",
+    "ratio": 4.47,
+    "target": 3,
+    "meets": true
+  },
+  {
+    "pair": "Verde de texto / tonal",
+    "foreground": "#176B50",
+    "background": "#EAF5EF",
+    "ratio": 5.78,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Ámbar de texto / tonal",
+    "foreground": "#80520A",
+    "background": "#FFF4DE",
+    "ratio": 6.15,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Crítico de texto / tonal",
+    "foreground": "#B52F34",
+    "background": "#FFF0EE",
+    "ratio": 5.54,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Desconocido / tonal",
+    "foreground": "#44474D",
+    "background": "#EDF3F5",
+    "ratio": 8.31,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Texto deshabilitado / superficie",
+    "foreground": "#526078",
+    "background": "#E3E8EF",
+    "ratio": 5.16,
+    "target": 4.5,
+    "meets": true
+  }
+]

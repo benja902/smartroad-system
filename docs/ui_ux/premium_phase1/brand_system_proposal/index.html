@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>URBES · Marca y componentes · propuesta provisional</title>
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../fixtures.js"></script>
+  <script defer src="../prototype.js"></script>
+<link rel="stylesheet" href="lab.css"><script defer src="tokens.js"></script><script defer src="../motion_prototype_01/assets.js"></script><script defer src="../motion_prototype_01/vehicle.js"></script><script defer src="lab.js"></script></head>
+<body>
+  <svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <symbol id="i-mark" viewBox="0 0 160 160"><path d="M80 23C109 23 126 39 126 77C126 111 105 130 80 137C55 130 34 111 34 77C34 39 51 23 80 23Z"/><path d="m80 62-20 23m20-23 20 23M80 62v49"/><circle cx="80" cy="62" r="4"/><circle cx="60" cy="85" r="4"/><circle cx="100" cy="85" r="4"/><circle cx="80" cy="111" r="4"/></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10H15v-6H9v6H3Z"/></symbol>
+      <symbol id="i-bell" viewBox="0 0 24 24"><path d="M5 9a7 7 0 0 1 14 0v6l2 3H3l2-3ZM10 21h4"/></symbol>
+      <symbol id="i-car" viewBox="0 0 24 24"><path d="m4 10 2-6h12l2 6v9h-3v-3H7v3H4ZM4 10h16M7 13h2m6 0h2"/></symbol>
+      <symbol id="i-history" viewBox="0 0 24 24"><path d="M4 9a9 9 0 1 1 0 6M4 4v5h5m3-3v6l4 2"/></symbol>
+      <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></symbol>
+      <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+      <symbol id="i-warning" viewBox="0 0 24 24"><path d="m12 3 10 18H2ZM12 9v5m0 3v.1"/></symbol>
+      <symbol id="i-signal" viewBox="0 0 24 24"><path d="M4 20v-4m5 4v-8m6 8V8m5 12V4"/></symbol>
+      <symbol id="i-battery" viewBox="0 0 24 24"><rect x="3" y="6" width="17" height="12" rx="2"/><path d="M23 10v4M7 10v4m4-4v4m4-4v4"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="m3 3 18 18M6 6c-3 2-4 6-4 6s4 7 10 7c2 0 4-1 6-2M10 5h2c6 0 10 7 10 7s-1 2-3 4"/></symbol>
+      <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+      <symbol id="i-link" viewBox="0 0 24 24"><path d="m9 15 6-6M7 14l-2 2a4 4 0 0 0 6 6l4-4m2-8 2-2a4 4 0 0 0-6-6L9 6"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.1"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 8a9 9 0 1 0 0 8M20 3v5h-5"/></symbol>
+      <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2 8a16 16 0 0 1 20 0M6 12a10 10 0 0 1 12 0m-8 4a4 4 0 0 1 4 0m-2 4v.1"/></symbol>
+      <symbol id="i-sos" viewBox="0 0 24 24"><path d="M8 12V7a4 4 0 0 1 8 0v5M5 12h14v8H5ZM12 2V0M3 6 1 4m20 2 2-2"/></symbol>
+      <symbol id="vehicle-profile" viewBox="0 0 340 126">
+        <path class="vehicle-fill" d="m24 77 7-19 51-11 40-29h81l44 31 51 9 15 18v20H24Z"/>
+        <path d="m24 77 7-19 51-11 40-29h81l44 31 51 9 15 18v20h-34m-44 0H104m-44 0H24V77m58-30h165M128 25l-31 22h60V25Zm38 0v22h65l-31-22ZM165 53v30m67-28 12 29m-15-26h-12m-65 0h-12M27 75h21m242-7h18M31 85h21m242 0h16"/>
+        <circle class="wheel" cx="82" cy="95" r="22"/><circle cx="82" cy="95" r="12"/><circle class="wheel" cx="257" cy="95" r="22"/><circle cx="257" cy="95" r="12"/>
+        <path class="road-line" d="M8 119h324"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="studio" id="studio">
+    <aside class="review-sidebar" aria-label="Herramientas de revisión, fuera de la app">
+      <a class="studio-brand" href="index.html" aria-label="Volver a la galería URBES"><svg class="brand-mark"><use href="#i-mark"/></svg><span>URBES<span class="brand-caption">Premium Redesign</span></span></a>
+      <div class="study-heading"><span class="study-version">Propuesta visual 01</span><h1>Silent Guardian,<br>más esencial.</h1><p>Cuatro momentos del propietario. Una identidad que acompaña y deja ver lo importante.</p></div>
+      <nav class="screen-picker" aria-label="Elegir pantalla del prototipo">
+        <button data-screen="login"><svg class="icon"><use href="#i-link"/></svg><span>Login<small>Marca y acceso</small></span></button>
+        <button data-screen="home"><svg class="icon"><use href="#i-home"/></svg><span>Inicio<small>Vehículo y últimos datos</small></span></button>
+        <button data-screen="alerts"><svg class="icon"><use href="#i-bell"/></svg><span>Alertas<small>Prioridad y contexto</small></span></button>
+        <button data-screen="emergency"><svg class="icon"><use href="#i-warning"/></svg><span>Emergencia<small>Claridad inmediata</small></span></button>
+      </nav>
+      <section class="review-controls" aria-label="Escenarios de diseño">
+        <label id="scenario-label" for="scenario">Escenario de Inicio</label><select id="scenario"></select>
+        <div id="type-control" hidden><label for="critical-type">Tipo de emergencia</label><select id="critical-type"><option value="crash">Choque grave</option><option value="rollover">Volcadura grave</option><option value="sos">SOS manual</option></select></div>
+        <div id="variant-control"><label for="home-variant">Superficie de Inicio</label><select id="home-variant"><option value="navy">Navy protagonista · propuesta</option><option value="light">Clara · alternativa</option></select></div>
+        <label for="text-scale">Escala de texto</label><select id="text-scale"><option value="1">100 %</option><option value="1.5">150 %</option><option value="2">200 %</option></select>
+        <label class="check-label"><input id="reduce-motion" type="checkbox"> Reducir movimiento</label>
+        <label class="check-label"><input id="ack-failure" type="checkbox"> Simular fallo del acuse</label>
+        <button class="studio-button danger-test" data-action="simulate-critical"><svg class="icon"><use href="#i-warning"/></svg>Simular llegada crítica</button>
+        <button class="studio-button" data-action="reset"><svg class="icon"><use href="#i-refresh"/></svg>Restablecer ejemplos</button>
+      </section>
+      <p class="study-disclaimer">Diseño experimental. Datos ficticios. Sin autenticación, comunicaciones ni cambios en Flutter.</p>
+      <a class="review-link" href="REVIEW.md">Diagnóstico, motion y decisiones</a>
+    </aside>
+
+    <main class="review-main">
+      <header class="review-toolbar"><div><p class="review-kicker">Estudio de experiencia móvil</p><h2 id="review-title">Una identidad. Cuatro momentos.</h2></div><div class="toolbar-actions"><span class="review-badge">Datos ficticios</span><button class="studio-button" data-action="gallery"><svg class="icon"><use href="#i-grid"/></svg>Ver las cuatro</button></div></header>
+      <div id="review-status" class="review-status" role="status" aria-live="polite"></div>
+      <section id="gallery" class="gallery" aria-label="Comparación de cuatro pantallas"></section>
+      <section id="focus" class="focus-layout" aria-label="Pantalla interactiva" hidden><div id="focused-phone"></div><aside class="screen-notes" id="screen-notes" aria-label="Criterios de diseño de la pantalla"></aside></section>
+      <footer class="review-footer">Prototipo independiente para decidir composición, contenido y movimiento. La fluidez y accesibilidad nativas se validarán posteriormente en Flutter.</footer>
+    </main>
+  </div>
+  <noscript>Activa JavaScript para observar las cuatro maquetas y sus escenarios. No se hacen solicitudes a servicios externos.</noscript>
+</body>
+</html>

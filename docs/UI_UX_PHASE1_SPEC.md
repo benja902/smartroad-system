@@ -2,6 +2,8 @@
 
 **Estado:** propuesta documental pendiente de aprobación. **Alcance:** aplicación Android Flutter del MVP de un vehículo y un SDA. Este documento no declara pantallas implementadas ni autoriza cambios de código, Firebase, firmware, navegación o políticas funcionales.
 
+**Actualización del 15 de octubre de 2026:** identidad SVG U + pulso seleccionada; roles cromáticos de interfaz y sistema de componentes aún provisionales. **Design System v1.0 no aprobado.** [Comparativa de cuatro pantallas](ui_ux/premium_phase1/brand_system_proposal/index.html), [propuesta de tokens y decisiones](ui_ux/premium_phase1/brand_system_proposal/REVIEW.md) e [inventario/mapa de componentes](ui_ux/premium_phase1/brand_system_proposal/COMPONENTS.md). Complementa la fase premium; el Motion Prototype 01 y sus SVG se conservan intactos. En roles de marca/componentes, esta actualización prevalece sobre las alternativas históricas de este borrador; no cambia políticas funcionales.
+
 ## Autoridad y límites
 
 - Para el comportamiento implementado prevalecen código y pruebas; para el orden funcional, [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md); para el siguiente bloque de incidentes, [`PHASE2_INCIDENT_SPEC.md`](PHASE2_INCIDENT_SPEC.md). [`AGENTS.md`](../AGENTS.md) rige las acciones del agente.
@@ -19,7 +21,7 @@ La intención útil de «Silent Guardian» es transmitir calma durante el monito
 | **B. Precisión técnica** | Neutros más fríos, divisores finos y estructura más compacta, con énfasis en datos verificables. | Diferencia con claridad estado del SDA, tiempos y calidad de ubicación. | Puede sentirse demasiado instrumental para un usuario en estrés; exige más revisión de legibilidad. | Alternativa si se prefiere una identidad más técnica. |
 | **C. Serenidad cálida** | Neutros menos fríos y menor presencia del navy, manteniendo colores semánticos de incidentes. | Tono más humano para familiares y contactos. | Cambia más la identidad visual y exige revisar todas las superficies y pares de contraste. | Solo con aprobación explícita de dirección de marca. |
 
-**Decisión D1 pendiente:** elegir A, B o C. La elección decide la dirección visual, no autoriza aún reemplazar los valores de `AppColors`, la tipografía ni los componentes. **Recomendación:** A, preservando los colores semánticos reconocibles mientras se verifican sus aplicaciones y contrastes. No adoptar automáticamente la paleta YAML histórica ni un color nuevo por estética.
+**Decisión D1 actualizada, pendiente de aprobación global:** la identidad U + pulso está seleccionada y la dirección isométrica de Splash/Login aprobada provisionalmente. A–C quedan como exploraciones históricas. Evaluar `#031B3B` como único primario UI y Aqua original `#14E0D3` como acento con usos accesibles; no mantener dos navy con el mismo rol. La selección de marca no autoriza reemplazar `AppColors` ni aprueba el Design System. Los SVG originales no se recolorean.
 
 ## 2. Design System propuesto
 
@@ -27,7 +29,8 @@ La intención útil de «Silent Guardian» es transmitir calma durante el monito
 
 | Rol | Base actual o criterio | Uso y restricción |
 | --- | --- | --- |
-| Marca / acción primaria | `#1B2B48` navy actual, provisional bajo D1 | Navegación, títulos prioritarios y acción primaria ordinaria. No representa conectividad. |
+| Marca / acción primaria | Código vigente `#1B2B48`; candidato `#031B3B`, pendiente bajo D1 | Un solo primario futuro para roles equivalentes. No representa conectividad; comparar antes de migrar. |
+| Acento de marca / interacción | SVG original `#14E0D3`; interacción clara candidata `#006D68` con contenedor `#CCF7F3` | Aqua sobre blanco ofrece 1,66:1: no usarlo como texto/borde/foco único. Derivados accesibles son roles UI, no cambios al SVG. |
 | Fondo / superficie | `#F8F9FA` / `#FFFFFF` actuales, provisionales | Separación de planos por tono y espacio; reservar sombra para elementos que realmente la necesiten. |
 | Texto principal / secundario | `#1B1B1E` / `#44474D` actuales | El secundario conserva contraste suficiente; `outline` no sustituye texto legible por defecto. |
 | Estado operativo confirmado | Verde actual `#2ECC71` como acento | Icono, borde o fondo suave acompañado de texto. Nunca inferir «operativo» solo por falta de datos. |
@@ -71,7 +74,7 @@ El punto de integración será `AppTheme`/`ThemeData` y los archivos actuales de
 | Emergencia | Aparición clara, estable y sin secuencia de entrada obligatoria. | Nada de cuenta regresiva, rebote o animación que postergue la información. |
 | Estado persistente de atención | Revisar el pulso actual: conservarlo solo si aporta detección y pasa accesibilidad/rendimiento; preferir énfasis estático cuando se reduzca movimiento. | Nunca sugerir sincronía con buzzer o preaviso del SDA. |
 
-Las duraciones son **parámetros de diseño candidatos**, no tiempos funcionales ni promesa de latencia. Se ajustarán con observación en dispositivo. Con la preferencia del sistema de reducir animaciones, las decorativas se eliminan y las explicativas se simplifican sin ocultar estados. No se propone portar los nuevos resortes de Material 3 por cuenta propia: la [guía actual de motion de Material](https://m3.material.io/styles/motion) señala que su implementación de física aún no está disponible para Flutter. **Decisión D3 pendiente:** aprobar esta política de movimiento sobrio o pedir una exploración visual alternativa antes de codificar.
+Las duraciones son **parámetros de diseño candidatos**, no tiempos funcionales ni promesa de latencia. Se ajustarán con observación en dispositivo. Con la preferencia del sistema de reducir animaciones, las decorativas se eliminan y las explicativas se simplifican sin ocultar estados. Evaluar feedback y transiciones nativas antes de introducir física personalizada o dependencias para imitar referencias. **Decisión D3 pendiente:** aprobar la política por componente; la intro de marca existente queda intacta y su duración no se aplica a navegación o controles.
 
 ## 4. UX, navegación y estados
 
@@ -143,8 +146,23 @@ Cada paso es una tarea revisable por separado. La aprobación de este documento 
 
 | ID | Alternativas a aprobar | Impacto |
 | --- | --- | --- |
-| **D1 Identidad** | A: Silent Guardian refinado (recomendada); B: precisión técnica; C: serenidad cálida. | Fija el carácter visual y cuánto cambia la paleta/superficie actual. |
+| **D1 Roles de marca** | Identidad SVG seleccionada; aprobar Brand Navy como único primario UI y usos/derivados de Aqua. | Validar comparativa y contraste; no recolorear SVG ni aprobar todavía Design System v1.0. |
 | **D2 Tipografía** | Mantener Manrope (recomendada inicialmente); comparar otra fuente antes de decidir. | Afecta legibilidad, carga de fuentes y coste de revisión de todas las pantallas. |
 | **D3 Movimiento** | Política sobria propuesta (recomendada); exploración de una variante con más expresión. | Afecta transiciones, pulso y alcance de pruebas de accesibilidad/rendimiento. |
 
 Una vez elegidas D1–D3, aún se requiere autorización explícita para cualquier implementación Flutter. Las decisiones funcionales sobre acciones vacías, frescura, mapa, origen de transporte y módulos pendientes permanecen en sus fases respectivas.
+
+## 9. Component-Driven Design y nueva marca — propuesta del 15 de octubre
+
+El rediseño puede cambiar significativamente composición y jerarquía, pero continúa sobre `AppTheme`, `ThemeData`, los archivos de `lib/core/theme/` y los widgets actuales. Los tokens de revisión son documentación temporal, no una segunda fuente de ejecución. Centralizar color, tipografía, espacio, forma, elevación, iconos y motion; convertirlos a roles del tema existente solo tras aprobación.
+
+- Componentes compartidos: botones existentes, `StatusPill`, `SectionHeader`, campos Material por tema, `ScreenEntrance` y shell nativo. [Mapa por pantalla y responsabilidades](ui_ux/premium_phase1/brand_system_proposal/COMPONENTS.md) distingue usos actuales de propuestas.
+- Separar acento, texto y superficie de estados. Verde/ámbar/coral solo para estados funcionales confirmados; desconocido/ausencia son neutros. Mantener independiente el error UI y no redefinir clasificadores.
+- Mantener `Provider`, `GoRouter`, repositorios y contratos. Los widgets reciben valores/callbacks resueltos; no hacen consultas Firebase ni deciden frescura, permisos o precedencia de incidentes.
+- Nuevas piezas únicamente con consumidores y responsabilidad claros: marca compartida; resúmenes de tiempo/ubicación o estados visuales solo si hay equivalencia presentacional y contratos definidos. Mantener piezas específicas dentro de su pantalla; no crear wrappers de cada primitiva.
+- Rendimiento: reconstrucciones localizadas y recursos estáticos preparados fuera de ticks. No regenerar geometría, clasificar listas ni animar grandes árboles por dato remoto. Medir antes de optimizar; la maqueta web no acredita FPS Android.
+- Accesibilidad: objetivos táctiles de 48 dp, contraste por rol/estado, texto escalado, orden semántico y movimiento reducido. La interacción empieza al toque; emergencia no espera decoración. Variantes oficiales oscuras/monocromáticas del logo pendientes de recibir, sin filtros/recoloreados del original.
+
+Tokens motion candidatos: respuesta 120 ms; selección 180 ms; entrada 240 ms; cambio local 180 ms; demora decorativa crítica 0; decoración reducida 0. Reutilizar feedback Material y controles finitos existentes. No modificar la animación de marca ni convertirla en patrón global.
+
+La comparación incluye Login, Inicio, Alertas y Emergencia con la misma estructura/datos en ambas paletas, más estados de componentes. Revisar allí D1–D3 y decisiones adicionales antes de declarar un Design System v1.0 o autorizar rediseño Flutter.

@@ -1,0 +1,81 @@
+{
+  "passed": true,
+  "total": 18,
+  "results": [
+    {
+      "name": "Four paired compositions, provisional status",
+      "passed": true
+    },
+    {
+      "name": "Local supplied logos loaded",
+      "passed": true
+    },
+    {
+      "name": "No forms or functional preview actions",
+      "passed": true
+    },
+    {
+      "name": "New primary and focus roles applied",
+      "passed": true
+    },
+    {
+      "name": "Functional field border and readable frozen action",
+      "passed": true
+    },
+    {
+      "name": "Both login compositions reuse static approved scene",
+      "passed": true
+    },
+    {
+      "name": "No duplicate DOM IDs",
+      "passed": true
+    },
+    {
+      "name": "Measured aqua limitation displayed",
+      "passed": true
+    },
+    {
+      "name": "Bench response is only a local demonstration",
+      "passed": true
+    },
+    {
+      "name": "login selector shows one pair",
+      "passed": true
+    },
+    {
+      "name": "inicio selector shows one pair",
+      "passed": true
+    },
+    {
+      "name": "alertas selector shows one pair",
+      "passed": true
+    },
+    {
+      "name": "emergencia selector shows one pair",
+      "passed": true
+    },
+    {
+      "name": "320px / 200% screen 0 has no page overflow",
+      "passed": true
+    },
+    {
+      "name": "320px / 200% screen 1 has no page overflow",
+      "passed": true
+    },
+    {
+      "name": "320px / 200% screen 2 has no page overflow",
+      "passed": true
+    },
+    {
+      "name": "320px / 200% screen 3 has no page overflow",
+      "passed": true
+    },
+    {
+      "name": "Reduced motion removes bench transitions",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "protected_motion_files_verified": 6,
+  "android_performance_measured": false
+}
