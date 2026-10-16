@@ -7,17 +7,62 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../state/event_provider.dart';
+import '../premium_scene/premium_scene.dart';
+import '../premium_scene/premium_vehicle.dart';
+import '../premium_scene/premium_scene_motion.dart';
+import '../premium_scene/premium_beacon_motion.dart';
 
 /// Exists only in main_dev.dart. The simulator requests a new presentation
 /// without changing the router, session, or any repository.
 class DevBrandIntroController extends ChangeNotifier {
   int _revision = 0;
   int get revision => _revision;
+  bool _premiumScene = false;
+  bool get isPremiumScene => _premiumScene;
+  bool _vehicleMotion = false;
+  bool get isVehicleMotion => _vehicleMotion;
+  bool _sceneBuild = false;
+  bool get isSceneBuild => _sceneBuild;
+  bool _beacon = false;
+  bool get isBeacon => _beacon;
 
   void replay() {
+    _beacon = false;
+    _sceneBuild = false;
+    _vehicleMotion = false;
+    _premiumScene = false;
     _revision++;
     notifyListeners();
   }
+
+  void showPremiumScene() {
+    _beacon = false;
+    _sceneBuild = false;
+    _vehicleMotion = false;
+    _premiumScene = true;
+    _revision++;
+    notifyListeners();
+  }
+
+  void showVehicleMotion() {
+    _beacon = false;
+    _sceneBuild = false;
+    _premiumScene = true;
+    _vehicleMotion = true;
+    _revision++;
+    notifyListeners();
+  }
+
+  void showSceneBuild({bool beacon = false}) {
+    _beacon = beacon;
+    _premiumScene = true;
+    _vehicleMotion = true;
+    _sceneBuild = true;
+    _revision++;
+    notifyListeners();
+  }
+
+  void showBeacon() => showSceneBuild(beacon: true);
 }
 
 /// Placed above the router by the DEV MaterialApp builder. The router builds
@@ -47,11 +92,17 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
   static const _maximumFrameStep = Duration(milliseconds: 40);
   late final Ticker _ticker = createTicker(_onFrame);
   final ValueNotifier<double> _progress = ValueNotifier(0);
+  final ValueNotifier<double> _sceneProgress = ValueNotifier(0);
   Duration? _previousFrameElapsed;
+  Duration? _motionStart;
   DevBrandIntroController? _trigger;
   EventProvider? _events;
   int _shownRevision = -1;
   bool _visible = false;
+  bool _showPremiumScene = false;
+  bool _vehicleMotion = false;
+  bool _sceneBuild = false;
+  bool _beacon = false;
 
   @override
   void didChangeDependencies() {
@@ -72,6 +123,10 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
     final revision = _trigger!.revision;
     if (_shownRevision == revision) return;
     _shownRevision = revision;
+    _showPremiumScene = _trigger!.isPremiumScene;
+    _vehicleMotion = _trigger!.isVehicleMotion;
+    _sceneBuild = _trigger!.isSceneBuild;
+    _beacon = _trigger!.isBeacon;
     if (MediaQuery.disableAnimationsOf(context) ||
         _events!.criticalEvent != null) {
       _finish();
@@ -80,8 +135,12 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
     _visible = true;
     _ticker.stop();
     _previousFrameElapsed = null;
+    _motionStart = null;
     _progress.value = 0;
-    _startWhenFirstFrameIsReady(revision);
+    _sceneProgress.value = 0;
+    if (!_showPremiumScene || _vehicleMotion) {
+      _startWhenFirstFrameIsReady(revision);
+    }
     if (mounted && !initial) setState(() {});
   }
 
@@ -106,7 +165,26 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
   void _onFrame(Duration elapsed) {
     final previous = _previousFrameElapsed;
     _previousFrameElapsed = elapsed;
-    if (previous == null) return;
+    if (previous == null) {
+      _motionStart = elapsed;
+      return;
+    }
+    if (_vehicleMotion) {
+      final end = _beacon ? PremiumBeaconMotion.endMilliseconds / 2600 : 1.0;
+      _progress.value = math.min(
+        end,
+        (elapsed - _motionStart!).inMicroseconds /
+            PremiumVehicleMotion.duration.inMicroseconds,
+      );
+      if (_sceneBuild) {
+        _sceneProgress.value = math.min(
+          _progress.value,
+          PremiumSceneMotion.completeMilliseconds / 2600,
+        );
+      }
+      if (_progress.value >= end) _ticker.stop();
+      return;
+    }
     final frameElapsed = elapsed - previous;
     final boundedElapsed = frameElapsed > _maximumFrameStep
         ? _maximumFrameStep
@@ -139,6 +217,7 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
     _events?.removeListener(_onEventsChanged);
     _ticker.dispose();
     _progress.dispose();
+    _sceneProgress.dispose();
     super.dispose();
   }
 
@@ -147,16 +226,40 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
     return Stack(
       fit: StackFit.expand,
       children: [
-        ExcludeSemantics(excluding: _visible, child: widget.child),
+        ExcludeFocus(
+          excluding: _visible,
+          child: IgnorePointer(
+            ignoring: _visible,
+            child: ExcludeSemantics(excluding: _visible, child: widget.child),
+          ),
+        ),
         if (_visible)
           Semantics(
             button: true,
-            label: 'Introducción URBES. Toca para continuar',
+            label: _beacon
+                ? 'Baliza flotante URBES D. Toca para cerrar'
+                : _sceneBuild
+                ? 'Construcción de escena URBES. Toca para cerrar'
+                : _vehicleMotion
+                ? 'Recorrido del vehículo URBES. Toca para cerrar'
+                : _showPremiumScene
+                ? 'Escena estática URBES Premium D. Toca para cerrar'
+                : 'Introducción URBES. Toca para continuar',
+            onTap: _finish,
             child: GestureDetector(
+              excludeFromSemantics: true,
               behavior: HitTestBehavior.opaque,
               onTap: _finish,
-              child: RepaintBoundary(
-                child: CustomPaint(painter: BrandIntroPainter(_progress)),
+              child: ExcludeSemantics(
+                child: RepaintBoundary(
+                  child: _showPremiumScene
+                      ? PremiumScenePreview(
+                          vehicleProgress: _vehicleMotion ? _progress : null,
+                          sceneProgress: _sceneBuild ? _sceneProgress : null,
+                          beaconProgress: _beacon ? _progress : null,
+                        )
+                      : CustomPaint(painter: BrandIntroPainter(_progress)),
+                ),
               ),
             ),
           ),

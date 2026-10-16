@@ -1,0 +1,7 @@
+{
+  "reference": "approved Increment 2 vehicle at 2160ms",
+  "candidate": "Increment 3 layers at 2160ms",
+  "mean_absolute_channel_error": 0.004109777444361091,
+  "pixels_max_channel_difference_over_16_percent": 0.0,
+  "note": "Local native renderer only. Not Android performance or TalkBack validation."
+}

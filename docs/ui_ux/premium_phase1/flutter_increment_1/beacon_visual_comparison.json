@@ -1,0 +1,24 @@
+{
+  "reference": "Increment 3 native captures, unchanged scene/car",
+  "excluded_beacon_bounds": [
+    445,
+    95,
+    540,
+    215
+  ],
+  "comparisons": [
+    {
+      "ms": 0,
+      "outside_beacon_changed_pixels": 0,
+      "outside_beacon_max_channel_error": 0,
+      "whole_image_mean_channel_error": 0.4856064016004001
+    },
+    {
+      "ms": 2160,
+      "outside_beacon_changed_pixels": 0,
+      "outside_beacon_max_channel_error": 0,
+      "whole_image_mean_channel_error": 7.5018754688672165e-06
+    }
+  ],
+  "note": "Initial frame only removes the former static logo and shadow. Not an Android performance metric."
+}

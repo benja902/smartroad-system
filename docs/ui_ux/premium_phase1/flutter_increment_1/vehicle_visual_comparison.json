@@ -1,0 +1,7 @@
+{
+  "reference": "Increment 1 native static D 2160ms",
+  "candidate": "native moving vehicle at 2160ms",
+  "mean_absolute_channel_error": 7.25181295323831e-05,
+  "pixels_max_channel_difference_over_16_percent": 0.0,
+  "note": "Static snapshot vs native dynamic reprojection; not an Android FPS measurement."
+}

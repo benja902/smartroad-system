@@ -68,15 +68,18 @@ void main() {
     await tester.tap(find.byTooltip('Panel de desarrollo'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Dispositivo offline'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Dispositivo offline'));
     await tester.pumpAndSettle();
     expect((await deviceRepo.getStatus(MockDataSeed.deviceId)).online, isFalse);
     await tester.ensureVisible(find.text('GNSS offline'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('GNSS offline'));
     await tester.pumpAndSettle();
     expect((await deviceRepo.getStatus(MockDataSeed.deviceId)).gnss?.fix, isFalse);
 
     await tester.ensureVisible(find.text('Choque leve'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Choque leve'));
     await tester.pumpAndSettle();
     final first = (await eventRepo.watchEvents(MockDataSeed.userId).first).single;

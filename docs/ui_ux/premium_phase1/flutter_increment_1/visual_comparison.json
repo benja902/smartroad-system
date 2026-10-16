@@ -1,0 +1,9 @@
+{
+  "dimensions": [
+    620,
+    430
+  ],
+  "mean_absolute_channel_error": 0.06269817454363591,
+  "pixels_max_channel_difference_over_16_percent": 0.04951237809452363,
+  "note": "Native Flutter vs Chrome SVG at source scale; different antialiasing/renderers. Not Android performance measurement."
+}

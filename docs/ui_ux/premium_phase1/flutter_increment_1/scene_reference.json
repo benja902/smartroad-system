@@ -1,0 +1,786 @@
+{
+  "source_sha256": "7e0709425ea868de69629598e010479a9721da7bfbc20bbcf93ee51f453c8e7f",
+  "clock_offset_ms": 200,
+  "samples": [
+    {
+      "ms": 0,
+      "layers": {
+        "layer-ground": {
+          "opacity": 0.16629350702218604,
+          "transform": "translate(0 0) translate(300 220) scale(0.9874944026053328) translate(-300 -220)"
+        },
+        "layer-road": {
+          "opacity": 0,
+          "transform": "translate(0 0) translate(300 220) scale(0.992) translate(-300 -220)"
+        },
+        "layer-architecture": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-landscape": {
+          "opacity": 0,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-townhouse": {
+          "opacity": 0,
+          "transform": "translate(0 8) translate(300 120) scale(0.985) translate(-300 -120)"
+        },
+        "object-pavilion": {
+          "opacity": 0,
+          "transform": "translate(0 6) translate(400 250) scale(0.985) translate(-400 -250)"
+        },
+        "object-tree-5": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-3": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-4": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-0": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-1": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-2": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-bench": {
+          "opacity": 0,
+          "transform": "translate(0 3) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-lamps": {
+          "opacity": 0,
+          "transform": "translate(0 3) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-vehicle": {
+          "opacity": 0,
+          "transform": null
+        }
+      }
+    },
+    {
+      "ms": 70,
+      "layers": {
+        "layer-ground": {
+          "opacity": 0.6024577651129654,
+          "transform": "translate(0 0) translate(300 220) scale(0.9940368664766944) translate(-300 -220)"
+        },
+        "layer-road": {
+          "opacity": 0,
+          "transform": "translate(0 0) translate(300 220) scale(0.992) translate(-300 -220)"
+        },
+        "layer-architecture": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-landscape": {
+          "opacity": 0,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-townhouse": {
+          "opacity": 0,
+          "transform": "translate(0 8) translate(300 120) scale(0.985) translate(-300 -120)"
+        },
+        "object-pavilion": {
+          "opacity": 0,
+          "transform": "translate(0 6) translate(400 250) scale(0.985) translate(-400 -250)"
+        },
+        "object-tree-5": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-3": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-4": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-0": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-1": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-2": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-bench": {
+          "opacity": 0,
+          "transform": "translate(0 3) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-lamps": {
+          "opacity": 0,
+          "transform": "translate(0 3) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-vehicle": {
+          "opacity": 0,
+          "transform": null
+        }
+      }
+    },
+    {
+      "ms": 230,
+      "layers": {
+        "layer-ground": {
+          "opacity": 0.9814522694891106,
+          "transform": "translate(0 0) translate(300 220) scale(0.9997217840423367) translate(-300 -220)"
+        },
+        "layer-road": {
+          "opacity": 0.805948388977985,
+          "transform": "translate(0 0) translate(300 220) scale(0.9984475871118239) translate(-300 -220)"
+        },
+        "layer-architecture": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-landscape": {
+          "opacity": 0,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-townhouse": {
+          "opacity": 0,
+          "transform": "translate(0 8) translate(300 120) scale(0.985) translate(-300 -120)"
+        },
+        "object-pavilion": {
+          "opacity": 0,
+          "transform": "translate(0 6) translate(400 250) scale(0.985) translate(-400 -250)"
+        },
+        "object-tree-5": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-3": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-4": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-0": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-1": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-2": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-bench": {
+          "opacity": 0,
+          "transform": "translate(0 3) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-lamps": {
+          "opacity": 0,
+          "transform": "translate(0 3) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-vehicle": {
+          "opacity": 0,
+          "transform": null
+        }
+      }
+    },
+    {
+      "ms": 380,
+      "layers": {
+        "layer-ground": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-road": {
+          "opacity": 0.9937490887884531,
+          "transform": "translate(0 0) translate(300 220) scale(0.9999499927103076) translate(-300 -220)"
+        },
+        "layer-architecture": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-landscape": {
+          "opacity": 0.6355685131195334,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-townhouse": {
+          "opacity": 0.755859375,
+          "transform": "translate(0 1.953125) translate(300 120) scale(0.996337890625) translate(-300 -120)"
+        },
+        "object-pavilion": {
+          "opacity": 0.22974537037037046,
+          "transform": "translate(0 4.621527777777777) translate(400 250) scale(0.9884461805555556) translate(-400 -250)"
+        },
+        "object-tree-5": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-3": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-4": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-0": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-1": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-2": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-bench": {
+          "opacity": 0,
+          "transform": "translate(0 3) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-lamps": {
+          "opacity": 0,
+          "transform": "translate(0 3) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-vehicle": {
+          "opacity": 0,
+          "transform": null
+        }
+      }
+    },
+    {
+      "ms": 490,
+      "layers": {
+        "layer-ground": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-road": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-architecture": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-landscape": {
+          "opacity": 0.9667911807580175,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-townhouse": {
+          "opacity": 0.957125,
+          "transform": "translate(0 0.34299999999999997) translate(300 120) scale(0.999356875) translate(-300 -120)"
+        },
+        "object-pavilion": {
+          "opacity": 0.7717764060356652,
+          "transform": "translate(0 1.3693415637860087) translate(400 250) scale(0.996576646090535) translate(-400 -250)"
+        },
+        "object-tree-5": {
+          "opacity": 0.7459629629629629,
+          "transform": "translate(0 1.0161481481481482) translate(300 220) scale(0.9949192592592593) translate(-300 -220)"
+        },
+        "object-tree-3": {
+          "opacity": 0.4553287037037037,
+          "transform": "translate(0 2.178685185185185) translate(300 220) scale(0.9891065740740741) translate(-300 -220)"
+        },
+        "object-tree-4": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-0": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-1": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-2": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-bench": {
+          "opacity": 0,
+          "transform": "translate(0 3) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-lamps": {
+          "opacity": 0,
+          "transform": "translate(0 3) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-vehicle": {
+          "opacity": 0,
+          "transform": null
+        }
+      }
+    },
+    {
+      "ms": 600,
+      "layers": {
+        "layer-ground": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-road": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-architecture": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-landscape": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-townhouse": {
+          "opacity": 0.999578125,
+          "transform": "translate(0 0.003375000000000128) translate(300 120) scale(0.999993671875) translate(-300 -120)"
+        },
+        "object-pavilion": {
+          "opacity": 0.9714720507544582,
+          "transform": "translate(0 0.17116769547325084) translate(400 250) scale(0.9995720807613169) translate(-400 -250)"
+        },
+        "object-tree-5": {
+          "opacity": 0.981037037037037,
+          "transform": "translate(0 0.07585185185185184) translate(300 220) scale(0.9996207407407407) translate(-300 -220)"
+        },
+        "object-tree-3": {
+          "opacity": 0.908875,
+          "transform": "translate(0 0.36450000000000005) translate(300 220) scale(0.9981775) translate(-300 -220)"
+        },
+        "object-tree-4": {
+          "opacity": 0.7459629629629629,
+          "transform": "translate(0 1.0161481481481482) translate(300 220) scale(0.9949192592592593) translate(-300 -220)"
+        },
+        "object-tree-0": {
+          "opacity": 0.4553287037037037,
+          "transform": "translate(0 2.178685185185185) translate(300 220) scale(0.9891065740740741) translate(-300 -220)"
+        },
+        "object-tree-1": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-tree-2": {
+          "opacity": 0,
+          "transform": "translate(0 4) translate(300 220) scale(0.98) translate(-300 -220)"
+        },
+        "object-bench": {
+          "opacity": 0.21347291761492937,
+          "transform": "translate(0 2.359581247155212) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-lamps": {
+          "opacity": 0,
+          "transform": "translate(0 3) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-vehicle": {
+          "opacity": 0,
+          "transform": null
+        }
+      }
+    },
+    {
+      "ms": 720,
+      "layers": {
+        "layer-ground": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-road": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-architecture": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-landscape": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-townhouse": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 120) scale(1) translate(-300 -120)"
+        },
+        "object-pavilion": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(400 250) scale(1) translate(-400 -250)"
+        },
+        "object-tree-5": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-3": {
+          "opacity": 0.999875,
+          "transform": "translate(0 0.000500000000000167) translate(300 220) scale(0.9999975) translate(-300 -220)"
+        },
+        "object-tree-4": {
+          "opacity": 0.9872962962962963,
+          "transform": "translate(0 0.050814814814814646) translate(300 220) scale(0.9997459259259259) translate(-300 -220)"
+        },
+        "object-tree-0": {
+          "opacity": 0.9276620370370371,
+          "transform": "translate(0 0.28935185185185164) translate(300 220) scale(0.9985532407407407) translate(-300 -220)"
+        },
+        "object-tree-1": {
+          "opacity": 0.784,
+          "transform": "translate(0 0.8639999999999999) translate(300 220) scale(0.99568) translate(-300 -220)"
+        },
+        "object-tree-2": {
+          "opacity": 0.519337962962963,
+          "transform": "translate(0 1.922648148148148) translate(300 220) scale(0.9903867592592592) translate(-300 -220)"
+        },
+        "object-bench": {
+          "opacity": 0.9016841147018662,
+          "transform": "translate(0 0.29494765589440153) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-lamps": {
+          "opacity": 0.6681838871187984,
+          "transform": "translate(0 0.9954483386436048) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-vehicle": {
+          "opacity": 0.6666666666666666,
+          "transform": null
+        }
+      }
+    },
+    {
+      "ms": 780,
+      "layers": {
+        "layer-ground": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-road": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-architecture": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-landscape": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-townhouse": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 120) scale(1) translate(-300 -120)"
+        },
+        "object-pavilion": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(400 250) scale(1) translate(-400 -250)"
+        },
+        "object-tree-5": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-3": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-4": {
+          "opacity": 0.9999629629629629,
+          "transform": "translate(0 0.00014814814814823052) translate(300 220) scale(0.9999992592592593) translate(-300 -220)"
+        },
+        "object-tree-0": {
+          "opacity": 0.9898287037037037,
+          "transform": "translate(0 0.04068518518518527) translate(300 220) scale(0.9997965740740741) translate(-300 -220)"
+        },
+        "object-tree-1": {
+          "opacity": 0.9359999999999999,
+          "transform": "translate(0 0.2560000000000002) translate(300 220) scale(0.99872) translate(-300 -220)"
+        },
+        "object-tree-2": {
+          "opacity": 0.8015046296296298,
+          "transform": "translate(0 0.793981481481481) translate(300 220) scale(0.9960300925925926) translate(-300 -220)"
+        },
+        "object-bench": {
+          "opacity": 0.9877105143377333,
+          "transform": "translate(0 0.03686845698680019) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-lamps": {
+          "opacity": 0.9016841147018662,
+          "transform": "translate(0 0.29494765589440153) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-vehicle": {
+          "opacity": 1,
+          "transform": null
+        }
+      }
+    },
+    {
+      "ms": 900,
+      "layers": {
+        "layer-ground": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-road": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-architecture": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-landscape": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-townhouse": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 120) scale(1) translate(-300 -120)"
+        },
+        "object-pavilion": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(400 250) scale(1) translate(-400 -250)"
+        },
+        "object-tree-5": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-3": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-4": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-0": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-1": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-2": {
+          "opacity": 0.993837962962963,
+          "transform": "translate(0 0.024648148148147975) translate(300 220) scale(0.9998767592592592) translate(-300 -220)"
+        },
+        "object-bench": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-lamps": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-vehicle": {
+          "opacity": 1,
+          "transform": null
+        }
+      }
+    },
+    {
+      "ms": 955,
+      "layers": {
+        "layer-ground": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-road": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-architecture": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-landscape": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-townhouse": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 120) scale(1) translate(-300 -120)"
+        },
+        "object-pavilion": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(400 250) scale(1) translate(-400 -250)"
+        },
+        "object-tree-5": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-3": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-4": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-0": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-1": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-2": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-bench": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-lamps": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-vehicle": {
+          "opacity": 1,
+          "transform": null
+        }
+      }
+    },
+    {
+      "ms": 2160,
+      "layers": {
+        "layer-ground": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-road": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-architecture": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-landscape": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-townhouse": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 120) scale(1) translate(-300 -120)"
+        },
+        "object-pavilion": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(400 250) scale(1) translate(-400 -250)"
+        },
+        "object-tree-5": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-3": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-4": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-0": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-1": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-2": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-bench": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-lamps": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-vehicle": {
+          "opacity": 1,
+          "transform": null
+        }
+      }
+    },
+    {
+      "ms": 2600,
+      "layers": {
+        "layer-ground": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-road": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-architecture": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-landscape": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-townhouse": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 120) scale(1) translate(-300 -120)"
+        },
+        "object-pavilion": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(400 250) scale(1) translate(-400 -250)"
+        },
+        "object-tree-5": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-3": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-4": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-0": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-1": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-tree-2": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-bench": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "object-lamps": {
+          "opacity": 1,
+          "transform": "translate(0 0) translate(300 220) scale(1) translate(-300 -220)"
+        },
+        "layer-vehicle": {
+          "opacity": 1,
+          "transform": null
+        }
+      }
+    }
+  ]
+}

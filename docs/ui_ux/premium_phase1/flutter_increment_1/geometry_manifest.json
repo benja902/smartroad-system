@@ -1,0 +1,83 @@
+{
+  "source_mode": "beacon",
+  "time_ms": 2160,
+  "source_snapshot_sha256": "da3d9d7d4ad7f4f5fa59e0441ae23bf019ac0281ecbdc2a992b74a81e2c5efa4",
+  "source_hashes": {
+    "index.html": "e6c6664862f87f49c9d30289c18fbff439d416e696c1ec73d9c3e384b851a5d4",
+    "styles.css": "e3a1f4171d8719a2dead06fd83889dcd46719871a22257469334bea0aabc9c0b",
+    "assets.js": "bab55ed9cd63ce14506f7754c9cfbbb0973a0f7bff6d0ee94fd47dd6c5312708",
+    "vehicle.js": "80f76656ab4c589e50834335868bdf6dfa1b4b6e56235840c405e7470eb07fef",
+    "prototype.js": "7e0709425ea868de69629598e010479a9721da7bfbc20bbcf93ee51f453c8e7f",
+    "logo.svg": "d6f08bd03de21d506d5200ae06934944fcf5ee0dd55907fda287be4b24278d9e",
+    "../assets/Manrope-variable.ttf": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6"
+  },
+  "layers": [
+    {
+      "id": "layer-ground",
+      "shapes": 3
+    },
+    {
+      "id": "layer-road",
+      "shapes": 21
+    },
+    {
+      "id": "object-townhouse",
+      "shapes": 69
+    },
+    {
+      "id": "layer-landscape",
+      "shapes": 1
+    },
+    {
+      "id": "object-tree-4",
+      "shapes": 7
+    },
+    {
+      "id": "object-tree-5",
+      "shapes": 7
+    },
+    {
+      "id": "object-lamps",
+      "shapes": 10
+    },
+    {
+      "id": "layer-vehicle",
+      "shapes": 24
+    },
+    {
+      "id": "object-pavilion",
+      "shapes": 32
+    },
+    {
+      "id": "object-bench",
+      "shapes": 22
+    },
+    {
+      "id": "object-tree-0",
+      "shapes": 7
+    },
+    {
+      "id": "object-tree-1",
+      "shapes": 7
+    },
+    {
+      "id": "object-tree-2",
+      "shapes": 7
+    },
+    {
+      "id": "target-shadow",
+      "shapes": 1
+    },
+    {
+      "id": "brand-symbol",
+      "shapes": 3
+    }
+  ],
+  "shape_count": 221,
+  "viewport": [
+    620,
+    430
+  ],
+  "t4_removed": true,
+  "animation_implemented": false
+}

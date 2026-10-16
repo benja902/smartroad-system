@@ -52,6 +52,30 @@ class DevSimulatorScreen extends StatelessWidget {
                           ? null
                           : brandIntro.replay,
                     ),
+                    _ActionButton(
+                      label: 'Ver escena premium D (estática)',
+                      onPressed: brandIntro == null || criticalEvent != null
+                          ? null
+                          : brandIntro.showPremiumScene,
+                    ),
+                    _ActionButton(
+                      label: 'Reproducir recorrido del vehículo D',
+                      onPressed: brandIntro == null || criticalEvent != null
+                          ? null
+                          : brandIntro.showVehicleMotion,
+                    ),
+                    _ActionButton(
+                      label: 'Reproducir construcción por capas D',
+                      onPressed: brandIntro == null || criticalEvent != null
+                          ? null
+                          : brandIntro.showSceneBuild,
+                    ),
+                    _ActionButton(
+                      label: 'Reproducir baliza flotante D',
+                      onPressed: brandIntro == null || criticalEvent != null
+                          ? null
+                          : brandIntro.showBeacon,
+                    ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
