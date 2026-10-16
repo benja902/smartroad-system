@@ -1,0 +1,134 @@
+{
+  "passed": true,
+  "total": 32,
+  "results": [
+    {
+      "name": "Manrope local cargada",
+      "passed": true
+    },
+    {
+      "name": "Vehículo único y disponibilidad separada",
+      "passed": true
+    },
+    {
+      "name": "Formulario vacío conserva login y muestra validación",
+      "passed": true
+    },
+    {
+      "name": "Contraseña con control accesible",
+      "passed": true
+    },
+    {
+      "name": "Acceso ficticio inmediato",
+      "passed": true
+    },
+    {
+      "name": "Volver a Inicio retiene scroll y no repite entrada",
+      "passed": true
+    },
+    {
+      "name": "Ausencia no inventa métricas ni verde",
+      "passed": true
+    },
+    {
+      "name": "Dato anterior no se afirma actual",
+      "passed": true
+    },
+    {
+      "name": "Fallo del acuse conserva atención",
+      "passed": true
+    },
+    {
+      "name": "Éxito del acuse personal pasa a historial",
+      "passed": true
+    },
+    {
+      "name": "Grave diferido no abre emergencia",
+      "passed": true
+    },
+    {
+      "name": "Desconocido permanece técnico",
+      "passed": true
+    },
+    {
+      "name": "Emergencia interrumpe carga sin entrada ni barra",
+      "passed": true
+    },
+    {
+      "name": "Ubicación ausente explícita",
+      "passed": true
+    },
+    {
+      "name": "Última posición no es actual",
+      "passed": true
+    },
+    {
+      "name": "Hora desconocida separada de recepción",
+      "passed": true
+    },
+    {
+      "name": "SOS identifica origen manual",
+      "passed": true
+    },
+    {
+      "name": "Fallo crítico conserva pantalla",
+      "passed": true
+    },
+    {
+      "name": "Acuse crítico vuelve a Inicio sin cancelar",
+      "passed": true
+    },
+    {
+      "name": "Escenario diferido sale inmediatamente de crítica",
+      "passed": true
+    },
+    {
+      "name": "Movimiento reducido elimina transiciones",
+      "passed": true
+    },
+    {
+      "name": "login: 320×640, texto 200 %, sin desborde horizontal",
+      "passed": true
+    },
+    {
+      "name": "login: controles activos de al menos 48 px",
+      "passed": true
+    },
+    {
+      "name": "home: 320×640, texto 200 %, sin desborde horizontal",
+      "passed": true
+    },
+    {
+      "name": "home: controles activos de al menos 48 px",
+      "passed": true
+    },
+    {
+      "name": "alerts: 320×640, texto 200 %, sin desborde horizontal",
+      "passed": true
+    },
+    {
+      "name": "alerts: controles activos de al menos 48 px",
+      "passed": true
+    },
+    {
+      "name": "emergency: 320×640, texto 200 %, sin desborde horizontal",
+      "passed": true
+    },
+    {
+      "name": "emergency: controles activos de al menos 48 px",
+      "passed": true
+    },
+    {
+      "name": "Mapa pendiente no es acción habilitada",
+      "passed": true
+    },
+    {
+      "name": "No hay llamada ni cancelación ficticias",
+      "passed": true
+    },
+    {
+      "name": "Texto grande conserva el alcance del acuse sin ocupar la mitad del viewport",
+      "passed": true
+    }
+  ]
+}
