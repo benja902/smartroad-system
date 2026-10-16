@@ -217,13 +217,66 @@ Diferencias deliberadas frente a D completa: no texto URBES ni vuelo desde 2680 
 
 Compilación Android del Incremento 4: **`assembleProfile` correcto en 3 min 37 s**, offline, con el mismo comando/objetivo `lib/main_dev.dart` de los incrementos anteriores. APK actualizado en `build/app/outputs/flutter-apk/app-profile.apk`; no instalado por el agente. Se mantienen las advertencias existentes Kotlin/Gradle sin actualizar dependencias ni configuración. **El usuario confirmó la aprobación de los cuatro incrementos después de revisarlos satisfactoriamente en Android físico y autorizó un checkpoint Git local previo al Incremento 5.** El agente no utilizó hardware en esta revisión.
 
+## Incremento 5 autorizado — cierre de marca y destino visual Login DEV
+
+El usuario ratificó la aprobación de la baliza en Android y autorizó el cierre de D. Punto de recuperación previo: **`fceba33cb04fb57e11bd2c2ed7cbfb1309bbb014`**, incrementos 1–4. Se preservan las ocho capturas locales ajenas/no incluidas en ese commit. No se hacen nuevos commits ni push.
+
+### Destino de presentación, sin cambios funcionales
+
+Se inspeccionaron `main_dev.dart`, `DevBrandIntroHost`, `SessionProvider`, `AppRouter` y `LoginScreen`. El router depende de la sesión y un mock ya iniciado puede estar en Inicio; instanciar el Login funcional aquí también iniciaría su `ScreenEntrance` y montaría su formulario fuera de la coreografía. Se utiliza **`PremiumClosurePreview` sobre el router vivo**, sin consultar/cambiar la sesión, autenticar, cerrar sesión ni navegar. El destino contiene la cabecera de marca y la ilustración, más una etiqueta de revisión DEV desde 4090 ms. **No hay campos, botones de acceso, formulario, estados ni microinteracciones del Login.**
+
+El modo **Reproducir cierre de marca D** se añade al panel DEV existente. La intro anterior y los modos estático, vehículo, capas y baliza permanecen disponibles. Solo este modo usa el artboard completo 390×844 del HTML, encajado uniformemente dentro de `SafeArea`; los otros encuadres aprobados se conservan.
+
+### Correspondencia exacta con D
+
+| Fase | Tiempo D | Posición/escala/curva |
+|---|---:|---|
+| Capas, auto y baliza | 0–2680 ms | Contratos de los incrementos anteriores intactos; cambia únicamente el encuadre al artboard de teléfono. |
+| Texto URBES bajo la escena | 1900–2200 ms | Entrada de opacidad cúbica de salida, tamaño 32, peso Manrope 800, origen de texto (43,11) relativo al lockup (131,633). No se espera a que llegue el isotipo para mostrar el texto. |
+| Vuelo del isotipo | 2680–3360 ms | Bézier cúbica: origen `toPhone(project(236,13,26))`, controles (365,440), (131,510), destino (131,633). Progreso quíntico original; escala del símbolo 0,3→0,6 sobre su caja original 96×96 (28,8→57,6 px). |
+| Retirada de sombra | 2680–2800 ms | Alpha previo multiplicado por `1-smoothstep(p)`; la onda ya está extinguida. |
+| Marca reunida | 3360–3540 ms | Símbolo y texto quietos bajo la ilustración, como un conjunto. |
+| Entrega a cabecera | 3540–4090 ms | `d=smoothstep((ms−3540)/550)`. Lockup: `x=42+89*(1−d)^3`, `y=633−586*smoothstep(d)`, escala `1−0.375*d`. Se conserva deliberadamente el **doble smoothstep vertical** del HTML. |
+| Continuidad de la escena | 3540–4090 ms | Su origen pasa (14,270)→(14,71), con `y=270−199*d`; su escala **permanece 0,6**. El HTML desplaza la ilustración, no la reduce en esta fase. |
+| Destino estable | 4090–4440 ms | Marca y escena permanecen en cabecera; la etiqueta DEV aparece 4090–4330 ms. Ticker se detiene a 4440 ms y la revisión permanece hasta omitir. |
+
+En destino: origen del conjunto (42,47), escala 0,625; símbolo de 36 px y texto con baseline global (68,875;53,875). No se intercambian representaciones, no hay reapariciones ni fundidos entre duplicados. Se mantienen un solo `Picture` del isotipo oficial y un solo trazado del texto durante todo el recorrido. Los colores del logo y el texto Navy permanecen sin cambios.
+
+### Recursos y separación
+
+- `PremiumClosureMotion`: estado determinista por tiempo; posiciones, Bézier, escalas y curvas extraídas de la referencia. Reutiliza la baliza aprobada antes de la salida, sin modificar su modelo.
+- `PremiumSceneArtwork`: composición nativa compartida extraída del encuadre anterior, conservando sus tres límites de repintado y orden de capas. Se reutiliza dentro de una transformación externa; no se reconstruyen geometrías al trasladar la escena.
+- `PremiumClosureBrandPainter`: un único isotipo y texto, sombra/onda originales hasta su extinción. El SVG oficial y las geometrías de escena/auto no se editan.
+- `premium_wordmark.g.dart`: únicamente los contornos de «URBES» derivados del **Manrope existente, peso 800**, con baseline y tamaño 32 del HTML. `generate_wordmark.py` usa **fontTools ya disponible** en el entorno de autoría; no se instala software ni se añade dependencia Flutter, fuente nueva o asset global en `pubspec.yaml`. OFL/FONTLOG de Manrope siguen en `assets/`; el archivo derivado conserva atribución. No hay carga de fuente ni acceso a red durante la animación. Avance de contornos: 105,408 px; Chrome presenta diferencias de métricas/hinting menores de 0,02 px.
+
+El host mantiene un ticker. El notificador de escena se detiene desde 955 ms y el del vehículo se limita a 2600 ms; el reloj de marca continúa hasta 4440/2600. La traslación externa conserva los hijos cacheados. Los modos anteriores siguen con sus duraciones originales. Emergencia, omisión, movimiento reducido y segundo plano retiran el overlay y dejan actuar a la app subyacente, sin espera de cierre de marca ni destino impuesto.
+
+### Validación y límites
+
+**65/65 pruebas dirigidas pasan**, ocho nuevas del cierre y las 57 anteriores. Tras ajustar exclusivamente la captura de QA, las ocho nuevas volvieron a pasar. **Análisis estático: cero incidencias.** Se verifican quince muestras obtenidas de la función original D, continuidad cada milisegundo y en las uniones 2680/3360/3540/4090; sesión mock intacta; ausencia de formulario/campos; retorno a la misma ruta DEV; emergencia durante entrega; movimiento reducido; segundo plano; pantalla 320×640/texto 200 % y una única acción semántica de omisión.
+
+`export_closure_browser.mjs` captura el **prototipo original** en Chrome headless con perfil temporal aislado, sin crear página o reproductor. Solo se ocultan el formulario fuera de alcance y el marco externo de revisión para comparar el artboard. Los PNG nativos excluyen igualmente la etiqueta DEV de presentación. Se compararon vuelo (3100), marca reunida (3450), entrega (3800) y destino (4440), a 390×844. Error medio por canal entre **0,0633 y 0,0811 sobre 255**, y **0,138–0,174 %** de píxeles con diferencia máxima superior a 16. Se inspeccionaron los cuatro estados. Las diferencias pequeñas corresponden a rasterización, contornos tipográficos y redondeo de captura entre renderers; no son métricas de rendimiento Android.
+
+Diferencias deliberadas frente a la secuencia HTML completa: **no se representa ni anima el formulario**; la etiqueta de revisión sustituye únicamente esa región. No se alteran autenticación, Login compartido, GoRouter, Provider, Firebase, producción ni Design System global. El encuadre se adapta uniformemente al espacio seguro del dispositivo; no se afirma equivalencia con sus píxeles físicos. La revisión humana del cierre, TalkBack y el perfilado Android permanecen pendientes. No se utiliza hardware por el agente.
+
+Compilación Android del Incremento 5: **`assembleProfile` correcto en 3 min 39 s**, offline, objetivo `lib/main_dev.dart`, con el comando Gradle documentado en los incrementos anteriores. APK actualizado: `build/app/outputs/flutter-apk/app-profile.apk`; no se instaló ni ejecutó por el agente. Se mantienen las advertencias Kotlin/Gradle existentes, sin modificar configuración o dependencias. Para revisión: abrir la app DEV y **Reproducir cierre de marca D**; SDA apagado, bridge detenido, sin conexión a Firebase real ni Internet requerido para los datos mock. Al terminar se espera aprobación humana antes del Incremento 6.
+
+```powershell
+python docs/ui_ux/premium_phase1/flutter_increment_1/generate_wordmark.py
+dart format lib/screens/dev/premium_scene/premium_wordmark.g.dart
+node docs/ui_ux/premium_phase1/flutter_increment_1/generate_closure_reference.mjs
+node docs/ui_ux/premium_phase1/flutter_increment_1/export_closure_browser.mjs
+flutter test --no-pub --dart-define=URBES_EXPORT_CLOSURE=true -r expanded test/premium_closure_test.dart test/premium_beacon_test.dart test/premium_scene_motion_test.dart test/premium_vehicle_test.dart test/premium_scene_test.dart test/brand_intro_test.dart test/dev_simulator_test.dart test/emergency_flow_test.dart test/motion_pilot_test.dart test/widget_test.dart
+flutter analyze --no-pub lib/screens/dev/premium_scene lib/screens/dev/brand_intro/dev_brand_intro.dart lib/screens/dev/dev_simulator_screen.dart test/premium_closure_test.dart
+```
+
 ## Secuencia de seis pasos y límite actual
 
 1. Escena estática DEV: aprobada por el usuario en Android.
 2. Movimiento aislado del vehículo: aprobado por el usuario en Android.
 3. Construcción progresiva de las capas: aprobada por el usuario en Android.
 4. Baliza flotante D y reacción sincronizada: aprobada por el usuario en Android.
-5. Reunión de marca y transición coordinada Splash→Login: posterior.
+5. Reunión de marca y transición a un destino visual DEV: aprobado por el usuario en Android físico; checkpoint local autorizado.
 6. Estados/microinteracciones de Login y validación integral de accesibilidad/rendimiento: posterior.
 
-No forzar Login para sesiones activas ni añadir una ruta de Splash que cambie GoRouter. Los incrementos 1–4 están aprobados; la tarea actual autoriza exclusivamente su checkpoint local, sin push. El Incremento 5 todavía no está autorizado para implementación. Se conserva el trabajo local ajeno y se versiona una selección de evidencias propias según el README asociado.
+No forzar Login para sesiones activas ni añadir una ruta de Splash que cambie GoRouter. Los incrementos 1–4 están aprobados y conservados en `fceba33`; el usuario confirmó también la validación satisfactoria del Incremento 5 en Android físico y autorizó su checkpoint local. Esta tarea registra ese estado sin modificar código, repetir pruebas Flutter ni hacer push. No se autoriza avanzar al formulario ni al Incremento 6 y se conserva el trabajo local ajeno.

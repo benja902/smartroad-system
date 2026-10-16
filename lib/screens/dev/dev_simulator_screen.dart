@@ -76,6 +76,12 @@ class DevSimulatorScreen extends StatelessWidget {
                           ? null
                           : brandIntro.showBeacon,
                     ),
+                    _ActionButton(
+                      label: 'Reproducir cierre de marca D',
+                      onPressed: brandIntro == null || criticalEvent != null
+                          ? null
+                          : brandIntro.showClosure,
+                    ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),

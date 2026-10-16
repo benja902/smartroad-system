@@ -1,0 +1,22 @@
+{
+  "source": "../assets/Manrope-variable.ttf",
+  "sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
+  "weight": 800,
+  "font_size": 32,
+  "glyphs": [
+    "U",
+    "R",
+    "B",
+    "E",
+    "S"
+  ],
+  "pair_adjustments_font_units": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "advance": 105.408,
+  "commands": 147,
+  "license": "../assets/OFL.txt"
+}

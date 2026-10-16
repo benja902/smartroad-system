@@ -1,0 +1,30 @@
+{
+  "dimensions": [
+    390,
+    844
+  ],
+  "comparisons": [
+    {
+      "ms": 3100,
+      "mean_absolute_channel_error": 0.08002187386073642,
+      "pixels_max_channel_difference_over_16_percent": 0.17316806416332484
+    },
+    {
+      "ms": 3450,
+      "mean_absolute_channel_error": 0.07995098634909062,
+      "pixels_max_channel_difference_over_16_percent": 0.17377567140600317
+    },
+    {
+      "ms": 3800,
+      "mean_absolute_channel_error": 0.08106189492445416,
+      "pixels_max_channel_difference_over_16_percent": 0.157066472232349
+    },
+    {
+      "ms": 4440,
+      "mean_absolute_channel_error": 0.06328533236116174,
+      "pixels_max_channel_difference_over_16_percent": 0.13792684408798153
+    }
+  ],
+  "scope": "Actual original D artboard vs native Flutter. HTML form and Flutter review-only destination label excluded. No scene/brand changes in browser.",
+  "note": "Different renderers/antialiasing. Not an Android performance measurement."
+}

@@ -11,6 +11,7 @@ import '../premium_scene/premium_scene.dart';
 import '../premium_scene/premium_vehicle.dart';
 import '../premium_scene/premium_scene_motion.dart';
 import '../premium_scene/premium_beacon_motion.dart';
+import '../premium_scene/premium_closure_motion.dart';
 
 /// Exists only in main_dev.dart. The simulator requests a new presentation
 /// without changing the router, session, or any repository.
@@ -25,8 +26,11 @@ class DevBrandIntroController extends ChangeNotifier {
   bool get isSceneBuild => _sceneBuild;
   bool _beacon = false;
   bool get isBeacon => _beacon;
+  bool _closure = false;
+  bool get isClosure => _closure;
 
   void replay() {
+    _closure = false;
     _beacon = false;
     _sceneBuild = false;
     _vehicleMotion = false;
@@ -36,6 +40,7 @@ class DevBrandIntroController extends ChangeNotifier {
   }
 
   void showPremiumScene() {
+    _closure = false;
     _beacon = false;
     _sceneBuild = false;
     _vehicleMotion = false;
@@ -45,6 +50,7 @@ class DevBrandIntroController extends ChangeNotifier {
   }
 
   void showVehicleMotion() {
+    _closure = false;
     _beacon = false;
     _sceneBuild = false;
     _premiumScene = true;
@@ -53,7 +59,8 @@ class DevBrandIntroController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void showSceneBuild({bool beacon = false}) {
+  void showSceneBuild({bool beacon = false, bool closure = false}) {
+    _closure = closure;
     _beacon = beacon;
     _premiumScene = true;
     _vehicleMotion = true;
@@ -63,6 +70,7 @@ class DevBrandIntroController extends ChangeNotifier {
   }
 
   void showBeacon() => showSceneBuild(beacon: true);
+  void showClosure() => showSceneBuild(beacon: true, closure: true);
 }
 
 /// Placed above the router by the DEV MaterialApp builder. The router builds
@@ -93,6 +101,7 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
   late final Ticker _ticker = createTicker(_onFrame);
   final ValueNotifier<double> _progress = ValueNotifier(0);
   final ValueNotifier<double> _sceneProgress = ValueNotifier(0);
+  final ValueNotifier<double> _vehicleProgress = ValueNotifier(0);
   Duration? _previousFrameElapsed;
   Duration? _motionStart;
   DevBrandIntroController? _trigger;
@@ -103,6 +112,7 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
   bool _vehicleMotion = false;
   bool _sceneBuild = false;
   bool _beacon = false;
+  bool _closure = false;
 
   @override
   void didChangeDependencies() {
@@ -127,6 +137,7 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
     _vehicleMotion = _trigger!.isVehicleMotion;
     _sceneBuild = _trigger!.isSceneBuild;
     _beacon = _trigger!.isBeacon;
+    _closure = _trigger!.isClosure;
     if (MediaQuery.disableAnimationsOf(context) ||
         _events!.criticalEvent != null) {
       _finish();
@@ -138,6 +149,7 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
     _motionStart = null;
     _progress.value = 0;
     _sceneProgress.value = 0;
+    _vehicleProgress.value = 0;
     if (!_showPremiumScene || _vehicleMotion) {
       _startWhenFirstFrameIsReady(revision);
     }
@@ -170,7 +182,11 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
       return;
     }
     if (_vehicleMotion) {
-      final end = _beacon ? PremiumBeaconMotion.endMilliseconds / 2600 : 1.0;
+      final end = _closure
+          ? PremiumClosureMotion.durationMilliseconds / 2600
+          : _beacon
+          ? PremiumBeaconMotion.endMilliseconds / 2600
+          : 1.0;
       _progress.value = math.min(
         end,
         (elapsed - _motionStart!).inMicroseconds /
@@ -182,6 +198,7 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
           PremiumSceneMotion.completeMilliseconds / 2600,
         );
       }
+      if (_closure) _vehicleProgress.value = math.min(_progress.value, 1);
       if (_progress.value >= end) _ticker.stop();
       return;
     }
@@ -218,6 +235,7 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
     _ticker.dispose();
     _progress.dispose();
     _sceneProgress.dispose();
+    _vehicleProgress.dispose();
     super.dispose();
   }
 
@@ -236,7 +254,9 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
         if (_visible)
           Semantics(
             button: true,
-            label: _beacon
+            label: _closure
+                ? 'Cierre de marca URBES. Toca para cerrar'
+                : _beacon
                 ? 'Baliza flotante URBES D. Toca para cerrar'
                 : _sceneBuild
                 ? 'Construcción de escena URBES. Toca para cerrar'
@@ -252,7 +272,13 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
               onTap: _finish,
               child: ExcludeSemantics(
                 child: RepaintBoundary(
-                  child: _showPremiumScene
+                  child: _closure
+                      ? PremiumClosurePreview(
+                          progress: _progress,
+                          sceneProgress: _sceneProgress,
+                          vehicleProgress: _vehicleProgress,
+                        )
+                      : _showPremiumScene
                       ? PremiumScenePreview(
                           vehicleProgress: _vehicleMotion ? _progress : null,
                           sceneProgress: _sceneBuild ? _sceneProgress : null,

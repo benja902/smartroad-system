@@ -82,3 +82,19 @@ Se versionan diez capturas propias representativas: `browser_scene.png`, `flutte
 Se conservan **solo en disco**, sin eliminar ni cambiar `.gitignore`: `vehicle_0.png`, `vehicle_2160.png`, `layers_0.png`, `layers_955.png`, `layers_2160.png`, `beacon_2160.png` y `beacon_2680.png`. Son capturas adicionales regenerables con los comandos de exportación de pruebas anteriores; los estados completos próximos a 2160 ms resultan visualmente redundantes con la referencia estática. Las métricas históricas pueden referirse a esas capturas locales: para reconstruirlas, ejecutar la prueba correspondiente con su define `URBES_EXPORT_*`.
 
 Las capturas PNG no son necesarias para compilar ni para ejecutar las pruebas sin exportación. Las muestras JSON sí se incluyen porque las pruebas las leen. El checkpoint excluye APK, cachés, configuración sensible y referencias externas; no contiene implementación del cierre de marca ni transición a Login.
+
+## Extensión del Incremento 5 — cierre de marca DEV
+
+Acción **Reproducir cierre de marca D** en el panel existente. Se usa el artboard de teléfono 390×844, con el mismo dibujo y las fases aprobadas. El texto URBES entra 1900–2200 ms; vuelo 2680–3360; reposo hasta 3540; entrega conjunta a cabecera y desplazamiento de escena hasta 4090; fin a 4440 ms. La app debajo conserva su sesión/ruta; el destino solo muestra una etiqueta DEV, sin formulario ni autenticación.
+
+```powershell
+python docs/ui_ux/premium_phase1/flutter_increment_1/generate_wordmark.py
+dart format lib/screens/dev/premium_scene/premium_wordmark.g.dart
+node docs/ui_ux/premium_phase1/flutter_increment_1/generate_closure_reference.mjs
+node docs/ui_ux/premium_phase1/flutter_increment_1/export_closure_browser.mjs
+flutter test --no-pub --dart-define=URBES_EXPORT_CLOSURE=true -r expanded test/premium_closure_test.dart
+```
+
+La generación de contornos requiere fontTools, ya disponible en el entorno de autoría; no es dependencia Flutter ni se instala como parte de este incremento. Se deriva únicamente URBES a tamaño 32/peso 800 del Manrope local con OFL y FONTLOG existentes. `wordmark_manifest.json` registra hash, glifos, peso y avance. El original de fuente/logo queda intacto y `pubspec.yaml` no cambia.
+
+`closure_reference.json` contiene quince estados de la coreografía JS original. Cuatro parejas `closure_browser_*.png` / `closure_flutter_*.png` (3100, 3450, 3800, 4440 ms) comparan vuelo, reunión, entrega y cabecera. El script de browser abre el HTML original con un perfil temporal aislado, sin controles nuevos, y oculta únicamente su formulario para esta comparación. Las capturas nativas excluyen la etiqueta de revisión para comparar la misma región. `closure_browser_metrics.json` y `closure_visual_comparison.json` registran encuadre/métricas. El usuario aprobó el Incremento 5 en Android físico y autorizó su checkpoint local con estas evidencias propias; el perfilado sigue pendiente y no se implementa el formulario del Incremento 6.

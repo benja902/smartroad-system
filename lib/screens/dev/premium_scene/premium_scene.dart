@@ -7,9 +7,12 @@ import 'package:flutter/foundation.dart';
 import 'premium_vehicle.dart';
 import 'premium_scene_motion.dart';
 import 'premium_beacon_motion.dart';
+import 'premium_closure_motion.dart';
 
 part 'premium_scene_geometry.g.dart';
 part 'premium_beacon_painter.dart';
+part 'premium_closure_preview.dart';
+part 'premium_wordmark.g.dart';
 
 /// DEV increment 1: static approved D, before the vehicle encounter.
 /// Illustration paths are prepared once; layout and movement stay separate.
@@ -147,45 +150,11 @@ class PremiumScenePreview extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: SizedBox.expand(
-                child: vehicleProgress == null
-                    ? CustomPaint(painter: PremiumScenePainter())
-                    : Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          RepaintBoundary(
-                            child: CustomPaint(
-                              painter: PremiumScenePainter(
-                                portion: PremiumScenePortion.beforeVehicle,
-                                motionProgress: sceneProgress,
-                                hideBeacon: beaconProgress != null,
-                              ),
-                            ),
-                          ),
-                          RepaintBoundary(
-                            child: CustomPaint(
-                              painter: PremiumVehiclePainter(
-                                vehicleProgress!,
-                                reveal: sceneProgress != null,
-                              ),
-                            ),
-                          ),
-                          RepaintBoundary(
-                            child: CustomPaint(
-                              painter: PremiumScenePainter(
-                                portion: PremiumScenePortion.afterVehicle,
-                                motionProgress: sceneProgress,
-                                hideBeacon: beaconProgress != null,
-                              ),
-                            ),
-                          ),
-                          if (beaconProgress != null)
-                            RepaintBoundary(
-                              child: CustomPaint(
-                                painter: PremiumBeaconPainter(beaconProgress!),
-                              ),
-                            ),
-                        ],
-                      ),
+                child: PremiumSceneArtwork(
+                  vehicleProgress: vehicleProgress,
+                  sceneProgress: sceneProgress,
+                  beaconProgress: beaconProgress,
+                ),
               ),
             ),
           ),
@@ -206,6 +175,61 @@ class PremiumScenePreview extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Shared native illustration, with the same paint order in every DEV mode.
+class PremiumSceneArtwork extends StatelessWidget {
+  const PremiumSceneArtwork({
+    super.key,
+    this.vehicleProgress,
+    this.sceneProgress,
+    this.beaconProgress,
+    this.hideBeacon = false,
+  });
+  final ValueListenable<double>? vehicleProgress, sceneProgress, beaconProgress;
+  final bool hideBeacon;
+  @override
+  Widget build(BuildContext context) {
+    if (vehicleProgress == null) {
+      return CustomPaint(painter: PremiumScenePainter());
+    }
+    final suppress = hideBeacon || beaconProgress != null;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        RepaintBoundary(
+          child: CustomPaint(
+            painter: PremiumScenePainter(
+              portion: PremiumScenePortion.beforeVehicle,
+              motionProgress: sceneProgress,
+              hideBeacon: suppress,
+            ),
+          ),
+        ),
+        RepaintBoundary(
+          child: CustomPaint(
+            painter: PremiumVehiclePainter(
+              vehicleProgress!,
+              reveal: sceneProgress != null,
+            ),
+          ),
+        ),
+        RepaintBoundary(
+          child: CustomPaint(
+            painter: PremiumScenePainter(
+              portion: PremiumScenePortion.afterVehicle,
+              motionProgress: sceneProgress,
+              hideBeacon: suppress,
+            ),
+          ),
+        ),
+        if (beaconProgress != null)
+          RepaintBoundary(
+            child: CustomPaint(painter: PremiumBeaconPainter(beaconProgress!)),
+          ),
+      ],
+    );
+  }
 }
 
 class _SceneLayer {

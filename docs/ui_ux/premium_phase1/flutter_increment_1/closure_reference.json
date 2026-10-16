@@ -1,0 +1,575 @@
+{
+  "source_sha256": "7e0709425ea868de69629598e010479a9721da7bfbc20bbcf93ee51f453c8e7f",
+  "samples": [
+    {
+      "ms": 0,
+      "symbol": {
+        "style": {
+          "opacity": 0
+        },
+        "transform": "translate(178.87419902635787 -275.1) scale(0.3)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(131 633) scale(1)"
+      },
+      "word": {
+        "style": {
+          "opacity": 0
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 270) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 1560,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(178.87419902635787 -277.1) scale(0.3)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(131 633) scale(1)"
+      },
+      "word": {
+        "style": {
+          "opacity": 0
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 270) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0.09
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 9.2,
+        "ry": 3.7,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 2400,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(178.87419902635787 -275.1) scale(0.3)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(131 633) scale(1)"
+      },
+      "word": {
+        "style": {
+          "opacity": 1
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 270) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0.11
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 2540,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(181.4722752377112 -276.6) scale(0.31049999999999994)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(131 633) scale(1)"
+      },
+      "word": {
+        "style": {
+          "opacity": 1
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 270) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0.11
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 2680,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(178.87419902635787 -275.1) scale(0.3)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(131 633) scale(1)"
+      },
+      "word": {
+        "style": {
+          "opacity": 1
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 270) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0.11
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 2800,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(184.27474398067085 -264.95204017442626) scale(0.3124307588721963)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(131 633) scale(1)"
+      },
+      "word": {
+        "style": {
+          "opacity": 1
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 270) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 3100,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(45.570893039020405 -94.46814589489213) scale(0.5137745385626863)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(131 633) scale(1)"
+      },
+      "word": {
+        "style": {
+          "opacity": 1
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 270) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 3360,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(0 0) scale(0.6)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(131 633) scale(1)"
+      },
+      "word": {
+        "style": {
+          "opacity": 1
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 270) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 3450,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(0 0) scale(0.6)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(131 633) scale(1)"
+      },
+      "word": {
+        "style": {
+          "opacity": 1
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 270) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 3540,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(0 0) scale(0.6)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(131 633) scale(1)"
+      },
+      "word": {
+        "style": {
+          "opacity": 1
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 270) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 3700,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(0 0) scale(0.6)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(86.77867113788272 569.4196207689712) scale(0.9232577009767092)"
+      },
+      "word": {
+        "style": {
+          "opacity": 1
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 229.27541998497372) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 3800,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(0 0) scale(0.6)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(56.08202534547562 375.84342819878725) scale(0.8278256949661909)"
+      },
+      "word": {
+        "style": {
+          "opacity": 1
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 178.6328354620586) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 4090,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(0 0) scale(0.6)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(42 47) scale(0.625)"
+      },
+      "word": {
+        "style": {
+          "opacity": 1
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 71) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 4200,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(0 0) scale(0.6)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(42 47) scale(0.625)"
+      },
+      "word": {
+        "style": {
+          "opacity": 1
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 71) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    },
+    {
+      "ms": 4440,
+      "symbol": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(0 0) scale(0.6)"
+      },
+      "lockup": {
+        "style": {
+          "opacity": 1
+        },
+        "transform": "translate(42 47) scale(0.625)"
+      },
+      "word": {
+        "style": {
+          "opacity": 1
+        },
+        "text-anchor": "start",
+        "x": 43,
+        "y": 11,
+        "font-size": 32
+      },
+      "scene": {
+        "style": {},
+        "transform": "translate(14 71) scale(.6)"
+      },
+      "shadow": {
+        "style": {
+          "opacity": 0
+        },
+        "cx": 309.87419902635787,
+        "cy": 373.5,
+        "rx": 10,
+        "ry": 4,
+        "transform": "rotate(-30 309.87419902635787 373.5)"
+      }
+    }
+  ]
+}
