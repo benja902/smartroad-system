@@ -57,3 +57,15 @@ lib/firebase_options.dart
 
 # Claude Code local settings
 .claude/
+
+# External visual references: retained locally; redistribution not approved
+/docs/ui_ux/premium_phase1/composition_v1/evidence/*.jpg
+/docs/ui_ux/premium_phase1/composition_v2/reference-previews/*.png
+/docs/ui_ux/premium_phase1/references/URBES_REFERENCIAS_ANIMACION_v1/videos/*.mp4
+/docs/ui_ux/premium_phase1/references/URBES_REFERENCIAS_ANIMACION_v1/fotogramas/01_beeway_secuencia.png
+/docs/ui_ux/premium_phase1/references/URBES_REFERENCIAS_ANIMACION_v1/fotogramas/02_parcel_secuencia.jpg
+/docs/ui_ux/premium_phase1/references/URBES_REFERENCIAS_ANIMACION_v1/fotogramas/03_skyward_splash.jpg
+/docs/ui_ux/premium_phase1/references/URBES_REFERENCIAS_ANIMACION_v1/fotogramas/04_skyward_login.jpg
+
+# Unused font: origin and licence pending review
+/docs/ui_ux/premium_phase1/assets/PattanakarnRegular.otf
