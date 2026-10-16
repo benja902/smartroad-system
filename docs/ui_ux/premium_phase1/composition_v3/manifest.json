@@ -1,0 +1,332 @@
+{
+  "review_date": "2026-10-16",
+  "provisional": true,
+  "source": "../motion_prototype_01/",
+  "source_hashes": {
+    "index.html": "e6c6664862f87f49c9d30289c18fbff439d416e696c1ec73d9c3e384b851a5d4",
+    "styles.css": "e3a1f4171d8719a2dead06fd83889dcd46719871a22257469334bea0aabc9c0b",
+    "assets.js": "bab55ed9cd63ce14506f7754c9cfbbb0973a0f7bff6d0ee94fd47dd6c5312708",
+    "vehicle.js": "80f76656ab4c589e50834335868bdf6dfa1b4b6e56235840c405e7470eb07fef",
+    "prototype.js": "7e0709425ea868de69629598e010479a9721da7bfbc20bbcf93ee51f453c8e7f",
+    "logo.svg": "d6f08bd03de21d506d5200ae06934944fcf5ee0dd55907fda287be4b24278d9e",
+    "../assets/Manrope-variable.ttf": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6"
+  },
+  "frames": [
+    {
+      "key": "common-0",
+      "mode": "impulse",
+      "time_ms": 0,
+      "title": "Arranque directo"
+    },
+    {
+      "key": "common-650",
+      "mode": "impulse",
+      "time_ms": 650,
+      "title": "Entorno en construcción"
+    },
+    {
+      "key": "common-1100",
+      "mode": "impulse",
+      "time_ms": 1100,
+      "title": "Entorno construido"
+    },
+    {
+      "key": "common-1800",
+      "mode": "impulse",
+      "time_ms": 1800,
+      "title": "Aparece el isotipo"
+    },
+    {
+      "key": "impulse-2510",
+      "mode": "impulse",
+      "time_ms": 2510,
+      "title": "Reacción al vehículo"
+    },
+    {
+      "key": "impulse-3100",
+      "mode": "impulse",
+      "time_ms": 3100,
+      "title": "Isotipo en movimiento"
+    },
+    {
+      "key": "impulse-3450",
+      "mode": "impulse",
+      "time_ms": 3450,
+      "title": "Marca reunida"
+    },
+    {
+      "key": "impulse-3800",
+      "mode": "impulse",
+      "time_ms": 3800,
+      "title": "Entrega a cabecera"
+    },
+    {
+      "key": "impulse-4200",
+      "mode": "impulse",
+      "time_ms": 4200,
+      "title": "Formulario entrando"
+    },
+    {
+      "key": "impulse-4440",
+      "mode": "impulse",
+      "time_ms": 4440,
+      "title": "Login disponible"
+    },
+    {
+      "key": "activation-2510",
+      "mode": "activation",
+      "time_ms": 2510,
+      "title": "Reacción al vehículo"
+    },
+    {
+      "key": "activation-3100",
+      "mode": "activation",
+      "time_ms": 3100,
+      "title": "Isotipo en movimiento"
+    },
+    {
+      "key": "activation-3450",
+      "mode": "activation",
+      "time_ms": 3450,
+      "title": "Marca reunida"
+    },
+    {
+      "key": "activation-3800",
+      "mode": "activation",
+      "time_ms": 3800,
+      "title": "Entrega a cabecera"
+    },
+    {
+      "key": "activation-4200",
+      "mode": "activation",
+      "time_ms": 4200,
+      "title": "Formulario entrando"
+    },
+    {
+      "key": "activation-4440",
+      "mode": "activation",
+      "time_ms": 4440,
+      "title": "Login disponible"
+    },
+    {
+      "key": "refined-600",
+      "mode": "refined",
+      "time_ms": 600,
+      "title": "Entra el vehículo"
+    },
+    {
+      "key": "refined-720",
+      "mode": "refined",
+      "time_ms": 720,
+      "title": "Comienza la entrada del isotipo"
+    },
+    {
+      "key": "refined-840",
+      "mode": "refined",
+      "time_ms": 840,
+      "title": "Isotipo apareciendo"
+    },
+    {
+      "key": "refined-960",
+      "mode": "refined",
+      "time_ms": 960,
+      "title": "Isotipo visible"
+    },
+    {
+      "key": "refined-2510",
+      "mode": "refined",
+      "time_ms": 2510,
+      "title": "Reacción al vehículo"
+    },
+    {
+      "key": "refined-3100",
+      "mode": "refined",
+      "time_ms": 3100,
+      "title": "Isotipo en movimiento"
+    },
+    {
+      "key": "refined-3450",
+      "mode": "refined",
+      "time_ms": 3450,
+      "title": "Marca reunida"
+    },
+    {
+      "key": "refined-3800",
+      "mode": "refined",
+      "time_ms": 3800,
+      "title": "Entrega a cabecera"
+    },
+    {
+      "key": "refined-4200",
+      "mode": "refined",
+      "time_ms": 4200,
+      "title": "Formulario entrando"
+    },
+    {
+      "key": "refined-4440",
+      "mode": "refined",
+      "time_ms": 4440,
+      "title": "Login disponible"
+    },
+    {
+      "key": "beacon-840",
+      "mode": "beacon",
+      "time_ms": 840,
+      "title": "Isotipo apareciendo"
+    },
+    {
+      "key": "beacon-1560",
+      "mode": "beacon",
+      "time_ms": 1560,
+      "title": "Baliza flotando"
+    },
+    {
+      "key": "beacon-2160",
+      "mode": "beacon",
+      "time_ms": 2160,
+      "title": "Estable antes del encuentro"
+    },
+    {
+      "key": "beacon-2400",
+      "mode": "beacon",
+      "time_ms": 2400,
+      "title": "Comienza el impulso"
+    },
+    {
+      "key": "beacon-2510",
+      "mode": "beacon",
+      "time_ms": 2510,
+      "title": "Reacción al vehículo"
+    },
+    {
+      "key": "beacon-3100",
+      "mode": "beacon",
+      "time_ms": 3100,
+      "title": "Isotipo en movimiento"
+    },
+    {
+      "key": "beacon-3450",
+      "mode": "beacon",
+      "time_ms": 3450,
+      "title": "Marca reunida"
+    },
+    {
+      "key": "beacon-3800",
+      "mode": "beacon",
+      "time_ms": 3800,
+      "title": "Entrega a cabecera"
+    },
+    {
+      "key": "beacon-4200",
+      "mode": "beacon",
+      "time_ms": 4200,
+      "title": "Formulario entrando"
+    },
+    {
+      "key": "beacon-4440",
+      "mode": "beacon",
+      "time_ms": 4440,
+      "title": "Login disponible"
+    }
+  ],
+  "objects": [
+    {
+      "code": "S",
+      "label": "Suelo",
+      "id": "layer-ground",
+      "x": 467.3205051422119,
+      "y": 257.99999999999994
+    },
+    {
+      "code": "R",
+      "label": "Carretera",
+      "id": "layer-road",
+      "x": 447.40191650390625,
+      "y": 208.99999999999994
+    },
+    {
+      "code": "T1",
+      "label": "Árbol del parque · izquierda",
+      "id": "object-tree-0",
+      "x": 252.57301712036133,
+      "y": 223.36249542236322
+    },
+    {
+      "code": "T2",
+      "label": "Árbol del parque · abajo",
+      "id": "object-tree-1",
+      "x": 268.1118698120117,
+      "y": 246.68958282470697
+    },
+    {
+      "code": "T3",
+      "label": "Árbol junto al banco",
+      "id": "object-tree-2",
+      "x": 334.7484130859375,
+      "y": 254.51667022705072
+    },
+    {
+      "code": "M",
+      "label": "Banco",
+      "id": "object-bench",
+      "x": 333.09000396728516,
+      "y": 310.49999999999994
+    },
+    {
+      "code": "P",
+      "label": "Pabellón",
+      "id": "object-pavilion",
+      "x": 565.6150054931641,
+      "y": 318.24999999999994
+    },
+    {
+      "code": "C",
+      "label": "Casa",
+      "id": "object-townhouse",
+      "x": 440.90999603271484,
+      "y": 150.87499999999994
+    },
+    {
+      "code": "T6",
+      "label": "Árbol junto a la casa",
+      "id": "object-tree-5",
+      "x": 520.0325164794922,
+      "y": 196.17082977294916
+    },
+    {
+      "code": "L",
+      "label": "Farolas",
+      "id": "object-lamps",
+      "x": 456.92820739746094,
+      "y": 252.74999999999994
+    },
+    {
+      "code": "T4",
+      "label": "Árbol al final de carretera",
+      "id": "object-tree-3",
+      "x": 670.9128875732422,
+      "y": 251.535415649414
+    },
+    {
+      "code": "T5",
+      "label": "Árbol junto al vehículo",
+      "id": "object-tree-4",
+      "x": 647.3835906982422,
+      "y": 277.0166625976562
+    },
+    {
+      "code": "V",
+      "label": "Vehículo",
+      "id": "layer-vehicle",
+      "x": 593.3274993896484,
+      "y": 239.40127563476557
+    },
+    {
+      "code": "U",
+      "label": "Isotipo URBES",
+      "id": "brand-symbol",
+      "x": 644.033337179178,
+      "y": 196.3743046425791
+    }
+  ]
+}
