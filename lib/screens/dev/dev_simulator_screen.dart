@@ -82,6 +82,12 @@ class DevSimulatorScreen extends StatelessWidget {
                           ? null
                           : brandIntro.showClosure,
                     ),
+                    if (brandIntro != null) _ActionButton(
+                      label: 'Reproducir Splash → Login real DEV',
+                      onPressed: criticalEvent != null
+                          ? null
+                          : brandIntro.showLogin,
+                    ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),

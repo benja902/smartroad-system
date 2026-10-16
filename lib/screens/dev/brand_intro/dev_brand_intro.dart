@@ -28,8 +28,11 @@ class DevBrandIntroController extends ChangeNotifier {
   bool get isBeacon => _beacon;
   bool _closure = false;
   bool get isClosure => _closure;
+  bool _login = false;
+  bool get isLogin => _login;
 
   void replay() {
+    _login = false;
     _closure = false;
     _beacon = false;
     _sceneBuild = false;
@@ -40,6 +43,7 @@ class DevBrandIntroController extends ChangeNotifier {
   }
 
   void showPremiumScene() {
+    _login = false;
     _closure = false;
     _beacon = false;
     _sceneBuild = false;
@@ -50,6 +54,7 @@ class DevBrandIntroController extends ChangeNotifier {
   }
 
   void showVehicleMotion() {
+    _login = false;
     _closure = false;
     _beacon = false;
     _sceneBuild = false;
@@ -59,7 +64,12 @@ class DevBrandIntroController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void showSceneBuild({bool beacon = false, bool closure = false}) {
+  void showSceneBuild({
+    bool beacon = false,
+    bool closure = false,
+    bool login = false,
+  }) {
+    _login = login;
     _closure = closure;
     _beacon = beacon;
     _premiumScene = true;
@@ -71,6 +81,7 @@ class DevBrandIntroController extends ChangeNotifier {
 
   void showBeacon() => showSceneBuild(beacon: true);
   void showClosure() => showSceneBuild(beacon: true, closure: true);
+  void showLogin() => showSceneBuild(beacon: true, closure: true, login: true);
 }
 
 /// Placed above the router by the DEV MaterialApp builder. The router builds
@@ -113,6 +124,7 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
   bool _sceneBuild = false;
   bool _beacon = false;
   bool _closure = false;
+  bool _login = false;
 
   @override
   void didChangeDependencies() {
@@ -125,7 +137,11 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
       WidgetsBinding.instance.addObserver(this);
       _onReplay(initial: true);
     } else if (MediaQuery.disableAnimationsOf(context)) {
-      _finish();
+      if (_login) {
+        _skipLoginIntro();
+      } else {
+        _finish();
+      }
     }
   }
 
@@ -138,8 +154,9 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
     _sceneBuild = _trigger!.isSceneBuild;
     _beacon = _trigger!.isBeacon;
     _closure = _trigger!.isClosure;
-    if (MediaQuery.disableAnimationsOf(context) ||
-        _events!.criticalEvent != null) {
+    _login = _trigger!.isLogin;
+    if (_events!.criticalEvent != null ||
+        (MediaQuery.disableAnimationsOf(context) && !_login)) {
       _finish();
       return;
     }
@@ -150,7 +167,9 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
     _progress.value = 0;
     _sceneProgress.value = 0;
     _vehicleProgress.value = 0;
-    if (!_showPremiumScene || _vehicleMotion) {
+    if (_login && MediaQuery.disableAnimationsOf(context)) {
+      _skipLoginIntro();
+    } else if (!_showPremiumScene || _vehicleMotion) {
       _startWhenFirstFrameIsReady(revision);
     }
     if (mounted && !initial) setState(() {});
@@ -218,8 +237,21 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
   void _finish() {
     if (!_visible) return;
     _ticker.stop();
+    if (_login) FocusManager.instance.primaryFocus?.unfocus();
     _visible = false;
     if (mounted) setState(() {});
+  }
+
+  void _skipLoginIntro() {
+    if (!_visible || !_login) return;
+    if (_events!.criticalEvent != null) {
+      _finish();
+      return;
+    }
+    _ticker.stop();
+    _progress.value = 4440 / 2600;
+    _sceneProgress.value = 955 / 2600;
+    _vehicleProgress.value = 1;
   }
 
   @override
@@ -252,43 +284,52 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
           ),
         ),
         if (_visible)
-          Semantics(
-            button: true,
-            label: _closure
-                ? 'Cierre de marca URBES. Toca para cerrar'
-                : _beacon
-                ? 'Baliza flotante URBES D. Toca para cerrar'
-                : _sceneBuild
-                ? 'Construcción de escena URBES. Toca para cerrar'
-                : _vehicleMotion
-                ? 'Recorrido del vehículo URBES. Toca para cerrar'
-                : _showPremiumScene
-                ? 'Escena estática URBES Premium D. Toca para cerrar'
-                : 'Introducción URBES. Toca para continuar',
-            onTap: _finish,
-            child: GestureDetector(
-              excludeFromSemantics: true,
-              behavior: HitTestBehavior.opaque,
+          if (_login)
+            DevPremiumLoginPreview(
+              progress: _progress,
+              sceneProgress: _sceneProgress,
+              vehicleProgress: _vehicleProgress,
+              onSkip: _skipLoginIntro,
+              onClose: _finish,
+            )
+          else
+            Semantics(
+              button: true,
+              label: _closure
+                  ? 'Cierre de marca URBES. Toca para cerrar'
+                  : _beacon
+                  ? 'Baliza flotante URBES D. Toca para cerrar'
+                  : _sceneBuild
+                  ? 'Construcción de escena URBES. Toca para cerrar'
+                  : _vehicleMotion
+                  ? 'Recorrido del vehículo URBES. Toca para cerrar'
+                  : _showPremiumScene
+                  ? 'Escena estática URBES Premium D. Toca para cerrar'
+                  : 'Introducción URBES. Toca para continuar',
               onTap: _finish,
-              child: ExcludeSemantics(
-                child: RepaintBoundary(
-                  child: _closure
-                      ? PremiumClosurePreview(
-                          progress: _progress,
-                          sceneProgress: _sceneProgress,
-                          vehicleProgress: _vehicleProgress,
-                        )
-                      : _showPremiumScene
-                      ? PremiumScenePreview(
-                          vehicleProgress: _vehicleMotion ? _progress : null,
-                          sceneProgress: _sceneBuild ? _sceneProgress : null,
-                          beaconProgress: _beacon ? _progress : null,
-                        )
-                      : CustomPaint(painter: BrandIntroPainter(_progress)),
+              child: GestureDetector(
+                excludeFromSemantics: true,
+                behavior: HitTestBehavior.opaque,
+                onTap: _finish,
+                child: ExcludeSemantics(
+                  child: RepaintBoundary(
+                    child: _closure
+                        ? PremiumClosurePreview(
+                            progress: _progress,
+                            sceneProgress: _sceneProgress,
+                            vehicleProgress: _vehicleProgress,
+                          )
+                        : _showPremiumScene
+                        ? PremiumScenePreview(
+                            vehicleProgress: _vehicleMotion ? _progress : null,
+                            sceneProgress: _sceneBuild ? _sceneProgress : null,
+                            beaconProgress: _beacon ? _progress : null,
+                          )
+                        : CustomPaint(painter: BrandIntroPainter(_progress)),
+                  ),
                 ),
               ),
             ),
-          ),
       ],
     );
   }

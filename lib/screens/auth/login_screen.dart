@@ -10,8 +10,26 @@ import '../../state/session_provider.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/screen_entrance.dart';
 
+/// Presentation slots only: ownership, validation and submit remain in LoginScreen.
+class LoginFormParts {
+  const LoginFormParts({
+    required this.email,
+    required this.password,
+    required this.submit,
+    this.error,
+  });
+  final Widget email, password, submit;
+  final Widget? error;
+}
+
+typedef LoginPresentationBuilder = Widget Function(
+  BuildContext context,
+  LoginFormParts parts,
+);
+
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.presentationBuilder});
+  final LoginPresentationBuilder? presentationBuilder;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -74,8 +92,45 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  LoginFormParts _parts() => LoginFormParts(
+    email: TextFormField(
+      controller: _emailController,
+      keyboardType: TextInputType.emailAddress,
+      autofillHints: const [AutofillHints.email],
+      decoration: const InputDecoration(labelText: 'CORREO'),
+      validator: (value) =>
+          (value == null || value.trim().isEmpty) ? 'Ingresa tu correo' : null,
+    ),
+    password: TextFormField(
+      controller: _passwordController,
+      obscureText: true,
+      autofillHints: const [AutofillHints.password],
+      decoration: const InputDecoration(labelText: 'CONTRASEÑA'),
+      validator: (value) =>
+          (value == null || value.isEmpty) ? 'Ingresa tu contraseña' : null,
+      onFieldSubmitted: (_) => _submit(),
+    ),
+    error: _errorMessage == null
+        ? null
+        : Text(
+            _errorMessage!,
+            style: AppTypography.bodyMd.copyWith(color: AppColors.critical),
+          ),
+    submit: PrimaryButton(
+      label: _isSubmitting ? 'Ingresando…' : 'Iniciar sesión',
+      onPressed: _isSubmitting ? null : _submit,
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
+    final parts = _parts();
+    if (widget.presentationBuilder != null) {
+      return Form(
+        key: _formKey,
+        child: widget.presentationBuilder!(context, parts),
+      );
+    }
     return ScreenEntrance(
       builder: (context, entrance) => Scaffold(
         body: SafeArea(
@@ -126,47 +181,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: AppSpacing.lg),
-                        TextFormField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          autofillHints: const [AutofillHints.email],
-                          decoration: const InputDecoration(
-                            labelText: 'CORREO',
-                          ),
-                          validator: (value) =>
-                              (value == null || value.trim().isEmpty)
-                              ? 'Ingresa tu correo'
-                              : null,
-                        ),
+                        parts.email,
                         const SizedBox(height: AppSpacing.sm),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: true,
-                          autofillHints: const [AutofillHints.password],
-                          decoration: const InputDecoration(
-                            labelText: 'CONTRASEÑA',
-                          ),
-                          validator: (value) => (value == null || value.isEmpty)
-                              ? 'Ingresa tu contraseña'
-                              : null,
-                          onFieldSubmitted: (_) => _submit(),
-                        ),
+                        parts.password,
                         if (_errorMessage != null) ...[
                           const SizedBox(height: AppSpacing.sm),
-                          Text(
-                            _errorMessage!,
-                            style: AppTypography.bodyMd.copyWith(
-                              color: AppColors.critical,
-                            ),
-                          ),
+                          parts.error!,
                         ],
                         const SizedBox(height: AppSpacing.md),
-                        PrimaryButton(
-                          label: _isSubmitting
-                              ? 'Ingresando…'
-                              : 'Iniciar sesión',
-                          onPressed: _isSubmitting ? null : _submit,
-                        ),
+                        parts.submit,
                       ],
                     ),
                   ),

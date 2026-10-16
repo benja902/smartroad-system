@@ -98,3 +98,16 @@ flutter test --no-pub --dart-define=URBES_EXPORT_CLOSURE=true -r expanded test/p
 La generación de contornos requiere fontTools, ya disponible en el entorno de autoría; no es dependencia Flutter ni se instala como parte de este incremento. Se deriva únicamente URBES a tamaño 32/peso 800 del Manrope local con OFL y FONTLOG existentes. `wordmark_manifest.json` registra hash, glifos, peso y avance. El original de fuente/logo queda intacto y `pubspec.yaml` no cambia.
 
 `closure_reference.json` contiene quince estados de la coreografía JS original. Cuatro parejas `closure_browser_*.png` / `closure_flutter_*.png` (3100, 3450, 3800, 4440 ms) comparan vuelo, reunión, entrega y cabecera. El script de browser abre el HTML original con un perfil temporal aislado, sin controles nuevos, y oculta únicamente su formulario para esta comparación. Las capturas nativas excluyen la etiqueta de revisión para comparar la misma región. `closure_browser_metrics.json` y `closure_visual_comparison.json` registran encuadre/métricas. El usuario aprobó el Incremento 5 en Android físico y autorizó su checkpoint local con estas evidencias propias; el perfilado sigue pendiente y no se implementa el formulario del Incremento 6.
+
+## Extensión del Incremento 6 — Login real DEV
+
+Acción **Reproducir Splash → Login real DEV** en el mismo panel. Reutiliza la escena/cierre y los campos, validadores, botón y envío de `LoginScreen`, mediante un constructor opcional de presentación. La sesión de la revisión es un mock local separado de la sesión/router de la app. No altera Firebase, navegación ni la presentación por defecto del Login.
+
+Título 4090–4330 ms, campos 4130–4370, botón 4170–4410: opacidad y desplazamiento 6→0 px, curva cúbica de salida, reloj único D. Omisión/movimiento reducido llevan directamente al formulario; emergencia/segundo plano retiran la revisión. El scroll común admite teclado y texto grande sin cambiar la escala de la ilustración.
+
+```powershell
+flutter test --no-pub -r expanded test/premium_login_test.dart
+flutter test --no-pub --dart-define=URBES_EXPORT_LOGIN=true -r expanded test/premium_login_test.dart
+```
+
+La segunda orden genera únicamente `login_flutter_4440.png`, evidencia propia opcional con Manrope local. No se incorpora fuente ni dependencia nueva a Flutter. Ver la especificación SDD para aislamiento, validación, diferencias Material/HTML e instrucciones de revisión física. Los recursos originales y las capturas locales anteriores permanecen intactos.

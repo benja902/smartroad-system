@@ -47,11 +47,15 @@ class PremiumClosureArtboard extends StatelessWidget {
     required this.sceneProgress,
     required this.vehicleProgress,
     this.showDestinationLabel = true,
+    this.finalSceneZoom = 1,
   });
   final ValueListenable<double> progress, sceneProgress, vehicleProgress;
 
   /// Exclude review-only metadata when comparing vector artboards in QA.
   final bool showDestinationLabel;
+
+  /// DEV art-direction adjustment; the original closure remains at 1.
+  final double finalSceneZoom;
   @override
   Widget build(BuildContext context) => SizedBox(
     width: 390,
@@ -76,18 +80,25 @@ class PremiumClosureArtboard extends StatelessWidget {
                 hideBeacon: true,
               ),
             ),
-            builder: (context, child) => Transform.translate(
-              offset: Offset(
-                14,
-                PremiumClosureMotion.atMilliseconds(progress.value * 2600)
-                    .sceneY,
-              ),
-              child: Transform.scale(
-                scale: .6,
-                alignment: Alignment.topLeft,
-                child: child,
-              ),
-            ),
+            builder: (context, child) {
+              final ms = progress.value * 2600;
+              final delivery = PremiumClosureMotion.smooth(
+                PremiumClosureMotion.phase(ms, 3540, 4090),
+              );
+              final zoom = 1 + (finalSceneZoom - 1) * delivery;
+              return Transform.translate(
+                // Grow around the scene centre, preserving the approved handoff.
+                offset:
+                    Offset(14, PremiumClosureMotion.atMilliseconds(ms).sceneY) +
+                    const Offset(620, 430) * (.6 * (1 - zoom) / 2),
+                child: Transform.scale(
+                  key: const ValueKey('premium-closure-scene-scale'),
+                  scale: .6 * zoom,
+                  alignment: Alignment.topLeft,
+                  child: child,
+                ),
+              );
+            },
           ),
         ),
         Positioned.fill(

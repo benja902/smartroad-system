@@ -280,3 +280,58 @@ flutter analyze --no-pub lib/screens/dev/premium_scene lib/screens/dev/brand_int
 6. Estados/microinteracciones de Login y validación integral de accesibilidad/rendimiento: posterior.
 
 No forzar Login para sesiones activas ni añadir una ruta de Splash que cambie GoRouter. Los incrementos 1–4 están aprobados y conservados en `fceba33`; el usuario confirmó también la validación satisfactoria del Incremento 5 en Android físico y autorizó su checkpoint local. Esta tarea registra ese estado sin modificar código, repetir pruebas Flutter ni hacer push. No se autoriza avanzar al formulario ni al Incremento 6 y se conserva el trabajo local ajeno.
+
+## Incremento 6 autorizado — Login real en la continuidad DEV
+
+El usuario aprobó el Incremento 5 en Android y autorizó esta integración de presentación. Checkpoints verificados: `fceba33` (1–4) y `a5c4d5` (5). Los párrafos anteriores describen sus límites históricos; esta sección amplía exclusivamente el alcance DEV al formulario. No activa el premium en producción. No se hacen commits ni push y se conservan las ocho imágenes locales ajenas.
+
+### Reutilización e aislamiento
+
+`LoginScreen` conserva la propiedad de su único `Form`, controladores, validadores, autofill, contraseña oculta, envío con teclado, `PrimaryButton`, estado ocupado y traducción de errores. Se añade un `LoginPresentationBuilder` opcional que recibe `LoginFormParts`: widgets reales ya conectados a ese estado. El constructor por defecto mantiene la presentación y `ScreenEntrance` anteriores. No se duplica el formulario ni se cambia `_submit`, `_messageFor`, repositorios o contratos de sesión.
+
+`DevPremiumLoginPreview` presenta ese Login sobre el host existente, con un `SessionProvider(MockAuthRepository())` local que no observa el router. Enviar datos ficticios ejercita el envío real contra el mock y muestra una confirmación DEV; no cambia la sesión ni la ruta de la app subyacente. No se cierra sesión global para mostrar Login. Un `Overlay` local proporciona selección/cursor de los campos, sin Navigator ni ruta adicional. Se retira y dispone junto con el formulario. El tema Navy y las superficies se aplican solo a esta revisión; no cambia `AppTheme` global.
+
+Nuevo recorrido del panel existente: **Reproducir Splash → Login real DEV**. Se conservan la intro anterior y todos los modos de los incrementos 1–5. No hay panel HTML nuevo ni recursos vectoriales nuevos.
+
+### Coreografía
+
+Las geometrías y modelos de capas, vehículo, baliza y cierre no cambian. Se reutiliza `PremiumClosureArtboard` sin su etiqueta de destino DEV y sin segunda ilustración/marca. El formulario se monta únicamente al llegar a 4090 ms; no ejecuta una animación privada detrás del Splash.
+
+| Contenido | Entrada D | Movimiento |
+|---|---:|---|
+| Título y descripción | 4090–4330 ms | Opacidad 0→1, desplazamiento vertical 6→0 px del artboard. |
+| Campos y error | 4130–4370 ms | Misma entrada escalonada, controles reales. |
+| Botón principal | 4170–4410 ms | Misma entrada escalonada. |
+| Destino estable | 4440 ms | Ticker detenido; formulario interactivo, sin espera adicional. |
+
+Las tres entradas usan la función cúbica de salida `1−(1−p)^3` y el reloj único del host. Cabecera e ilustración mantienen el encuadre 390×844 aprobado; el contenido empieza en y=340 con márgenes de 24 unidades. El formulario usa tamaños nativos accesibles y puede crecer verticalmente, a diferencia del dibujo vectorial escalado.
+
+### Teclado, accesibilidad y garantías
+
+Ilustración, marca y formulario comparten un único scroll. El encuadre se calcula con la altura disponible antes de descontar teclado: el viewport se reduce y permite desplazar los campos, sin reducir o saltar la ilustración al abrirlo. Las secciones totalmente transparentes no admiten foco, puntero ni semántica. Los campos y botón mantienen su semántica nativa; el fondo de la app permanece bloqueado durante la revisión.
+
+**Omitir introducción** y movimiento reducido muestran inmediatamente el destino con el formulario, sin reproducir 4,44 segundos. **Cerrar DEV** devuelve la revisión a la misma ruta. Segundo plano retira el overlay y no lo reproduce al volver. Un evento crítico lo retira inmediatamente, libera el foco y deja actuar al flujo de emergencia existente. La revisión no añade esperas obligatorias a ese flujo.
+
+### Validación y diferencias conocidas
+
+Se añaden nueve pruebas de integración: montaje/entradas con reloj D y ausencia de marca duplicada; omisión/validación/autofill/envío mock aislado; carga y errores de cuenta no provisionada/credenciales inválidas; teclado en 320×640 con texto 200 %; movimiento reducido inicial y sobrevenido; emergencia con campo enfocado; segundo plano. La regresión dirigida completa pasa **74/74** (65 anteriores + 9 nuevas).
+
+El formulario se adapta a Material nativo: conserva etiquetas CORREO/CONTRASEÑA, validadores y mensajes existentes, en lugar de sustituirlos por inputs HTML. El Login actual no incluye un botón para revelar contraseña y este incremento no añade esa funcionalidad. El acceso de revisión no navega a Inicio ni llama Firebase: solo confirma el mock local. La ilustración vectorial y la marca conservan la coreografía aprobada; no se afirma equivalencia píxel a píxel del texto/campos entre Chrome y Flutter.
+
+La captura opcional `login_flutter_4440.png` es evidencia propia, no un recurso de ejecución; carga Manrope ya existente únicamente en la prueba de exportación mediante un bundle ficticio de fuentes. También representa el fallback Material con ese Manrope local para evitar los rectángulos de Ahem del runner: sirve para revisar composición, no para certificar métricas tipográficas Android. No hay descarga de fuentes en esa exportación ni cambios del manifiesto de assets de la app. La revisión física de teclado/autofill, TalkBack, contraste en dispositivo y perfilado de cuadros Android queda pendiente del usuario. El agente no instala ni ejecuta en hardware.
+
+**Análisis estático: cero incidencias. Compilación Android DEV `assembleProfile` offline: correcta en 2 min 36 s**, con el comando Gradle de los incrementos anteriores y objetivo `lib/main_dev.dart`. APK en `build/app/outputs/flutter-apk/app-profile.apk`, sin instalar. Se mantienen las advertencias existentes del toolchain Kotlin/Gradle; no se actualizan versiones ni configuración. `git diff --check` pasa; `_submit` y `_messageFor` coinciden con el checkpoint anterior ignorando únicamente formato. Los modelos y geometrías de los incrementos 1–5 permanecen sin cambios. Tras añadir el límite de repintado y completar la captura, las nueve pruebas nuevas se vuelven a verificar sin repetir la compilación ni la regresión completa innecesariamente.
+
+```powershell
+flutter test --no-pub -r expanded test/premium_login_test.dart test/premium_closure_test.dart test/premium_beacon_test.dart test/premium_scene_motion_test.dart test/premium_vehicle_test.dart test/premium_scene_test.dart test/brand_intro_test.dart test/dev_simulator_test.dart test/emergency_flow_test.dart test/motion_pilot_test.dart test/widget_test.dart
+flutter test --no-pub --dart-define=URBES_EXPORT_LOGIN=true -r expanded test/premium_login_test.dart
+flutter analyze --no-pub lib/screens/auth/login_screen.dart lib/screens/dev/premium_scene lib/screens/dev/brand_intro/dev_brand_intro.dart lib/screens/dev/dev_simulator_screen.dart test/premium_login_test.dart
+```
+
+Para revisión humana: ejecutar `lib/main_dev.dart`, abrir el panel DEV y seleccionar el nuevo recorrido. Utilizar solo datos ficticios; no requiere Internet ni Firebase real. SDA apagado y bridge detenido. Se detiene el trabajo al terminar este incremento; producción y validación física requieren una nueva decisión.
+
+### Opción de ajuste — escala de la ilustración final
+
+`finalSceneZoom` permite elegir el tamaño de la ilustración final sin editar sus recursos. Para conservar la composición aprobada de D, el modo **Splash → Login real DEV** queda por defecto en `finalSceneZoom: 1.0`, con escala nativa de escena 0,60 durante toda la secuencia. El modo de cierre del Incremento 5 conserva el mismo valor predeterminado.
+
+Como opción de revisión, `finalSceneZoom: 1.1` permite ampliar la ilustración final un 10 %: escala nativa 0,60→0,66 durante 3540–4090 ms, con el mismo `smoothstep` del traslado y creciendo alrededor del centro de la escena. Antes de 3540 ms no cambia la escala; el isotipo ya se reunió con el texto. Marca, formulario, trayectorias y tiempos mantienen sus valores anteriores. Esta opción ofrece mayor elección de encuadre; no está activada por defecto. La captura final corresponde al valor predeterminado `1.0`.
