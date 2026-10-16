@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 430" width="1240" height="860" role="img" aria-label="Propuesta est?tica A 2510 ms: ?nicamente T4 retirado; isotipo original" data-preview-revision="only-t4-original-isotipo-2026-10-16">
+  <title>URBES ? propuesta est?tica A ? 2510 ms ? sin T4</title>
+  <desc>Detalle ampliado de Reacci?n al veh?culo, A 2510 ms. ?nico cambio de composici?n: ?rbol T4 retirado. Isotipo y se?al conservan posici?n, escala, opacidad y transformaciones originales de ese instante. El encuadre ampliado no incluye el texto inferior. Propuesta est?tica; Motion y storyboard permanecen intactos.</desc>
+  <rect width="620" height="430" fill="#F8F9FA" />
+  <defs>
+    <symbol id="impulse-2510-urbes-logo" viewBox="0 0 512 512">
+      <path fill="#031B3B" d="M22 65h44v265c0 72.9 59.1 132 132 132s132-59.1 132-132V225c0-18 8-32 22-32 5 0 10 1.5 14 4l16-39c3.5-8.5 14.5-10.5 21-3.5l11 11.5 78 3c4.5.2 8 3.8 8 8.5s-3.5 8.2-8 8.8l-84 9.7c-4 .5-8-1-10.8-4l-3.2-3.5-18 41.5V330c0 97.2-78.8 176-176 176S22 427.2 22 330V65z" />
+      <path fill="#14E0D3" d="M96 65h44v265c0 32 26 58 58 58s58-26 58-58V195h28c4.5 0 8.5 3 9.8 7.4L300 225v105c0 56.3-45.7 102-102 102S96 386.3 96 330V65z" />
+      <path transform="translate(-2, -4)" fill="#14E0D3" d="M165 151l53-7 7-7c4.5-4.5 12-4 16 1l5 6.5 19-62c3.2-10.5 18-10.2 21 .5l15 58 23-122c3-15.5 25-15.5 28 0l22 107 13-19c5.5-8 17-8.5 23-.8l8 10.3 85 6.5c4.5.4 8 4 8 8.5s-3.5 8.1-8 8.5l-91 4c-4 .2-7.8-1.5-10.2-4.8l-5.8-7.7-19 37c-4.5 8.8-17.5 7.2-19.8-2.5L343 73l-24 134c-2 11-17.5 11.5-20.2.8L280 135l-11 35c-2.8 9-14.8 10.5-19.8 2.5l-7.2-11.5-7 5c-2.5 1.8-5.5 2.5-8.5 2.2L165 166a7.5 7.5 0 0 1 0-15z" />
+    </symbol>
+  </defs>
+  <g id="impulse-2510-scene-wrap">
+    <g id="impulse-2510-illustration-world" data-projection="iso">
+      <g id="impulse-2510-layer-ground" transform="translate(0 0) translate(300 220) scale(1) translate(-300 -220)" style="opacity: 1;">
+        <g transform="matrix(.8660254 .5 -.8660254 .5 300 48)">
+          <rect x="-12" y="-12" width="364" height="324" rx="38" fill="#E8EEEC" />
+        </g>
+        <g transform="matrix(.8660254 .5 -.8660254 .5 300 48)">
+          <path d="M-3 237H176Q181 283 130 298H18Q-4 297-3 275Z" fill="#D5E5DB" />
+          <path d="M269 7H315Q338 7 338 36V102H269Z" fill="#D5E5DB" />
+        </g>
+      </g>
+      <g id="impulse-2510-layer-road" transform="translate(0 0) translate(300 220) scale(1) translate(-300 -220)" style="opacity: 1;">
+        <g transform="matrix(.8660254 .5 -.8660254 .5 300 48)">
+          <path d="M-18 205H135C198 205 235 171 235 113V10" fill="none" stroke="#C2CFD1" stroke-width="80" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M-18 205H135C198 205 235 171 235 113V10" fill="none" stroke="#FAFBF9" stroke-width="76" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M-18 205H135C198 205 235 171 235 113V10" fill="none" stroke="#91A5B0" stroke-width="63" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M-18 205H135C198 205 235 171 235 113V10" fill="none" stroke="#F8FAF7" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="9 10" />
+        </g>
+        <g transform="matrix(.8660254 .5 -.8660254 .5 300 48)">
+          <path d="M12 168v6M12 237v6" stroke="#B8C7CC" stroke-width="1" />
+          <path d="M24 168v6M24 237v6" stroke="#B8C7CC" stroke-width="1" />
+          <path d="M36 168v6M36 237v6" stroke="#B8C7CC" stroke-width="1" />
+          <path d="M48 168v6M48 237v6" stroke="#B8C7CC" stroke-width="1" />
+          <path d="M60 168v6M60 237v6" stroke="#B8C7CC" stroke-width="1" />
+          <path d="M72 168v6M72 237v6" stroke="#B8C7CC" stroke-width="1" />
+          <path d="M84 168v6M84 237v6" stroke="#B8C7CC" stroke-width="1" />
+          <path d="M96 168v6M96 237v6" stroke="#B8C7CC" stroke-width="1" />
+          <path d="M108 168v6M108 237v6" stroke="#B8C7CC" stroke-width="1" />
+          <path d="M120 168v6M120 237v6" stroke="#B8C7CC" stroke-width="1" />
+          <path d="M132 168v6M132 237v6" stroke="#B8C7CC" stroke-width="1" />
+        </g>
+        <g transform="matrix(.8660254 .5 -.8660254 .5 300 48)">
+          <rect x="21" y="179" width="4" height="19" rx=".5" fill="#F8FAF7" />
+          <rect x="27" y="179" width="4" height="19" rx=".5" fill="#F8FAF7" />
+          <rect x="33" y="179" width="4" height="19" rx=".5" fill="#F8FAF7" />
+          <rect x="39" y="179" width="4" height="19" rx=".5" fill="#F8FAF7" />
+          <rect x="45" y="179" width="4" height="19" rx=".5" fill="#F8FAF7" />
+        </g>
+        <g transform="matrix(.8660254 .5 -.8660254 .5 300 48)">
+          <g stroke="#637E8C" stroke-width="1">
+            <path d="M191 110h8m-8 3h8m-8 3h8M65 247h8m-8 3h8m-8 3h8" />
+          </g>
+        </g>
+      </g>
+      <g id="impulse-2510-layer-architecture" transform="translate(0 0) translate(300 220) scale(1) translate(-300 -220)" style="opacity: 1;">
+        <g id="impulse-2510-object-townhouse" transform="translate(0 0) translate(300 120) scale(1) translate(-300 -120)" style="opacity: 1;">
+          <g transform="matrix(.8660254 .5 -.8660254 .5 300 48)">
+            <rect x="47" y="65" width="82" height="67" rx="5" fill="#1B2B48" opacity="0.12" />
+          </g>
+          <polygon points="221.19,128.50 297.40,172.50 297.40,169.50 221.19,125.50" fill="#B6C8CC" />
+          <polygon points="360.62,136.00 297.40,172.50 297.40,169.50 360.62,133.00" fill="#A5BAC1" />
+          <polygon points="284.41,89.00 360.62,133.00 297.40,169.50 221.19,125.50" fill="#D7E1E1" />
+          <polygon points="226.39,128.50 297.40,169.50 297.40,104.50 226.39,63.50" fill="#E3D5C8" />
+          <polygon points="355.43,136.00 297.40,169.50 297.40,104.50 355.43,71.00" fill="#C4B7AC" />
+          <polygon points="284.41,30.00 355.43,71.00 297.40,104.50 226.39,63.50" fill="#F2E4D7" />
+          <polygon points="236.69,120.55 247.09,126.55 247.09,110.55 236.69,104.55" fill="#1B2B48" />
+          <polygon points="238.34,119.60 245.27,123.60 245.27,111.60 238.34,107.60" fill="#87A7B4" />
+          <path d="M241.72 121.65L241.72 109.65" fill="none" stroke="#D8E6E8" stroke-width="0.8" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M235.48 120.25L247.61 127.25" fill="none" stroke="#F8EFE7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="236.69,95.55 247.09,101.55 247.09,85.55 236.69,79.55" fill="#1B2B48" />
+          <polygon points="238.34,94.60 245.27,98.60 245.27,86.60 238.34,82.60" fill="#87A7B4" />
+          <path d="M241.72 96.65L241.72 84.65" fill="none" stroke="#D8E6E8" stroke-width="0.8" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M235.48 95.25L247.61 102.25" fill="none" stroke="#F8EFE7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="256.61,132.05 267.00,138.05 267.00,122.05 256.61,116.05" fill="#1B2B48" />
+          <polygon points="258.26,131.10 265.19,135.10 265.19,123.10 258.26,119.10" fill="#87A7B4" />
+          <path d="M261.64 133.15L261.64 121.15" fill="none" stroke="#D8E6E8" stroke-width="0.8" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M255.40 131.75L267.52 138.75" fill="none" stroke="#F8EFE7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="256.61,107.05 267.00,113.05 267.00,97.05 256.61,91.05" fill="#1B2B48" />
+          <polygon points="258.26,106.10 265.19,110.10 265.19,98.10 258.26,94.10" fill="#87A7B4" />
+          <path d="M261.64 108.15L261.64 96.15" fill="none" stroke="#D8E6E8" stroke-width="0.8" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M255.40 106.75L267.52 113.75" fill="none" stroke="#F8EFE7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="276.53,143.55 286.92,149.55 286.92,133.55 276.53,127.55" fill="#1B2B48" />
+          <polygon points="278.18,142.60 285.10,146.60 285.10,134.60 278.18,130.60" fill="#87A7B4" />
+          <path d="M281.55 144.65L281.55 132.65" fill="none" stroke="#D8E6E8" stroke-width="0.8" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M275.32 143.25L287.44 150.25" fill="none" stroke="#F8EFE7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="276.53,118.55 286.92,124.55 286.92,108.55 276.53,102.55" fill="#1B2B48" />
+          <polygon points="278.18,117.60 285.10,121.60 285.10,109.60 278.18,105.60" fill="#87A7B4" />
+          <path d="M281.55 119.65L281.55 107.65" fill="none" stroke="#D8E6E8" stroke-width="0.8" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M275.32 118.25L287.44 125.25" fill="none" stroke="#F8EFE7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="344.34,117.60 332.22,124.60 332.22,103.60 344.34,96.60" fill="#1B2B48" />
+          <polygon points="342.70,116.65 334.03,121.65 334.03,104.65 342.70,99.65" fill="#76929F" />
+          <polygon points="320.96,131.10 308.83,138.10 308.83,117.10 320.96,110.10" fill="#1B2B48" />
+          <polygon points="319.31,130.15 310.65,135.15 310.65,118.15 319.31,113.15" fill="#76929F" />
+          <polygon points="284.41,25.00 364.09,71.00 330.74,70.25 251.07,24.25" fill="#E7B59C" />
+          <polygon points="251.07,24.25 330.74,70.25 297.40,109.50 217.73,63.50" fill="#D38B70" />
+          <polygon points="364.09,71.00 330.74,70.25 297.40,109.50" fill="#B57059" />
+          <path d="M255.40 26.75L222.06 66.00" fill="none" stroke="#B57059" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M288.74 27.50L255.40 26.75" fill="none" stroke="#D38B70" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M262.33 30.75L228.99 70.00" fill="none" stroke="#B57059" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M295.67 31.50L262.33 30.75" fill="none" stroke="#D38B70" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M269.26 34.75L235.91 74.00" fill="none" stroke="#B57059" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M302.60 35.50L269.26 34.75" fill="none" stroke="#D38B70" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M276.18 38.75L242.84 78.00" fill="none" stroke="#B57059" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M309.53 39.50L276.18 38.75" fill="none" stroke="#D38B70" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M283.11 42.75L249.77 82.00" fill="none" stroke="#B57059" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M316.45 43.50L283.11 42.75" fill="none" stroke="#D38B70" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M290.04 46.75L256.70 86.00" fill="none" stroke="#B57059" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M323.38 47.50L290.04 46.75" fill="none" stroke="#D38B70" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M296.97 50.75L263.63 90.00" fill="none" stroke="#B57059" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M330.31 51.50L296.97 50.75" fill="none" stroke="#D38B70" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M303.90 54.75L270.56 94.00" fill="none" stroke="#B57059" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M337.24 55.50L303.90 54.75" fill="none" stroke="#D38B70" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M310.83 58.75L277.48 98.00" fill="none" stroke="#B57059" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M344.17 59.50L310.83 58.75" fill="none" stroke="#D38B70" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M317.75 62.75L284.41 102.00" fill="none" stroke="#B57059" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M351.10 63.50L317.75 62.75" fill="none" stroke="#D38B70" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M324.68 66.75L291.34 106.00" fill="none" stroke="#B57059" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M358.02 67.50L324.68 66.75" fill="none" stroke="#D38B70" stroke-width="0.65" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M242.73 34.06L322.41 80.06" fill="none" stroke="#B57059" stroke-width="0.6" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M234.40 43.88L314.07 89.88" fill="none" stroke="#B57059" stroke-width="0.6" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M226.06 53.69L305.74 99.69" fill="none" stroke="#B57059" stroke-width="0.6" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M251.07 23.25L330.74 69.25" fill="none" stroke="#F0C5AD" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="262.33,41.75 279.65,51.75 267.52,66.75 250.20,56.75" fill="#DDE9EA" stroke="#1B2B48" stroke-width="1" stroke-linejoin="round" />
+          <path d="M270.99 46.75L258.86 61.75" fill="none" stroke="#75939F" stroke-width="0.8" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="317.32,65.00 325.11,69.50 325.11,55.50 317.32,51.00" fill="#D0B7A5" />
+          <polygon points="332.91,65.00 325.11,69.50 325.11,55.50 332.91,51.00" fill="#B29989" />
+          <polygon points="325.11,46.50 332.91,51.00 325.11,55.50 317.32,51.00" fill="#EEDCD0" />
+        </g>
+      </g>
+      <g id="impulse-2510-layer-landscape" transform="translate(0 0) translate(300 220) scale(1) translate(-300 -220)" style="opacity: 1;">
+        <g transform="matrix(.8660254 .5 -.8660254 .5 300 48)">
+          <path d="M87 244Q97 263 111 276H171" stroke="#F4F4E9" stroke-width="10" stroke-linecap="round" fill="none" />
+        </g>
+        <g id="impulse-2510-object-tree-4" transform="translate(0 0) translate(300 220) scale(1) translate(-300 -220)" style="opacity: 1;">
+          <ellipse cx="497.45379119999996" cy="259.0" rx="20.0" ry="10.4" fill="#1B2B48" opacity=".09" />
+          <path d="M496.59 249.50L496.59 206.50" fill="none" stroke="#826C5C" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M496.59 226.50L490.53 212.00" fill="none" stroke="#826C5C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+          <g transform="translate(496.5877658 205.5) scale(0.8)">
+            <path d="M-19 3C-26-3-23-14-15-16C-14-27 1-29 7-22C18-25 27-16 23-8C31 1 22 17 12 17C6 26-8 23-12 16C-23 18-29 8-19 3Z" fill="#255963" />
+            <path d="M-18-5C-25-13-14-25-6-21C1-29 15-22 14-14C27-13 23 3 16 5C11 16-3 12-6 8C-17 12-24 3-18-5Z" fill="#347E84" />
+            <path d="M-14-10C-19-17-9-22-4-18C3-24 12-17 8-10C12-3 1 1-2-4C-10 1-17-4-14-10Z" fill="#79AAA6" />
+            <path d="M-2 5L-3-12M-3-4L-10-9M-3 0L5-5" fill="none" stroke="#255963" stroke-width="0.7" stroke-linejoin="round" stroke-linecap="round" opacity=".45" />
+          </g>
+        </g>
+        <g id="impulse-2510-object-tree-5" transform="translate(0 0) translate(300 220) scale(1) translate(-300 -220)" style="opacity: 1;">
+          <ellipse cx="370.14805739999997" cy="177.5" rx="17.5" ry="9.1" fill="#1B2B48" opacity=".09" />
+          <path d="M369.28 168.00L369.28 125.00" fill="none" stroke="#826C5C" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M369.28 145.00L363.22 130.50" fill="none" stroke="#826C5C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+          <g transform="translate(369.282032 124.0) scale(0.7)">
+            <path d="M-19 3C-26-3-23-14-15-16C-14-27 1-29 7-22C18-25 27-16 23-8C31 1 22 17 12 17C6 26-8 23-12 16C-23 18-29 8-19 3Z" fill="#255963" />
+            <path d="M-18-5C-25-13-14-25-6-21C1-29 15-22 14-14C27-13 23 3 16 5C11 16-3 12-6 8C-17 12-24 3-18-5Z" fill="#347E84" />
+            <path d="M-14-10C-19-17-9-22-4-18C3-24 12-17 8-10C12-3 1 1-2-4C-10 1-17-4-14-10Z" fill="#79AAA6" />
+            <path d="M-2 5L-3-12M-3-4L-10-9M-3 0L5-5" fill="none" stroke="#255963" stroke-width="0.7" stroke-linejoin="round" stroke-linecap="round" opacity=".45" />
+          </g>
+        </g>
+        <g id="impulse-2510-object-lamps" transform="translate(0 0) translate(300 220) scale(1) translate(-300 -220)" style="opacity: 1;">
+          <g transform="matrix(.8660254 .5 -.8660254 .5 300 48)">
+            <path d="M159 244l20 20" fill="none" stroke="#1B2B48" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity=".10" />
+          </g>
+          <path d="M226.39 249.50L226.39 200.50L234.18 201.00" fill="none" stroke="#66818D" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="228.12,202.50 237.65,208.00 237.65,206.00 228.12,200.50" fill="#7E969F" />
+          <polygon points="241.98,205.50 237.65,208.00 237.65,206.00 241.98,203.50" fill="#66818D" />
+          <polygon points="232.45,198.00 241.98,203.50 237.65,206.00 228.12,200.50" fill="#E7EDEF" />
+          <g transform="matrix(.8660254 .5 -.8660254 .5 300 48)">
+            <path d="M190 89l20 20" fill="none" stroke="#1B2B48" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity=".10" />
+          </g>
+          <path d="M387.47 187.50L387.47 138.50L395.26 139.00" fill="none" stroke="#66818D" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="389.20,140.50 398.73,146.00 398.73,144.00 389.20,138.50" fill="#7E969F" />
+          <polygon points="403.06,143.50 398.73,146.00 398.73,144.00 403.06,141.50" fill="#66818D" />
+          <polygon points="393.53,136.00 403.06,141.50 398.73,144.00 389.20,138.50" fill="#E7EDEF" />
+        </g>
+      </g>
+      <g id="impulse-2510-layer-vehicle" data-x="235.000" data-y="70.245" data-heading="-90.000" style="opacity: 1;">
+        <polygon fill="#1B2B48" opacity=".13" points="479.0547635446951,186.62268406778549 481.32866594123703,188.31194832809223 482.91167210760966,190.34873490810497 483.77669636941414,192.6981938247357 483.90893792170084,195.32012518452783 483.306134074846,198.1696670149786 481.9785989697981,201.19806286532673 479.9490471002666,204.35349604294282 477.2522046614375,207.58197621130654 473.93421537514496,210.82826317963332 470.051850957998,214.03681207785428 465.6715397415687,217.15272374474316 460.8682300652219,220.12268406778549 455.72410788924896,222.89587620242543 450.3271905703008,225.4248500623652 444.76982086001294,227.66633420369726 439.1470868949222,229.58197621130654 433.5551952120877,231.13899891932653 428.0898246285682,232.31076123753482 422.8444891503344,233.07721398779293 417.90893792170084,233.42524295104312 413.36761959258274,233.34889325523233 409.2982373786826,232.849471264824 405.7704195379261,231.93552222853992 402.8445280116645,230.62268406778549 400.5706256151226,228.9334198074787 398.98761944874997,226.896633227466 398.12259518694555,224.54717431083526 397.9903536346588,221.92524295104312 398.59315748151363,219.07570112059236 399.9206925865616,216.04730527024424 401.950244456093,212.89187209262815 404.64708689492215,209.66339192426443 407.9650761812147,206.41710495593765 411.8474405983617,203.20855605771663 416.22775181479096,200.0926443908278 421.03106149113773,197.12268406778549 426.1751836671107,194.34949193314554 431.5721009860588,191.82051807320573 437.12947069634674,189.5790339318737 442.75220466143753,187.66339192426443 448.34409634427186,186.10636921624442 453.8094669277915,184.93460689803612 459.0548024060252,184.168154147778 463.9903536346588,183.82012518452783 468.5316719637769,183.89647488033864 472.60105417767704,184.39589687074698 476.1288720184335,185.30984590703105" />
+        <g>
+          <polygon data-part="7" fill="#B4C9CD" points="451.429,166.373 451.302,165.333 450.930,164.511 450.338,163.962 449.567,163.724 448.668,163.813 447.705,164.223 446.741,164.926 445.843,165.874 445.071,167.002 444.480,168.235 444.108,169.487 443.981,170.673 444.108,171.712 444.480,172.535 445.071,173.084 445.843,173.322 446.741,173.233 447.705,172.823 448.668,172.120 449.567,171.172 450.338,170.043 450.930,168.811 451.302,167.559" style="display: none;" />
+          <polygon data-part="6" fill="#1B2B48" points="455.672,164.123 455.406,161.947 454.628,160.226 453.389,159.077 451.775,158.578 449.895,158.765 447.878,159.623 445.861,161.094 443.981,163.078 442.366,165.441 441.128,168.020 440.349,170.640 440.084,173.123 440.349,175.299 441.128,177.020 442.366,178.169 443.981,178.667 445.861,178.481 447.878,177.623 449.895,176.151 451.775,174.167 453.389,171.805 454.628,169.226 455.406,166.605" style="display: none;" />
+          <polyline data-part="8" fill="none" stroke="#FFFFFF" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" points="446.146,169.623 449.610,167.623" style="display: none;" />
+          <polygon data-part="15" fill="#347E84" points="466.930,163.623 475.591,165.623 475.591,149.623 466.930,147.623" style="display: none;" />
+          <polygon data-part="14" fill="#347E84" points="447.878,167.623 466.930,163.623 466.930,147.623 447.878,151.623" style="display: none;" />
+          <polyline data-part="38" fill="none" stroke="#1B2B48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="476.457,160.123 484.251,164.623" style="display: none;" />
+          <polygon data-part="36" fill="#FFF2D6" points="465.198,154.623 473.859,154.623 473.859,150.623 466.064,150.123" style="display: none;" />
+          <polygon data-part="16" fill="#255963" points="475.591,165.623 485.983,171.623 485.983,155.623 475.591,149.623" style="display: none;" />
+          <polygon data-part="17" fill="#255963" points="485.983,171.623 487.715,180.623 487.715,164.623 485.983,155.623" style="display: none;" />
+          <polygon data-part="37" fill="#FFF2D6" points="484.251,165.623 484.251,160.623 484.251,156.623 485.117,161.123" style="display: none;" />
+          <polygon data-part="40" fill="#255963" points="438.352,157.123 436.620,151.123 431.423,151.123 434.887,156.123" />
+          <polygon data-part="22" fill="#79AAA6" points="450.476,153.123 466.064,149.123 482.519,156.623 482.519,163.623 476.457,168.123" />
+          <polygon data-part="13" fill="#347E84" points="398.514,196.123 447.878,167.623 447.878,151.623 398.514,180.123" style="display: none;" />
+          <polyline data-part="31" fill="none" stroke="#A8CCD0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="449.610,148.623 451.342,152.623" style="display: none;" />
+          <polygon data-part="9" fill="#1B2B48" points="488.581,183.123 488.315,180.947 487.537,179.226 486.298,178.077 484.684,177.578 482.804,177.765 480.787,178.623 478.770,180.094 476.890,182.078 475.275,184.441 474.037,187.020 473.258,189.640 472.993,192.123 473.258,194.299 474.037,196.020 475.275,197.169 476.890,197.667 478.770,197.481 480.787,196.623 482.804,195.151 484.684,193.167 486.298,190.805 487.537,188.226 488.315,185.605" />
+          <polyline data-part="11" fill="none" stroke="#FFFFFF" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" points="479.055,188.623 482.519,186.623" />
+          <polygon data-part="10" fill="#B4C9CD" points="484.684,185.573 484.557,184.533 484.185,183.711 483.593,183.162 482.822,182.924 481.924,183.013 480.960,183.423 479.996,184.126 479.098,185.074 478.327,186.202 477.735,187.435 477.363,188.687 477.236,189.873 477.363,190.912 477.735,191.735 478.327,192.284 479.098,192.522 479.996,192.433 480.960,192.023 481.924,191.320 482.822,190.372 483.593,189.243 484.185,188.011 484.557,186.759" />
+          <polygon data-part="1" fill="#B4C9CD" points="408.127,191.373 408.000,190.333 407.628,189.511 407.037,188.962 406.265,188.724 405.367,188.813 404.403,189.223 403.440,189.926 402.541,190.874 401.770,192.002 401.178,193.235 400.806,194.487 400.679,195.673 400.806,196.712 401.178,197.535 401.770,198.084 402.541,198.322 403.440,198.233 404.403,197.823 405.367,197.120 406.265,196.172 407.037,195.043 407.628,193.811 408.000,192.559" style="display: none;" />
+          <polygon data-part="0" fill="#1B2B48" points="412.371,189.123 412.105,186.947 411.327,185.226 410.088,184.077 408.474,183.578 406.594,183.765 404.577,184.623 402.559,186.094 400.679,188.078 399.065,190.441 397.827,193.020 397.048,195.640 396.782,198.123 397.048,200.299 397.827,202.020 399.065,203.169 400.679,203.667 402.559,203.481 404.577,202.623 406.594,201.151 408.474,199.167 410.088,196.805 411.327,194.226 412.105,191.605" style="display: none;" />
+          <polyline data-part="2" fill="none" stroke="#FFFFFF" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" points="402.845,194.623 406.309,192.623" style="display: none;" />
+          <polygon data-part="26" fill="#254A61" points="444.414,145.623 465.198,157.623 476.457,168.123 450.476,153.123" style="display: none;" />
+          <polygon data-part="21" fill="#347E84" points="397.648,187.623 398.514,180.123 447.878,151.623 466.930,147.623 475.591,149.623 485.983,155.623 487.715,164.623 432.289,198.623 414.969,199.623" />
+          <polygon data-part="24" fill="#1B2B48" points="405.443,179.123 417.567,161.123 444.414,145.623 450.476,153.123" style="display: none;" />
+          <polyline data-part="29" fill="none" stroke="#347E84" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="427.093,155.623 425.361,166.623" style="display: none;" />
+          <polygon data-part="18" fill="#255963" points="487.715,180.623 432.289,214.623 432.289,198.623 487.715,164.623" />
+          <polyline data-part="32" fill="none" stroke="#BCD7D2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="425.361,160.123 442.682,150.123" />
+          <polygon data-part="41" fill="#255963" points="467.796,174.123 478.189,175.123 474.725,176.123 466.064,174.123" />
+          <polygon data-part="12" fill="#347E84" points="397.648,203.623 398.514,196.123 398.514,180.123 397.648,187.623" style="display: none;" />
+          <polyline data-part="35" fill="none" stroke="#A8C8C5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="457.404,187.123 463.466,183.623" />
+          <polyline data-part="33" fill="none" stroke="#79AAA6" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" points="434.021,197.623 483.385,168.123" />
+          <polygon data-part="27" fill="#8AB7B2" points="417.567,161.123 444.414,145.623 465.198,157.623 438.352,173.123" />
+          <polyline data-part="34" fill="none" stroke="#255963" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round" points="454.373,199.373 454.373,185.373" />
+          <polygon data-part="28" fill="#79AAA6" points="422.763,160.923 443.548,148.923 459.136,157.923 438.352,169.923" />
+          <polygon data-part="25" fill="#255963" points="431.423,194.123 438.352,173.123 465.198,157.623 476.457,168.123" />
+          <polygon data-part="3" fill="#1B2B48" points="445.280,208.123 445.014,205.947 444.236,204.226 442.997,203.077 441.383,202.578 439.503,202.765 437.486,203.623 435.468,205.094 433.588,207.078 431.974,209.441 430.736,212.020 429.957,214.640 429.691,217.123 429.957,219.299 430.736,221.020 431.974,222.169 433.588,222.667 435.468,222.481 437.486,221.623 439.503,220.151 441.383,218.167 442.997,215.805 444.236,213.226 445.014,210.605" />
+          <polyline data-part="5" fill="none" stroke="#FFFFFF" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" points="435.753,213.623 439.218,211.623" />
+          <polyline data-part="30" fill="none" stroke="#347E84" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="449.610,168.623 451.342,181.623" />
+          <polygon data-part="4" fill="#B4C9CD" points="441.383,210.573 441.256,209.533 440.884,208.711 440.292,208.162 439.521,207.924 438.623,208.013 437.659,208.423 436.695,209.126 435.797,210.074 435.026,211.202 434.434,212.435 434.062,213.687 433.935,214.873 434.062,215.912 434.434,216.735 435.026,217.284 435.797,217.522 436.695,217.433 437.659,217.023 438.623,216.320 439.521,215.372 440.292,214.243 440.884,213.011 441.256,211.759" />
+          <polygon data-part="23" fill="#496D7C" points="405.443,179.123 431.423,194.123 438.352,173.123 417.567,161.123" style="" />
+          <polygon data-part="20" fill="#347E84" points="414.969,215.623 397.648,203.623 397.648,187.623 414.969,199.623" style="" />
+          <polyline data-part="39" fill="none" stroke="#E7B59C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="401.112,194.623 412.371,201.123" style="" />
+          <polygon data-part="19" fill="#255963" points="432.289,214.623 414.969,215.623 414.969,199.623 432.289,198.623" />
+        </g>
+      </g>
+      <g id="impulse-2510-layer-foreground">
+        <g id="impulse-2510-object-pavilion" transform="translate(0 0) translate(400 250) scale(1) translate(-400 -250)" style="opacity: 1;">
+          <g transform="matrix(.8660254 .5 -.8660254 .5 300 48)">
+            <rect x="286" y="139" width="50" height="77" rx="5" fill="#1B2B48" opacity="0.12" />
+          </g>
+          <polygon points="355.43,290.00 403.92,318.00 403.92,315.00 355.43,287.00" fill="#B9C8CE" />
+          <polygon points="475.80,276.50 403.92,318.00 403.92,315.00 475.80,273.50" fill="#91A5AF" />
+          <polygon points="427.31,245.50 475.80,273.50 403.92,315.00 355.43,287.00" fill="#E0E6E7" />
+          <polygon points="360.62,290.00 403.92,315.00 403.92,284.00 360.62,259.00" fill="#C6D8DA" />
+          <polygon points="470.61,276.50 403.92,315.00 403.92,284.00 470.61,245.50" fill="#9EBCC1" />
+          <polygon points="427.31,220.50 470.61,245.50 403.92,284.00 360.62,259.00" fill="#EFF2F2" />
+          <polygon points="366.51,287.60 374.30,292.10 374.30,274.10 366.51,269.60" fill="#456778" />
+          <path d="M368.16 286.65L368.16 272.65" fill="none" stroke="#8FB7C1" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="379.50,295.10 387.30,299.60 387.30,281.60 379.50,277.10" fill="#456778" />
+          <path d="M381.15 294.15L381.15 280.15" fill="none" stroke="#8FB7C1" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="392.49,302.60 400.29,307.10 400.29,289.10 392.49,284.60" fill="#456778" />
+          <path d="M394.14 301.65L394.14 287.65" fill="none" stroke="#8FB7C1" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="460.39,275.60 448.26,282.60 448.26,265.60 460.39,258.60" fill="#456778" />
+          <polygon points="440.47,287.10 428.34,294.10 428.34,277.10 440.47,270.10" fill="#456778" />
+          <polygon points="420.55,298.60 408.43,305.60 408.43,288.60 420.55,281.60" fill="#456778" />
+          <polygon points="353.69,259.00 403.92,288.00 403.92,284.00 353.69,255.00" fill="#347E84" />
+          <polygon points="477.54,245.50 403.92,288.00 403.92,284.00 477.54,241.50" fill="#255963" />
+          <polygon points="427.31,212.50 477.54,241.50 403.92,284.00 353.69,255.00" fill="#79AAA6" />
+          <polygon points="427.31,223.40 455.88,239.90 441.16,248.40 412.58,231.90" fill="#456778" />
+          <path d="M434.23 227.30L419.51 235.80" fill="none" stroke="#91B6BD" stroke-width="0.7" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M441.16 231.30L426.44 239.80" fill="none" stroke="#91B6BD" stroke-width="0.7" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M448.09 235.30L433.37 243.80" fill="none" stroke="#91B6BD" stroke-width="0.7" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M420.38 227.30L448.96 243.80" fill="none" stroke="#91B6BD" stroke-width="0.7" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="407.39,234.90 435.97,251.40 421.24,259.90 392.66,243.40" fill="#456778" />
+          <path d="M414.32 238.80L399.59 247.30" fill="none" stroke="#91B6BD" stroke-width="0.7" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M421.24 242.80L406.52 251.30" fill="none" stroke="#91B6BD" stroke-width="0.7" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M428.17 246.80L413.45 255.30" fill="none" stroke="#91B6BD" stroke-width="0.7" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M400.46 238.80L429.04 255.30" fill="none" stroke="#91B6BD" stroke-width="0.7" stroke-linejoin="round" stroke-linecap="round" />
+          <polygon points="378.81,256.50 393.53,265.00 393.53,259.00 378.81,250.50" fill="#AFC4C8" />
+          <polygon points="401.32,260.50 393.53,265.00 393.53,259.00 401.32,254.50" fill="#8AA9B1" />
+          <polygon points="386.60,246.00 401.32,254.50 393.53,259.00 378.81,250.50" fill="#DAE4E5" />
+        </g>
+        <g id="impulse-2510-object-bench" transform="translate(0 0) translate(300 220) scale(1) translate(-300 -220)" style="opacity: 1;">
+          <g transform="matrix(.8660254 .5 -.8660254 .5 300 48)">
+            <rect x="140" y="287" width="37" height="12" rx="5" fill="#1B2B48" opacity="0.1" />
+          </g>
+          <polygon points="167.50,260.50 170.10,262.00 170.10,254.00 167.50,252.50" fill="#1B2B48" />
+          <polygon points="177.89,257.50 170.10,262.00 170.10,254.00 177.89,249.50" fill="#1B2B48" />
+          <polygon points="175.29,248.00 177.89,249.50 170.10,254.00 167.50,252.50" fill="#1B2B48" />
+          <polygon points="189.15,273.00 191.75,274.50 191.75,266.50 189.15,265.00" fill="#1B2B48" />
+          <polygon points="199.54,270.00 191.75,274.50 191.75,266.50 199.54,262.00" fill="#1B2B48" />
+          <polygon points="196.94,260.50 199.54,262.00 191.75,266.50 189.15,265.00" fill="#1B2B48" />
+          <polygon points="170.10,246.00 202.14,264.50 202.14,262.50 170.10,244.00" fill="#D38B70" />
+          <polygon points="204.74,263.00 202.14,264.50 202.14,262.50 204.74,261.00" fill="#B57059" />
+          <polygon points="172.69,242.50 204.74,261.00 202.14,262.50 170.10,244.00" fill="#E7B59C" />
+          <polygon points="166.63,248.00 198.68,266.50 198.68,264.50 166.63,246.00" fill="#D38B70" />
+          <polygon points="201.27,265.00 198.68,266.50 198.68,264.50 201.27,263.00" fill="#B57059" />
+          <polygon points="169.23,244.50 201.27,263.00 198.68,264.50 166.63,246.00" fill="#E7B59C" />
+          <polygon points="163.17,250.00 195.21,268.50 195.21,266.50 163.17,248.00" fill="#D38B70" />
+          <polygon points="197.81,267.00 195.21,268.50 195.21,266.50 197.81,265.00" fill="#B57059" />
+          <polygon points="165.77,246.50 197.81,265.00 195.21,266.50 163.17,248.00" fill="#E7B59C" />
+          <polygon points="161.44,244.00 193.48,262.50 193.48,259.50 161.44,241.00" fill="#D38B70" />
+          <polygon points="195.21,261.50 193.48,262.50 193.48,259.50 195.21,258.50" fill="#B57059" />
+          <polygon points="163.17,240.00 195.21,258.50 193.48,259.50 161.44,241.00" fill="#E7B59C" />
+          <polygon points="161.44,239.00 193.48,257.50 193.48,254.50 161.44,236.00" fill="#D38B70" />
+          <polygon points="195.21,256.50 193.48,257.50 193.48,254.50 195.21,253.50" fill="#B57059" />
+          <polygon points="163.17,235.00 195.21,253.50 193.48,254.50 161.44,236.00" fill="#E7B59C" />
+        </g>
+        <g id="impulse-2510-object-tree-0" transform="translate(0 0) translate(300 220) scale(1) translate(-300 -220)" style="opacity: 1;">
+          <ellipse cx="102.54620880000002" cy="206.0" rx="22.5" ry="11.700000000000001" fill="#1B2B48" opacity=".09" />
+          <path d="M101.68 196.50L101.68 153.50" fill="none" stroke="#826C5C" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M101.68 173.50L95.62 159.00" fill="none" stroke="#826C5C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+          <g transform="translate(101.6801834 152.5) scale(0.9)">
+            <path d="M-19 3C-26-3-23-14-15-16C-14-27 1-29 7-22C18-25 27-16 23-8C31 1 22 17 12 17C6 26-8 23-12 16C-23 18-29 8-19 3Z" fill="#255963" />
+            <path d="M-18-5C-25-13-14-25-6-21C1-29 15-22 14-14C27-13 23 3 16 5C11 16-3 12-6 8C-17 12-24 3-18-5Z" fill="#347E84" />
+            <path d="M-14-10C-19-17-9-22-4-18C3-24 12-17 8-10C12-3 1 1-2-4C-10 1-17-4-14-10Z" fill="#79AAA6" />
+            <path d="M-2 5L-3-12M-3-4L-10-9M-3 0L5-5" fill="none" stroke="#255963" stroke-width="0.7" stroke-linejoin="round" stroke-linecap="round" opacity=".45" />
+          </g>
+        </g>
+        <g id="impulse-2510-object-tree-1" transform="translate(0 0) translate(300 220) scale(1) translate(-300 -220)" style="opacity: 1;">
+          <ellipse cx="118.13466600000001" cy="229.0" rx="21.25" ry="11.05" fill="#1B2B48" opacity=".09" />
+          <path d="M117.27 219.50L117.27 176.50" fill="none" stroke="#826C5C" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M117.27 196.50L111.21 182.00" fill="none" stroke="#826C5C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+          <g transform="translate(117.2686406 175.5) scale(0.85)">
+            <path d="M-19 3C-26-3-23-14-15-16C-14-27 1-29 7-22C18-25 27-16 23-8C31 1 22 17 12 17C6 26-8 23-12 16C-23 18-29 8-19 3Z" fill="#255963" />
+            <path d="M-18-5C-25-13-14-25-6-21C1-29 15-22 14-14C27-13 23 3 16 5C11 16-3 12-6 8C-17 12-24 3-18-5Z" fill="#347E84" />
+            <path d="M-14-10C-19-17-9-22-4-18C3-24 12-17 8-10C12-3 1 1-2-4C-10 1-17-4-14-10Z" fill="#79AAA6" />
+            <path d="M-2 5L-3-12M-3-4L-10-9M-3 0L5-5" fill="none" stroke="#255963" stroke-width="0.7" stroke-linejoin="round" stroke-linecap="round" opacity=".45" />
+          </g>
+        </g>
+        <g id="impulse-2510-object-tree-2" transform="translate(0 0) translate(300 220) scale(1) translate(-300 -220)" style="opacity: 1;">
+          <ellipse cx="184.81862180000002" cy="236.5" rx="20.0" ry="10.4" fill="#1B2B48" opacity=".09" />
+          <path d="M183.95 227.00L183.95 184.00" fill="none" stroke="#826C5C" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+          <path d="M183.95 204.00L177.89 189.50" fill="none" stroke="#826C5C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+          <g transform="translate(183.9525964 183.0) scale(0.8)">
+            <path d="M-19 3C-26-3-23-14-15-16C-14-27 1-29 7-22C18-25 27-16 23-8C31 1 22 17 12 17C6 26-8 23-12 16C-23 18-29 8-19 3Z" fill="#255963" />
+            <path d="M-18-5C-25-13-14-25-6-21C1-29 15-22 14-14C27-13 23 3 16 5C11 16-3 12-6 8C-17 12-24 3-18-5Z" fill="#347E84" />
+            <path d="M-14-10C-19-17-9-22-4-18C3-24 12-17 8-10C12-3 1 1-2-4C-10 1-17-4-14-10Z" fill="#79AAA6" />
+            <path d="M-2 5L-3-12M-3-4L-10-9M-3 0L5-5" fill="none" stroke="#255963" stroke-width="0.7" stroke-linejoin="round" stroke-linecap="round" opacity=".45" />
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g id="impulse-2510-encounter-signal" fill="none" stroke="#14E0D3" stroke-linecap="round" aria-hidden="true" style="opacity: 0.712733;">
+    <ellipse id="impulse-2510-impulse-ring" cx="493.123665043930" cy="171.500000000000" rx="29.166666666667" ry="14.583333333333" stroke-width="2.333333333333" />
+    <path id="impulse-2510-activation-link" d="M302.47208861135834 377.17361044067127 L309.87419902635787 373.5 L309.87419902635787 365.9" stroke-width="1.5" style="display: none;" />
+  </g>
+  <g id="impulse-2510-brand-symbol" transform="translate(493.123665043930 146.500000000000) scale(0.515591025472)" style="opacity: 1;">
+    <use href="#impulse-2510-urbes-logo" x="-48" y="-48" width="96" height="96" />
+  </g>
+</svg>
