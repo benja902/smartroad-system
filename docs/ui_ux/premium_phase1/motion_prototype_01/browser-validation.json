@@ -1,6 +1,6 @@
 {
   "passed": true,
-  "total": 26,
+  "total": 109,
   "results": [
     {
       "name": "Direct file opening; no autoplay",
@@ -105,9 +105,345 @@
     {
       "name": "Full real-time playback completes without seeking",
       "passed": true
+    },
+    {
+      "name": "Existing selector retains all previous routes and adds D",
+      "passed": true
+    },
+    {
+      "name": "impulse: cue derived from real eased vehicle nose",
+      "passed": true
+    },
+    {
+      "name": "impulse: vehicle geometry matches previous route",
+      "passed": true
+    },
+    {
+      "name": "impulse: one persistent isotipo through all phases",
+      "passed": true
+    },
+    {
+      "name": "impulse: continuous symbol and name at phase boundaries",
+      "passed": true
+    },
+    {
+      "name": "impulse: approaching logo never overlaps the word",
+      "passed": true
+    },
+    {
+      "name": "impulse: grouped delivery stays inside left margin",
+      "passed": true
+    },
+    {
+      "name": "impulse: docked logo and word travel as one group",
+      "passed": true
+    },
+    {
+      "name": "impulse: form waits for scene delivery",
+      "passed": true
+    },
+    {
+      "name": "impulse: fields and action retain staggered reveal",
+      "passed": true
+    },
+    {
+      "name": "impulse: slider input and restart reuse existing controls",
+      "passed": true
+    },
+    {
+      "name": "impulse: finite playback at 1×",
+      "passed": true
+    },
+    {
+      "name": "impulse: finite playback at .25×",
+      "passed": true
+    },
+    {
+      "name": "impulse: pause preserves progress and speed changes do not restart",
+      "passed": true
+    },
+    {
+      "name": "impulse: skip delivers final brand without signal",
+      "passed": true
+    },
+    {
+      "name": "impulse: manual reduced motion delivers static login",
+      "passed": true
+    },
+    {
+      "name": "impulse: emergency wins over active sequence and skip",
+      "passed": true
+    },
+    {
+      "name": "impulse: background interruption stays finished",
+      "passed": true
+    },
+    {
+      "name": "impulse: system reduced motion prevents replay",
+      "passed": true
+    },
+    {
+      "name": "activation: cue derived from real eased vehicle nose",
+      "passed": true
+    },
+    {
+      "name": "activation: vehicle geometry matches previous route",
+      "passed": true
+    },
+    {
+      "name": "activation: one persistent isotipo through all phases",
+      "passed": true
+    },
+    {
+      "name": "activation: continuous symbol and name at phase boundaries",
+      "passed": true
+    },
+    {
+      "name": "activation: approaching logo never overlaps the word",
+      "passed": true
+    },
+    {
+      "name": "activation: grouped delivery stays inside left margin",
+      "passed": true
+    },
+    {
+      "name": "activation: docked logo and word travel as one group",
+      "passed": true
+    },
+    {
+      "name": "activation: form waits for scene delivery",
+      "passed": true
+    },
+    {
+      "name": "activation: fields and action retain staggered reveal",
+      "passed": true
+    },
+    {
+      "name": "activation: slider input and restart reuse existing controls",
+      "passed": true
+    },
+    {
+      "name": "activation: finite playback at 1×",
+      "passed": true
+    },
+    {
+      "name": "activation: finite playback at .25×",
+      "passed": true
+    },
+    {
+      "name": "activation: pause preserves progress and speed changes do not restart",
+      "passed": true
+    },
+    {
+      "name": "activation: skip delivers final brand without signal",
+      "passed": true
+    },
+    {
+      "name": "activation: manual reduced motion delivers static login",
+      "passed": true
+    },
+    {
+      "name": "activation: emergency wins over active sequence and skip",
+      "passed": true
+    },
+    {
+      "name": "activation: background interruption stays finished",
+      "passed": true
+    },
+    {
+      "name": "activation: system reduced motion prevents replay",
+      "passed": true
+    },
+    {
+      "name": "refined: cue derived from real eased vehicle nose",
+      "passed": true
+    },
+    {
+      "name": "refined: vehicle geometry matches previous route",
+      "passed": true
+    },
+    {
+      "name": "refined: one persistent isotipo through all phases",
+      "passed": true
+    },
+    {
+      "name": "refined: continuous symbol and name at phase boundaries",
+      "passed": true
+    },
+    {
+      "name": "refined: approaching logo never overlaps the word",
+      "passed": true
+    },
+    {
+      "name": "refined: grouped delivery stays inside left margin",
+      "passed": true
+    },
+    {
+      "name": "refined: docked logo and word travel as one group",
+      "passed": true
+    },
+    {
+      "name": "refined: form waits for scene delivery",
+      "passed": true
+    },
+    {
+      "name": "refined: fields and action retain staggered reveal",
+      "passed": true
+    },
+    {
+      "name": "refined: slider input and restart reuse existing controls",
+      "passed": true
+    },
+    {
+      "name": "refined: finite playback at 1×",
+      "passed": true
+    },
+    {
+      "name": "refined: finite playback at .25×",
+      "passed": true
+    },
+    {
+      "name": "refined: pause preserves progress and speed changes do not restart",
+      "passed": true
+    },
+    {
+      "name": "refined: skip delivers final brand without signal",
+      "passed": true
+    },
+    {
+      "name": "refined: manual reduced motion delivers static login",
+      "passed": true
+    },
+    {
+      "name": "refined: emergency wins over active sequence and skip",
+      "passed": true
+    },
+    {
+      "name": "refined: background interruption stays finished",
+      "passed": true
+    },
+    {
+      "name": "refined: system reduced motion prevents replay",
+      "passed": true
+    },
+    {
+      "name": "beacon: cue derived from real eased vehicle nose",
+      "passed": true
+    },
+    {
+      "name": "beacon: vehicle geometry matches previous route",
+      "passed": true
+    },
+    {
+      "name": "beacon: one persistent isotipo through all phases",
+      "passed": true
+    },
+    {
+      "name": "beacon: continuous symbol and name at phase boundaries",
+      "passed": true
+    },
+    {
+      "name": "beacon: approaching logo never overlaps the word",
+      "passed": true
+    },
+    {
+      "name": "beacon: grouped delivery stays inside left margin",
+      "passed": true
+    },
+    {
+      "name": "beacon: docked logo and word travel as one group",
+      "passed": true
+    },
+    {
+      "name": "beacon: form waits for scene delivery",
+      "passed": true
+    },
+    {
+      "name": "beacon: fields and action retain staggered reveal",
+      "passed": true
+    },
+    {
+      "name": "beacon: slider input and restart reuse existing controls",
+      "passed": true
+    },
+    {
+      "name": "beacon: finite playback at 1×",
+      "passed": true
+    },
+    {
+      "name": "beacon: finite playback at .25×",
+      "passed": true
+    },
+    {
+      "name": "beacon: pause preserves progress and speed changes do not restart",
+      "passed": true
+    },
+    {
+      "name": "beacon: skip delivers final brand without signal",
+      "passed": true
+    },
+    {
+      "name": "beacon: manual reduced motion delivers static login",
+      "passed": true
+    },
+    {
+      "name": "beacon: emergency wins over active sequence and skip",
+      "passed": true
+    },
+    {
+      "name": "beacon: background interruption stays finished",
+      "passed": true
+    },
+    {
+      "name": "beacon: system reduced motion prevents replay",
+      "passed": true
+    },
+    {
+      "name": "C isotipo begins 120ms after vehicle and finishes at 960ms",
+      "passed": true
+    },
+    {
+      "name": "C removes only T4 at opening, encounter and final Login",
+      "passed": true
+    },
+    {
+      "name": "Switching back to A B and isolated vehicle restores T4",
+      "passed": true
+    },
+    {
+      "name": "C preserves A symbol transforms and reaction",
+      "passed": true
+    },
+    {
+      "name": "D floats once by 2px without rotating or changing scale",
+      "passed": true
+    },
+    {
+      "name": "D is stable before geometric contact without anticipatory pulse",
+      "passed": true
+    },
+    {
+      "name": "D reacts forward at contact and rejoins the original flight",
+      "passed": true
+    },
+    {
+      "name": "D shadow clears for skip reduced motion and emergency",
+      "passed": true
+    },
+    {
+      "name": "Leaving D restores unmodified C A and B effects",
+      "passed": true
+    },
+    {
+      "name": "D seeking is deterministic and new phase boundaries are continuous",
+      "passed": true
     }
   ],
   "errors": [],
   "live_raf_verified": true,
+  "variant_playback_speeds": [
+    1,
+    0.25
+  ],
   "android_performance_measured": false
 }
