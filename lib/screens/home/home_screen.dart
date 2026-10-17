@@ -7,6 +7,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../models/alert_presentation.dart';
 import '../../navigation/app_router.dart';
+import '../../navigation/dev_mode_flag.dart';
 import '../../state/device_status_provider.dart';
 import '../../state/event_provider.dart';
 import '../../state/session_provider.dart';
@@ -19,6 +20,8 @@ import 'widgets/quick_actions_row.dart';
 import 'widgets/recent_alerts_preview.dart';
 import 'widgets/urbes_status_card.dart';
 import 'widgets/vehicle_summary_card.dart';
+import 'home_visual_preview.dart';
+import 'premium_home_content.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -37,6 +40,33 @@ class HomeScreen extends StatelessWidget {
     final topAttentionEvent = attentionEvents.isEmpty
         ? null
         : attentionEvents.last;
+
+    final variant = context.watch<DevModeFlag>().enabled
+        ? HomeVisualPreview.of(context)
+        : HomePreviewVariant.current;
+    if (variant != HomePreviewVariant.current) {
+      return PremiumHomeContent(
+        variant: variant,
+        userName: user?.name ?? 'Usuario',
+        vehicle: vehicle,
+        status: deviceStatus,
+        events: events,
+        eventError: eventProvider.error != null,
+        attention: topAttentionEvent == null
+            ? null
+            : AttentionBanner(
+                key: ValueKey(topAttentionEvent.dedupKey),
+                event: topAttentionEvent,
+                animateIcon: false,
+                onAcknowledge: () =>
+                    eventProvider.acknowledge(topAttentionEvent.dedupKey),
+                onViewDetails: () => context.push(
+                  '${AppRoutes.incidentDetail}/${topAttentionEvent.dedupKey}',
+                ),
+              ),
+        onOpenAlerts: () => context.go(AppRoutes.alerts),
+      );
+    }
 
     return ScreenEntrance(
       builder: (context, entrance) => Scaffold(

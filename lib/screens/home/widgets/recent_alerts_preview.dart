@@ -14,26 +14,45 @@ import '../../../models/alert_presentation.dart';
 /// there is no event history yet.
 class RecentAlertsPreview extends StatelessWidget {
   final List<AccidentEvent> events;
+  final bool neutralEmpty;
+  final bool editorial;
 
-  const RecentAlertsPreview({super.key, required this.events});
+  const RecentAlertsPreview({
+    super.key,
+    required this.events,
+    this.neutralEmpty = false,
+    this.editorial = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final visible = events.where((e) => classify(e) != AlertPresentation.cancellation).toList();
+    final visible = events
+        .where((e) => classify(e) != AlertPresentation.cancellation)
+        .toList();
     final recent = visible.reversed.take(3).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Alertas recientes', style: AppTypography.headlineMd.copyWith(color: AppColors.primary)),
+        Text(
+          'Alertas recientes',
+          style: AppTypography.headlineMd.copyWith(color: AppColors.primary),
+        ),
         const SizedBox(height: AppSpacing.sm),
         if (recent.isEmpty)
-          const _AlertRow(
-            icon: Icons.check_circle,
-            iconColor: AppColors.success,
-            title: 'Sin incidentes recientes',
-            subtitle: 'Todo en orden',
+          _AlertRow(
+            icon: neutralEmpty ? Icons.inbox_outlined : Icons.check_circle,
+            iconColor: neutralEmpty
+                ? AppColors.onSurfaceVariant
+                : AppColors.success,
+            title: neutralEmpty
+                ? 'Sin registros para mostrar'
+                : 'Sin incidentes recientes',
+            subtitle: neutralEmpty
+                ? 'Aquí aparecerán los registros recibidos.'
+                : 'Todo en orden',
             emphasized: true,
+            editorial: editorial,
           )
         else
           Column(
@@ -48,8 +67,10 @@ class RecentAlertsPreview extends StatelessWidget {
                     AlertPresentation.activeEmergency,
                     AlertPresentation.attention,
                   }.contains(classify(event)),
+                  editorial: editorial,
                 ),
-                if (event != recent.last) const SizedBox(height: AppSpacing.gutter),
+                if (event != recent.last)
+                  const SizedBox(height: AppSpacing.gutter),
               ],
             ],
           ),
@@ -59,16 +80,24 @@ class RecentAlertsPreview extends StatelessWidget {
 
   IconData _iconFor(AccidentEvent event) {
     final presentation = classify(event);
-    if (presentation == AlertPresentation.cancelled) return Icons.cancel_outlined;
-    if (presentation == AlertPresentation.attended) return Icons.check_circle_outline;
-    if (presentation == AlertPresentation.technical) return Icons.build_outlined;
+    if (presentation == AlertPresentation.cancelled) {
+      return Icons.cancel_outlined;
+    }
+    if (presentation == AlertPresentation.attended) {
+      return Icons.check_circle_outline;
+    }
+    if (presentation == AlertPresentation.technical) {
+      return Icons.build_outlined;
+    }
     switch (event.type) {
       case AccidentEventType.sos:
         return Icons.emergency_share;
       case AccidentEventType.rollover:
         return Icons.change_circle;
       default:
-        return presentation == AlertPresentation.informative ? Icons.info_outline : Icons.warning_amber_outlined;
+        return presentation == AlertPresentation.informative
+            ? Icons.info_outline
+            : Icons.warning_amber_outlined;
     }
   }
 
@@ -113,6 +142,7 @@ class _AlertRow extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool emphasized;
+  final bool editorial;
 
   const _AlertRow({
     required this.icon,
@@ -120,13 +150,18 @@ class _AlertRow extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.emphasized,
+    this.editorial = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: emphasized
+      decoration: editorial
+          ? const BoxDecoration(
+              border: Border(bottom: BorderSide(color: Color(0xFFE0E6EB))),
+            )
+          : emphasized
           ? BoxDecoration(
               color: AppColors.surfaceCard,
               borderRadius: BorderRadius.circular(AppRadius.md),
@@ -138,7 +173,10 @@ class _AlertRow extends StatelessWidget {
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(color: AppColors.chipBackground(iconColor), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: AppColors.chipBackground(iconColor),
+              shape: BoxShape.circle,
+            ),
             child: Icon(icon, color: iconColor),
           ),
           const SizedBox(width: AppSpacing.sm),
@@ -146,8 +184,19 @@ class _AlertRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppTypography.bodyMd.copyWith(fontWeight: FontWeight.w600, color: AppColors.primary)),
-                Text(subtitle, style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+                Text(
+                  title,
+                  style: AppTypography.bodyMd.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),

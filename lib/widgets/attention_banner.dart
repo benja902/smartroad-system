@@ -27,19 +27,22 @@ class AttentionBanner extends StatefulWidget {
   final AccidentEvent event;
   final VoidCallback onAcknowledge;
   final VoidCallback onViewDetails;
+  final bool animateIcon;
 
   const AttentionBanner({
     super.key,
     required this.event,
     required this.onAcknowledge,
     required this.onViewDetails,
+    this.animateIcon = true,
   });
 
   @override
   State<AttentionBanner> createState() => _AttentionBannerState();
 }
 
-class _AttentionBannerState extends State<AttentionBanner> with SingleTickerProviderStateMixin {
+class _AttentionBannerState extends State<AttentionBanner>
+    with SingleTickerProviderStateMixin {
   late final Timer _ticker;
   late final AnimationController _pulseController;
   int _elapsedSeconds = 0;
@@ -48,9 +51,30 @@ class _AttentionBannerState extends State<AttentionBanner> with SingleTickerProv
   void initState() {
     super.initState();
     _updateElapsed();
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _updateElapsed());
-    _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
-      ..repeat(reverse: true);
+    _ticker = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _updateElapsed(),
+    );
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _configurePulse();
+  }
+
+  void _configurePulse() {
+    if (widget.animateIcon) {
+      _pulseController.repeat(reverse: true);
+    } else {
+      _pulseController.stop();
+      _pulseController.value = 1;
+    }
+  }
+
+  @override
+  void didUpdateWidget(AttentionBanner oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.animateIcon != widget.animateIcon) _configurePulse();
   }
 
   void _updateElapsed() {
@@ -89,9 +113,15 @@ class _AttentionBannerState extends State<AttentionBanner> with SingleTickerProv
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
         borderRadius: AppRadius.cardRadius,
-        border: const Border(top: BorderSide(color: AppColors.warning, width: 4)),
+        border: const Border(
+          top: BorderSide(color: AppColors.warning, width: 4),
+        ),
         boxShadow: const [
-          BoxShadow(color: Color(0x141B2B48), offset: Offset(0, 4), blurRadius: 20),
+          BoxShadow(
+            color: Color(0x141B2B48),
+            offset: Offset(0, 4),
+            blurRadius: 20,
+          ),
         ],
       ),
       child: Column(
@@ -105,8 +135,14 @@ class _AttentionBannerState extends State<AttentionBanner> with SingleTickerProv
                 child: Container(
                   width: 40,
                   height: 40,
-                  decoration: BoxDecoration(color: AppColors.chipBackground(AppColors.warning), shape: BoxShape.circle),
-                  child: const Icon(Icons.warning_amber, color: AppColors.warning),
+                  decoration: BoxDecoration(
+                    color: AppColors.chipBackground(AppColors.warning),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.warning_amber,
+                    color: AppColors.warning,
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -114,10 +150,19 @@ class _AttentionBannerState extends State<AttentionBanner> with SingleTickerProv
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w700, color: AppColors.primary)),
+                    Text(
+                      title,
+                      style: AppTypography.bodyLg.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
                     Text(
                       _elapsedLabel,
-                      style: AppTypography.labelSm.copyWith(color: AppColors.warning, fontWeight: FontWeight.w700),
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.warning,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
@@ -128,13 +173,19 @@ class _AttentionBannerState extends State<AttentionBanner> with SingleTickerProv
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(onPressed: widget.onViewDetails, child: const Text('Ver detalles')),
+                child: OutlinedButton(
+                  onPressed: widget.onViewDetails,
+                  child: const Text('Ver detalles'),
+                ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: ElevatedButton(
                   onPressed: widget.onAcknowledge,
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.warning, foregroundColor: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.warning,
+                    foregroundColor: Colors.white,
+                  ),
                   child: const Text('Ya lo vi'),
                 ),
               ),
