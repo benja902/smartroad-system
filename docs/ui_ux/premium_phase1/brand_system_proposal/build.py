@@ -1,4 +1,4 @@
-"""Review-only palette lab, composed from the existing HTML prototype."""
+"""Review-only DS proposal, composed from the existing HTML prototype."""
 from pathlib import Path
 import json,hashlib
 
@@ -34,15 +34,34 @@ def main():
         ('Desconocido / tonal',c['status.unknown.text'],c['status.unknown.surface'],4.5),
         ('Texto deshabilitado / superficie',c['disabled.text'],c['disabled.surface'],4.5)
     ]
+    pairs += [
+        ('Botón pulsado / blanco',c['action.pressed'],c['action.onPrimary'],4.5),
+        ('Interacción oscura / tonal',c['action.secondary'],c['action.secondaryContainer'],4.5),
+        ('Borde de control / canvas',c['border.control'],c['surface.canvas'],3),
+        ('Foco / blanco',c['focus.ring'],c['surface.base'],3),
+        ('Foco / tonal',c['focus.ring'],c['action.secondaryContainer'],3),
+        ('Error UI / blanco',c['feedback.error.text'],c['surface.base'],4.5),
+        ('Error UI / tonal',c['feedback.error.text'],c['feedback.error.surface'],4.5),
+        ('Botón crítico / blanco',c['action.critical'],c['action.onPrimary'],4.5),
+        ('Ámbar acción / blanco',c['action.warning'],c['action.onPrimary'],4.5),
+        ('Blanco / navy pulsado',c['action.onPrimary'],c['action.pressed'],4.5),
+        ('Texto secundario / blanco',c['text.secondary'],c['surface.base'],4.5),
+        ('Texto primario / blanco',c['text.primary'],c['surface.base'],4.5),
+        ('Coral anterior / blanco','#E74C3C','#FFFFFF',4.5),
+        ('Verde anterior / blanco','#2ECC71','#FFFFFF',4.5),
+        ('Ámbar anterior / blanco','#F39C12','#FFFFFF',4.5),
+        ('Borde decorativo / blanco',c['border.decorative'],c['surface.base'],3),
+    ]
+    restricted=('Aqua original / blanco','Coral anterior / blanco','Verde anterior / blanco','Ámbar anterior / blanco','Borde decorativo / blanco')
     results=[{'pair':name,'foreground':a,'background':b,'ratio':round(contrast(a,b),2),'target':target,'meets':contrast(a,b)>=target} for name,a,b,target in pairs]
-    assert all(row['meets'] for row in results if not row['pair'].startswith('Aqua original / blanco'))
+    assert all(row['meets'] for row in results if row['pair'] not in restricted)
     assert not results[2]['meets']
     (ROOT/'contrast.json').write_text(json.dumps(results,ensure_ascii=False,indent=2),encoding='utf-8')
     (ROOT/'tokens.js').write_text('window.URBES_PROPOSAL='+json.dumps({'tokens':tokens,'contrast':results},ensure_ascii=False)+';\n',encoding='utf-8')
     original=(BASE/'index.html').read_text(encoding='utf-8')
     page=original.replace('href="styles.css"','href="../styles.css"').replace('src="fixtures.js"','src="../fixtures.js"').replace('src="prototype.js"','src="../prototype.js"')
-    page=page.replace('</head>','<link rel="stylesheet" href="lab.css"><script defer src="tokens.js"></script><script defer src="../motion_prototype_01/assets.js"></script><script defer src="../motion_prototype_01/vehicle.js"></script><script defer src="lab.js"></script></head>')
-    page=page.replace('<title>URBES — Premium Redesign / Propuesta 01</title>','<title>URBES · Marca y componentes · propuesta provisional</title>')
+    page=page.replace('</head>','<link rel="stylesheet" href="lab.css"><link rel="stylesheet" href="ds-review.css"><script defer src="tokens.js"></script><script defer src="../motion_prototype_01/assets.js"></script><script defer src="../motion_prototype_01/vehicle.js"></script><script defer src="lab.js"></script><script defer src="ds-review.js"></script></head>')
+    page=page.replace('<title>URBES — Premium Redesign / Propuesta 01</title>','<title>URBES · Design System v1.0 · propuesta para revisión</title>')
     (ROOT/'index.html').write_text(page,encoding='utf-8')
     protected=[BASE/'motion_prototype_01'/name for name in ['logo.svg','assets.js','prototype.js','vehicle.js','index.html','styles.css']]
     (ROOT/'preserved-files.json').write_text(json.dumps({str(p.relative_to(BASE)):hashlib.sha256(p.read_bytes()).hexdigest() for p in protected},indent=2),encoding='utf-8')

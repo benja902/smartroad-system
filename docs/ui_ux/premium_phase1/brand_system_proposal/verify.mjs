@@ -23,24 +23,37 @@ try{
   const ev=async expression=>{const r=await call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
   const check=async(name,expression)=>{assert.equal(await ev(expression),true,name);results.push({name,passed:true});console.log('OK: '+name);};
   await call('Runtime.enable');await call('Page.enable');
-  await waitFor(()=>ev('typeof BrandReview!=="undefined"'));
+  await waitFor(()=>ev('typeof BrandReview!=="undefined" && BrandReview.refinement'));
   await ev('document.fonts.ready.then(()=>true)');
   await check('Four paired compositions, provisional status','BrandReview.rows===4 && BrandReview.provisional && document.querySelectorAll(".palette .phone").length===8');
   await check('Local supplied logos loaded','Array.from(document.querySelectorAll(".lab-brand-logo")).every(i=>i.complete&&i.naturalWidth>0&&i.src.endsWith("/motion_prototype_01/logo.svg"))');
-  await check('No forms or functional preview actions','document.querySelectorAll("form").length===0 && Array.from(document.querySelectorAll(".phone button,.phone select")).every(b=>b.disabled) && Array.from(document.querySelectorAll(".phone input")).every(i=>i.readOnly)');
+  await check('No forms or functional preview actions','document.querySelectorAll("form").length===0 && Array.from(document.querySelectorAll(".phone button:not([data-demo-eye]),.phone select")).every(b=>b.disabled) && Array.from(document.querySelectorAll(".phone input")).every(i=>i.readOnly)');
   await check('New primary and focus roles applied','getComputedStyle(document.querySelector(".bench .sample-primary")).backgroundColor==="rgb(3, 27, 59)" && getComputedStyle(document.querySelector(".force-focus")).outlineColor==="rgb(0, 109, 104)"');
   await check('Functional field border and readable frozen action','getComputedStyle(document.querySelector(".candidate .input-wrap")).borderColor==="rgb(117, 119, 126)" && getComputedStyle(document.querySelector(".candidate .emergency-actions .button")).color==="rgb(255, 255, 255)"');
-  await check('Both login compositions reuse static approved scene','document.querySelectorAll(".login-identity svg").length===2 && typeof MotionPrototype==="undefined"');
+  await check('Approved native header and DEV evidence reused','document.querySelectorAll(".ds-approved-header img").length===1 && document.querySelectorAll(".ds-baseline-image img").length===1 && typeof MotionPrototype==="undefined"');
   await check('No duplicate DOM IDs','(()=>{const ids=Array.from(document.querySelectorAll("[id]")).map(e=>e.id);return new Set(ids).size===ids.length;})()');
-  await check('Measured aqua limitation displayed','BrandReview.contrast.length===15 && BrandReview.contrast.filter(p=>!p.meets).length===1 && document.querySelectorAll("#contrast-body tr").length===15');
+  await check('Measured aqua limitation displayed','BrandReview.contrast.length===31 && BrandReview.contrast.filter(p=>!p.meets).length===5 && document.querySelectorAll("#contrast-body tr").length===31');
   await check('Bench response is only a local demonstration','document.querySelector(".bench .sample-primary").click();document.getElementById("sample-status").textContent.includes("sin operación funcional")');
+  await check('Actual references labelled honestly','document.querySelectorAll(".palette.previous > h3")[0].textContent.includes("captura Flutter") && [...document.querySelectorAll(".palette.previous > h3")].slice(1).every(n=>n.textContent.includes("reconstrucción"))');
+  await check('All local evidence images loaded','[...document.querySelectorAll(".phone img")].every(i=>i.complete&&i.naturalWidth>0)');
+  await check('Password eye only toggles fictitious field','(()=>{const b=document.querySelector("[data-demo-eye]"),f=document.getElementById("ds-password");b.click();const shown=f.type==="text"&&b.getAttribute("aria-pressed")==="true";b.click();return shown&&f.type==="password";})()');
+  await check('No Google sign-in control','![...document.querySelectorAll("button")].some(b=>/google/i.test(b.textContent))');
   await call('Emulation.setDeviceMetricsOverride',{width:1200,height:1400,deviceScaleFactor:1,mobile:false});
   for(const [index,name] of ['login','inicio','alertas','emergencia'].entries()){
-    await ev(`document.getElementById('review-screen').value='${index}';document.getElementById('review-screen').dispatchEvent(new Event('change'));window.scrollTo(0,0)`);
+    await ev(`document.getElementById('review-screen').value='${index}';document.getElementById('review-screen').dispatchEvent(new Event('change'));document.querySelector('.comparison-row:not([hidden])').scrollIntoView({block:'start'})`);
     await check(name+' selector shows one pair','Array.from(document.querySelectorAll(".comparison-row")).filter(r=>!r.hidden).length===1');
     await sleep(50);
     const {data}=await call('Page.captureScreenshot',{format:'png'});await writeFile(join(root,name+'.png'),Buffer.from(data,'base64'));
   }
+  for(const state of ['loading','error','empty']){
+    await ev(`document.getElementById('review-state').value='${state}';document.getElementById('review-state').dispatchEvent(new Event('change'))`);
+    await check('State '+state+' retains critical content','document.querySelectorAll(".palette .phone").length===8 && document.querySelector(".candidate .emergency-head")!==null');
+  }
+  await ev('document.getElementById("review-state").value="error";document.getElementById("review-state").dispatchEvent(new Event("change"))');
+  await check('Auth error linked to field','document.getElementById("ds-password").getAttribute("aria-describedby")==="ds-auth-error"');
+  await ev('document.getElementById("review-mode").value="palette";document.getElementById("review-mode").dispatchEvent(new Event("change"))');
+  await check('Historical palettes still available','document.querySelectorAll(".login-identity svg").length===2 && document.getElementById("review-state").disabled');
+  await ev('document.getElementById("review-mode").value="refined";document.getElementById("review-mode").dispatchEvent(new Event("change"));document.getElementById("review-state").value="ready";document.getElementById("review-state").dispatchEvent(new Event("change"))');
   await call('Emulation.setDeviceMetricsOverride',{width:320,height:920,deviceScaleFactor:1,mobile:false});
   await ev('document.getElementById("review-scale").value="2";document.getElementById("review-scale").dispatchEvent(new Event("change"))');
   for(let i=0;i<4;i++){
@@ -49,6 +62,7 @@ try{
   }
   await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
   await check('Reduced motion removes bench transitions','getComputedStyle(document.querySelector(".sample-primary")).transitionDuration==="0s"');
+  await check('Explicit reduced-motion control','document.getElementById("review-motion").click();document.body.classList.contains("reduced-motion")');
   const preserved=JSON.parse(await readFile(join(root,'preserved-files.json'),'utf8'));
   for(const [file,hash] of Object.entries(preserved))assert.equal(createHash('sha256').update(await readFile(join(root,'..',file))).digest('hex'),hash,file+' preserved');
   assert.equal(errors.length,0,'No runtime exceptions');

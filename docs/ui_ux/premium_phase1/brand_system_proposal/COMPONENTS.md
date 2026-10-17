@@ -1,3 +1,5 @@
+> Actualización del 16 de octubre de 2026: propuesta DS v1.0 pendiente. Los seis incrementos Splash→Login están aprobados DEV; la tabla se actualiza abajo para distinguirlo del diseño global aún provisional.
+
 # Componentes y mapa de reutilización — propuesta
 
 15 de octubre de 2026. Inventario basado en código; las variantes descritas son candidatas. No declara componentes nuevos implementados ni Design System v1.0 aprobado.
@@ -56,3 +58,25 @@ El mapa distingue reutilización visual de equivalencia de datos. Un estado del 
 6. Verificar accesibilidad y pruebas dirigidas del incremento antes de propagarlo. Perfilado UI/raster en dispositivo solo con autorización; no justificar refactors de rendimiento sin evidencia.
 
 Los nombres nuevos son candidatos. No se crean wrappers de cada `Padding`, `Text` o `Container`, ni motores de formularios, temas por pantalla o widgets que absorban política funcional.
+
+## Auditoría consolidada de componentes v1.0
+
+| Componente / responsabilidad | Existencia y estrategia | Estados / límites |
+|---|---|---|
+| `LoginScreen` / `LoginFormParts` | Reutilizar el formulario único y presentación opcional del Incremento 6. | Reposo/foco/ocupado/error/autofill ya funcionales; iconos y ojo propuestos, no implementados. No extraer otro formulario. |
+| `PrimaryButton` | Existente; evolucionar tema ElevatedButton. | Normal/pulsado/foco/ocupado/deshabilitado. Altura mínima 56; texto escalable. |
+| `GhostButton` | Existente basado en TextButton; reutilizar para acción secundaria por contexto. | Foco legible; no inventar una clase SecondaryButton solo para cambiar color. OutlinedButtonTheme sirve al caso con borde. |
+| `CriticalButton` | Existente, color contextual explícito. | Proponer tonos de acción accesibles `#B52F34` y `#80520A`; no convertir acuse ordinario en llamada urgente. |
+| Correo/contraseña | TextFormField del Login, personalización por `InputDecorationTheme`. | Iconos 20, hit area del ojo 48, etiqueta/error asociados; conservar validadores. |
+| Búsqueda | No hay componente de búsqueda compartido en las cuatro pantallas auditadas. | Muestra de catálogo; no crear widget ni capacidad hasta existir consumidor/operación aprobados. |
+| `StatusPill` | Existente, recibe un color único y deriva alpha 15 %. Evolucionar hacia pares explícitos cuando se autorice. | Normal/desconocido/atención/crítico; texto accesible, icono opcional y wrap. |
+| `SectionHeader` | Existente; reutilizar en secciones reales. | No botones vacíos ni truncado de acciones. |
+| `AttentionBanner` | Existente con pulso/temporizador. Proponer énfasis estable. | Conservar acuse/detalle actuales; quitar pulso requiere implementación posterior autorizada. |
+| Tarjetas locales de Inicio | `VehicleSummaryCard`, `UrbesStatusCard`, `DeviceIndicatorsGrid`, `QuickActionsRow`, `RecentAlertsPreview`. | Evolucionar cada consumidor; sin Card universal ni inferir estado a partir de decoración. |
+| Tarjeta y secciones Alertas | `AlertCard`, `ActiveAlertsSection`, `InformativeEventsSection`, `TechnicalStatusSection`, `RecentHistorySection`. | Clasificación, tiempos, `queued` y acuse intactos. |
+| Barra de navegación | NavigationBar del shell, cinco ramas. | Normal/seleccionado/foco; reutilizar tema, no crear navegación paralela. |
+| Diálogos/confirmaciones | Flutter Material en operaciones específicas existentes (por ejemplo contactos); no componente global necesario aún. | Tema compartido antes que wrapper; una muestra de catálogo no añade confirmación al acuse. |
+| Carga/vacío/error | Presentaciones locales y `ComingSoonView`; no contrato global uniforme demostrado. | Empty no equivale a éxito; unknown no equivale a offline. Extraer ContentState solo con dos consumidores y contratos reales. |
+| `PremiumClosureArtboard` / Login preview | DEV existente y aprobado; un solo lockup y escena. | No tocar D ni crear otro host. No activarlo en main.dart. |
+
+`BrandMark`, un resumen de tiempo/ubicación y ContentState siguen siendo nombres propuestos, no componentes ya implementados globalmente. Revisar consumidores antes de extraer. El orden de evolución está en [la propuesta consolidada](DESIGN_SYSTEM_V1_PROPOSAL.md#plan-flutter-posterior-no-autorizado-todavía).

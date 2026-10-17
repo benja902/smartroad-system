@@ -1,5 +1,7 @@
 # URBES Premium Redesign — Fase 1
 
+> Documento histórico de la propuesta visual 01. Para decisiones vigentes de marca y componentes, consultar la [propuesta consolidada DS v1.0](brand_system_proposal/DESIGN_SYSTEM_V1_PROPOSAL.md), todavía pendiente de aprobación. Los seis incrementos Splash→Login D ya fueron aprobados en Flutter DEV; las referencias siguientes al escudo provisional no reemplazan el isotipo oficial seleccionado.
+
 Estado: propuesta visual 01 para revisión. Diseño y prototipado exclusivamente; no aprueba D1–D3 globales ni modifica Flutter. La referencia de marca de Brand Intro 01 sigue siendo provisional y el usuario informa evaluación visual positiva. No se declara rendimiento medido.
 
 ## Abrir y revisar

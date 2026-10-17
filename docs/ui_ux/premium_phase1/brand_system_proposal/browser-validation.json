@@ -1,6 +1,6 @@
 {
   "passed": true,
-  "total": 18,
+  "total": 28,
   "results": [
     {
       "name": "Four paired compositions, provisional status",
@@ -23,7 +23,7 @@
       "passed": true
     },
     {
-      "name": "Both login compositions reuse static approved scene",
+      "name": "Approved native header and DEV evidence reused",
       "passed": true
     },
     {
@@ -36,6 +36,22 @@
     },
     {
       "name": "Bench response is only a local demonstration",
+      "passed": true
+    },
+    {
+      "name": "Actual references labelled honestly",
+      "passed": true
+    },
+    {
+      "name": "All local evidence images loaded",
+      "passed": true
+    },
+    {
+      "name": "Password eye only toggles fictitious field",
+      "passed": true
+    },
+    {
+      "name": "No Google sign-in control",
       "passed": true
     },
     {
@@ -52,6 +68,26 @@
     },
     {
       "name": "emergencia selector shows one pair",
+      "passed": true
+    },
+    {
+      "name": "State loading retains critical content",
+      "passed": true
+    },
+    {
+      "name": "State error retains critical content",
+      "passed": true
+    },
+    {
+      "name": "State empty retains critical content",
+      "passed": true
+    },
+    {
+      "name": "Auth error linked to field",
+      "passed": true
+    },
+    {
+      "name": "Historical palettes still available",
       "passed": true
     },
     {
@@ -72,6 +108,10 @@
     },
     {
       "name": "Reduced motion removes bench transitions",
+      "passed": true
+    },
+    {
+      "name": "Explicit reduced-motion control",
       "passed": true
     }
   ],

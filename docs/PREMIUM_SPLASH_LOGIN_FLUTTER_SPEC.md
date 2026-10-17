@@ -283,6 +283,8 @@ No forzar Login para sesiones activas ni añadir una ruta de Splash que cambie G
 
 ## Incremento 6 autorizado — Login real en la continuidad DEV
 
+**Estado actualizado para la consolidación del Design System:** el usuario revisó y aprobó también el Incremento 6 en Android físico; checkpoint local `98f56899393098cce814691bc1bb4e4825475099`. Se conserva D y `finalSceneZoom: 1.0`. El refinamiento del formulario y el tema global continúan como [propuesta DS v1.0 pendiente de aprobación](ui_ux/premium_phase1/brand_system_proposal/DESIGN_SYSTEM_V1_PROPOSAL.md). Las notas de revisión física de esta sección documentan el momento de entrega original; no invalidan la aprobación posterior. TalkBack/autofill y perfilado no se dan por certificados sin evidencia específica.
+
 El usuario aprobó el Incremento 5 en Android y autorizó esta integración de presentación. Checkpoints verificados: `fceba33` (1–4) y `a5c4d5` (5). Los párrafos anteriores describen sus límites históricos; esta sección amplía exclusivamente el alcance DEV al formulario. No activa el premium en producción. No se hacen commits ni push y se conservan las ocho imágenes locales ajenas.
 
 ### Reutilización e aislamiento

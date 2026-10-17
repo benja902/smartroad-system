@@ -118,5 +118,133 @@
     "ratio": 5.16,
     "target": 4.5,
     "meets": true
+  },
+  {
+    "pair": "Botón pulsado / blanco",
+    "foreground": "#0B355B",
+    "background": "#FFFFFF",
+    "ratio": 12.54,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Interacción oscura / tonal",
+    "foreground": "#006D68",
+    "background": "#CCF7F3",
+    "ratio": 5.36,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Borde de control / canvas",
+    "foreground": "#75777E",
+    "background": "#F8F9FA",
+    "ratio": 4.24,
+    "target": 3,
+    "meets": true
+  },
+  {
+    "pair": "Foco / blanco",
+    "foreground": "#006D68",
+    "background": "#FFFFFF",
+    "ratio": 6.2,
+    "target": 3,
+    "meets": true
+  },
+  {
+    "pair": "Foco / tonal",
+    "foreground": "#006D68",
+    "background": "#CCF7F3",
+    "ratio": 5.36,
+    "target": 3,
+    "meets": true
+  },
+  {
+    "pair": "Error UI / blanco",
+    "foreground": "#B52F34",
+    "background": "#FFFFFF",
+    "ratio": 6.14,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Error UI / tonal",
+    "foreground": "#B52F34",
+    "background": "#FFF0EE",
+    "ratio": 5.54,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Botón crítico / blanco",
+    "foreground": "#B52F34",
+    "background": "#FFFFFF",
+    "ratio": 6.14,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Ámbar acción / blanco",
+    "foreground": "#80520A",
+    "background": "#FFFFFF",
+    "ratio": 6.71,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Blanco / navy pulsado",
+    "foreground": "#FFFFFF",
+    "background": "#0B355B",
+    "ratio": 12.54,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Texto secundario / blanco",
+    "foreground": "#44474D",
+    "background": "#FFFFFF",
+    "ratio": 9.32,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Texto primario / blanco",
+    "foreground": "#1B1B1E",
+    "background": "#FFFFFF",
+    "ratio": 17.18,
+    "target": 4.5,
+    "meets": true
+  },
+  {
+    "pair": "Coral anterior / blanco",
+    "foreground": "#E74C3C",
+    "background": "#FFFFFF",
+    "ratio": 3.82,
+    "target": 4.5,
+    "meets": false
+  },
+  {
+    "pair": "Verde anterior / blanco",
+    "foreground": "#2ECC71",
+    "background": "#FFFFFF",
+    "ratio": 2.1,
+    "target": 4.5,
+    "meets": false
+  },
+  {
+    "pair": "Ámbar anterior / blanco",
+    "foreground": "#F39C12",
+    "background": "#FFFFFF",
+    "ratio": 2.19,
+    "target": 4.5,
+    "meets": false
+  },
+  {
+    "pair": "Borde decorativo / blanco",
+    "foreground": "#C5C6CE",
+    "background": "#FFFFFF",
+    "ratio": 1.7,
+    "target": 3,
+    "meets": false
   }
 ]
