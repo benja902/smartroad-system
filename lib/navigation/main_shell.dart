@@ -4,8 +4,9 @@ import 'package:provider/provider.dart';
 
 import 'app_router.dart';
 import 'dev_mode_flag.dart';
+import 'navigation_visual_preview.dart';
 
-/// Single shared Material NavigationBar for the 5 normal modules
+/// Shared Pill Active navigation for the 5 normal modules, with DEV comparisons.
 /// (Home, Alertas, Vehículo, Historial, Perfil). Wraps go_router's
 /// StatefulNavigationShell so each tab preserves its own navigation state.
 class MainShell extends StatelessWidget {
@@ -44,26 +45,52 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final devModeEnabled = context.watch<DevModeFlag>().enabled;
+    final preview = devModeEnabled
+        ? NavigationVisualPreview.maybeOf(context)
+        : null;
+    final variant = preview?.variant ?? NavigationPreviewVariant.defaultVariant;
+    final premium = variant != NavigationPreviewVariant.current;
+    void select(int index) =>
+        shell.goBranch(index, initialLocation: index == shell.currentIndex);
 
     return Scaffold(
-      body: shell,
+      body: NavigationPreviewContentMotion(
+        index: shell.currentIndex,
+        enabled: premium,
+        child: shell,
+      ),
       floatingActionButton: devModeEnabled
-          ? FloatingActionButton.small(
-              heroTag: 'dev-panel-fab',
-              tooltip: 'Panel de desarrollo',
-              onPressed: () => context.push(AppRoutes.dev),
-              child: const Icon(Icons.build_outlined),
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (preview != null) ...[
+                  preview.reviewAction,
+                  const SizedBox(height: 8),
+                ],
+                FloatingActionButton.small(
+                  heroTag: 'dev-panel-fab',
+                  tooltip: 'Panel de desarrollo',
+                  onPressed: () => context.push(AppRoutes.dev),
+                  child: const Icon(Icons.build_outlined),
+                ),
+              ],
             )
           : null,
-      bottomNavigationBar: NavigationBar(
-        animationDuration: MediaQuery.disableAnimationsOf(context)
-            ? Duration.zero
-            : const Duration(milliseconds: 180),
-        destinations: _items,
-        selectedIndex: shell.currentIndex,
-        onDestinationSelected: (index) =>
-            shell.goBranch(index, initialLocation: index == shell.currentIndex),
-      ),
+      bottomNavigationBar: premium
+          ? PremiumNavigationPreviewBar(
+              variant: variant,
+              destinations: _items,
+              selectedIndex: shell.currentIndex,
+              onDestinationSelected: select,
+            )
+          : NavigationBar(
+              animationDuration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 180),
+              destinations: _items,
+              selectedIndex: shell.currentIndex,
+              onDestinationSelected: select,
+            ),
     );
   }
 }

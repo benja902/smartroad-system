@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'app.dart';
 import 'screens/dev/brand_intro/dev_brand_intro.dart';
+import 'screens/dev/dev_navigation_review.dart';
 import 'repositories/mock/mock_auth_repository.dart';
 import 'repositories/mock/mock_device_repository.dart';
 import 'repositories/mock/mock_event_repository.dart';
@@ -36,7 +37,7 @@ Future<void> main() async {
           devBuilder: (context, child) => DevBrandIntroHost(
             premiumLoginOnStartup: true,
             enableLoginVisualReview: true,
-            child: child!,
+            child: DevNavigationReview(child: child!),
           ),
         ),
       ),

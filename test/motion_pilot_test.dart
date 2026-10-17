@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
 import 'package:smartroad/app.dart';
+import 'package:smartroad/navigation/navigation_visual_preview.dart';
 import 'package:smartroad/core/theme/app_theme.dart';
 import 'package:smartroad/repositories/device_repository.dart';
 import 'package:smartroad/repositories/event_repository.dart';
@@ -117,13 +118,17 @@ void main() {
         find.byType(Scrollable).first,
       );
       final offset = scrollState.position.pixels;
-      final nav = tester.widget<NavigationBar>(find.byType(NavigationBar));
+      final nav = tester.widget<PremiumNavigationPreviewBar>(
+        find.byType(PremiumNavigationPreviewBar),
+      );
       for (final index in [1, 2, 3, 4, 0]) {
-        nav.onDestinationSelected!(index);
+        nav.onDestinationSelected(index);
         await tester.pumpAndSettle();
         expect(
           tester
-              .widget<NavigationBar>(find.byType(NavigationBar))
+              .widget<PremiumNavigationPreviewBar>(
+                find.byType(PremiumNavigationPreviewBar),
+              )
               .selectedIndex,
           index,
         );
@@ -233,8 +238,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       tester
-          .widget<NavigationBar>(find.byType(NavigationBar))
-          .animationDuration,
+          .widget<AnimatedPositioned>(
+            find.byKey(const ValueKey('premium-nav-indicator')),
+          )
+          .duration,
       Duration.zero,
     );
     for (
