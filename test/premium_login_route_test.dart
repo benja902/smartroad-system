@@ -18,7 +18,10 @@ import 'package:smartroad/state/session_provider.dart';
 import 'premium_login_test.dart' show fill;
 import 'test_helpers.dart';
 
-Future<GlobalKey> openRouted(WidgetTester tester) async {
+Future<GlobalKey> openRouted(
+  WidgetTester tester, {
+  bool visualReview = false,
+}) async {
   final key = GlobalKey();
   final auth = MockAuthRepository();
   await auth.signOut();
@@ -36,6 +39,7 @@ Future<GlobalKey> openRouted(WidgetTester tester) async {
           includeDevRoute: true,
           devBuilder: (context, child) => DevBrandIntroHost(
             premiumLoginOnStartup: true,
+            enableLoginVisualReview: visualReview,
             firstFrameReady: Future<void>.value(),
             child: child!,
           ),
@@ -76,6 +80,10 @@ void main() {
       )!;
       expect(timeline.progress, same(PremiumLoginTimeline.completed));
       expect(find.byType(Form), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('signature-login-panel')),
+        findsOneWidget,
+      );
       expect(find.text('Omitir introducción'), findsNothing);
       await tester.pump(const Duration(milliseconds: 400));
       expect(timeline.progress.value, 4440 / 2600);
@@ -145,6 +153,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(LoginScreen), findsOneWidget);
       expect(find.byType(PremiumLoginPresentation), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('signature-login-panel')),
+        findsOneWidget,
+      );
       expect(find.byType(Form), findsOneWidget);
       expect(find.text('Omitir introducción'), findsNothing);
       expect(find.byType(DevPremiumLoginPreview), findsNothing);

@@ -23,10 +23,12 @@ class PremiumScenePainter extends CustomPainter {
     this.portion = PremiumScenePortion.all,
     this.motionProgress,
     this.hideBeacon = false,
+    this.backgroundColor = const Color(0xFFF8F9FA),
   }) : super(repaint: motionProgress);
   final PremiumScenePortion portion;
   final ValueListenable<double>? motionProgress;
   final bool hideBeacon;
+  final Color backgroundColor;
 
   static const designSize = Size(620, 430);
   static final List<_SceneLayer> _layers = _buildPremiumSceneGeometry();
@@ -51,7 +53,7 @@ class PremiumScenePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (portion != PremiumScenePortion.afterVehicle) {
-      canvas.drawColor(const Color(0xFFF8F9FA), BlendMode.srcOver);
+      canvas.drawColor(backgroundColor, BlendMode.srcOver);
     }
     final scale = math.min(size.width / 620, size.height / 430);
     canvas.save();
@@ -118,6 +120,7 @@ class PremiumScenePainter extends CustomPainter {
   bool shouldRepaint(covariant PremiumScenePainter oldDelegate) =>
       oldDelegate.portion != portion ||
       oldDelegate.hideBeacon != hideBeacon ||
+      oldDelegate.backgroundColor != backgroundColor ||
       oldDelegate.motionProgress != motionProgress;
 }
 
@@ -185,13 +188,17 @@ class PremiumSceneArtwork extends StatelessWidget {
     this.sceneProgress,
     this.beaconProgress,
     this.hideBeacon = false,
+    this.backgroundColor = const Color(0xFFF8F9FA),
   });
   final ValueListenable<double>? vehicleProgress, sceneProgress, beaconProgress;
   final bool hideBeacon;
+  final Color backgroundColor;
   @override
   Widget build(BuildContext context) {
     if (vehicleProgress == null) {
-      return CustomPaint(painter: PremiumScenePainter());
+      return CustomPaint(
+        painter: PremiumScenePainter(backgroundColor: backgroundColor),
+      );
     }
     final suppress = hideBeacon || beaconProgress != null;
     return Stack(
@@ -203,6 +210,7 @@ class PremiumSceneArtwork extends StatelessWidget {
               portion: PremiumScenePortion.beforeVehicle,
               motionProgress: sceneProgress,
               hideBeacon: suppress,
+              backgroundColor: backgroundColor,
             ),
           ),
         ),
@@ -220,6 +228,7 @@ class PremiumSceneArtwork extends StatelessWidget {
               portion: PremiumScenePortion.afterVehicle,
               motionProgress: sceneProgress,
               hideBeacon: suppress,
+              backgroundColor: backgroundColor,
             ),
           ),
         ),

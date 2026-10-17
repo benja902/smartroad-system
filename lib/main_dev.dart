@@ -33,8 +33,11 @@ Future<void> main() async {
         create: (_) => DevBrandIntroController(),
         child: UrbesApp(
           includeDevRoute: true,
-          devBuilder: (context, child) =>
-              DevBrandIntroHost(premiumLoginOnStartup: true, child: child!),
+          devBuilder: (context, child) => DevBrandIntroHost(
+            premiumLoginOnStartup: true,
+            enableLoginVisualReview: true,
+            child: child!,
+          ),
         ),
       ),
     ),

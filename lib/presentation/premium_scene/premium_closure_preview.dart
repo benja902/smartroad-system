@@ -48,6 +48,7 @@ class PremiumClosureArtboard extends StatelessWidget {
     required this.vehicleProgress,
     this.showDestinationLabel = true,
     this.finalSceneZoom = 1,
+    this.backgroundColor = const Color(0xFFF8F9FA),
   });
   final ValueListenable<double> progress, sceneProgress, vehicleProgress;
 
@@ -56,6 +57,9 @@ class PremiumClosureArtboard extends StatelessWidget {
 
   /// DEV art-direction adjustment; the original closure remains at 1.
   final double finalSceneZoom;
+
+  /// Optional presentation surface; geometry and motion are unaffected.
+  final Color backgroundColor;
   @override
   Widget build(BuildContext context) => SizedBox(
     width: 390,
@@ -63,7 +67,7 @@ class PremiumClosureArtboard extends StatelessWidget {
     child: Stack(
       clipBehavior: Clip.hardEdge,
       children: [
-        const Positioned.fill(child: ColoredBox(color: Color(0xFFF8F9FA))),
+        Positioned.fill(child: ColoredBox(color: backgroundColor)),
         // The child keeps its native repaint boundaries; only its outer transform
         // changes during delivery. Vehicle projection and layer clocks stay intact.
         Positioned(
@@ -78,6 +82,7 @@ class PremiumClosureArtboard extends StatelessWidget {
                 vehicleProgress: vehicleProgress,
                 sceneProgress: sceneProgress,
                 hideBeacon: true,
+                backgroundColor: backgroundColor,
               ),
             ),
             builder: (context, child) {

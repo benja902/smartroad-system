@@ -9,6 +9,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../state/event_provider.dart';
 import '../../../state/session_provider.dart';
 import '../../auth/premium_login_presentation.dart';
+import '../../auth/login_visual_style.dart';
+import '../dev_login_variant_menu.dart';
 import '../premium_login_preview.dart';
 import '../../../presentation/premium_scene/premium_scene.dart';
 import '../../../presentation/premium_scene/premium_vehicle.dart';
@@ -95,11 +97,13 @@ class DevBrandIntroHost extends StatefulWidget {
     required this.child,
     this.firstFrameReady,
     this.premiumLoginOnStartup = false,
+    this.enableLoginVisualReview = false,
   });
 
   static const duration = Duration(milliseconds: 1900);
   final Widget child;
   final bool premiumLoginOnStartup;
+  final bool enableLoginVisualReview;
 
   /// Overrides the engine signal in widget tests, which have no raster thread.
   final Future<void>? firstFrameReady;
@@ -124,6 +128,7 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
   EventProvider? _events;
   SessionProvider? _session;
   bool _routeLogin = false;
+  LoginVisualVariant _loginVariant = LoginVisualVariant.defaultVariant;
   int _shownRevision = -1;
   bool _visible = false;
   bool _showPremiumScene = false;
@@ -328,94 +333,107 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        ExcludeFocus(
-          excluding: _visible,
-          child: IgnorePointer(
-            ignoring: _visible,
-            child: ExcludeSemantics(
-              excluding: _visible,
-              child: PremiumLoginTimeline(
-                progress: _routeLogin
-                    ? _progress
-                    : PremiumLoginTimeline.completed,
-                sceneProgress: _routeLogin
-                    ? _sceneProgress
-                    : PremiumLoginTimeline.builtScene,
-                vehicleProgress: _routeLogin
-                    ? _vehicleProgress
-                    : PremiumLoginTimeline.parkedVehicle,
-                headerAction: _routeLogin
-                    ? ValueListenableBuilder<double>(
-                        valueListenable: _progress,
-                        builder: (context, value, _) => value * 2600 < 4440
-                            ? ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 140,
-                                ),
-                                child: TextButton(
-                                  onPressed: _skipLoginIntro,
-                                  child: const Text('Omitir introducción'),
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                      )
-                    : null,
-                child: widget.child,
-              ),
-            ),
-          ),
-        ),
-        if (_visible)
-          if (_login)
-            DevPremiumLoginPreview(
-              progress: _progress,
-              sceneProgress: _sceneProgress,
-              vehicleProgress: _vehicleProgress,
-              onSkip: _skipLoginIntro,
-              onClose: _finish,
+    return LoginVisualScope(
+      variant: _loginVariant,
+      reviewAction: widget.enableLoginVisualReview
+          ? DevLoginVariantMenu(
+              variant: _loginVariant,
+              onSelected: (value) => setState(() => _loginVariant = value),
             )
-          else
-            Semantics(
-              button: true,
-              label: _closure
-                  ? 'Cierre de marca URBES. Toca para cerrar'
-                  : _beacon
-                  ? 'Baliza flotante URBES D. Toca para cerrar'
-                  : _sceneBuild
-                  ? 'Construcción de escena URBES. Toca para cerrar'
-                  : _vehicleMotion
-                  ? 'Recorrido del vehículo URBES. Toca para cerrar'
-                  : _showPremiumScene
-                  ? 'Escena estática URBES Premium D. Toca para cerrar'
-                  : 'Introducción URBES. Toca para continuar',
-              onTap: _finish,
-              child: GestureDetector(
-                excludeFromSemantics: true,
-                behavior: HitTestBehavior.opaque,
-                onTap: _finish,
-                child: ExcludeSemantics(
-                  child: RepaintBoundary(
-                    child: _closure
-                        ? PremiumClosurePreview(
-                            progress: _progress,
-                            sceneProgress: _sceneProgress,
-                            vehicleProgress: _vehicleProgress,
-                          )
-                        : _showPremiumScene
-                        ? PremiumScenePreview(
-                            vehicleProgress: _vehicleMotion ? _progress : null,
-                            sceneProgress: _sceneBuild ? _sceneProgress : null,
-                            beaconProgress: _beacon ? _progress : null,
-                          )
-                        : CustomPaint(painter: BrandIntroPainter(_progress)),
-                  ),
+          : null,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ExcludeFocus(
+            excluding: _visible,
+            child: IgnorePointer(
+              ignoring: _visible,
+              child: ExcludeSemantics(
+                excluding: _visible,
+                child: PremiumLoginTimeline(
+                  progress: _routeLogin
+                      ? _progress
+                      : PremiumLoginTimeline.completed,
+                  sceneProgress: _routeLogin
+                      ? _sceneProgress
+                      : PremiumLoginTimeline.builtScene,
+                  vehicleProgress: _routeLogin
+                      ? _vehicleProgress
+                      : PremiumLoginTimeline.parkedVehicle,
+                  headerAction: _routeLogin
+                      ? ValueListenableBuilder<double>(
+                          valueListenable: _progress,
+                          builder: (context, value, _) => value * 2600 < 4440
+                              ? ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 140,
+                                  ),
+                                  child: TextButton(
+                                    onPressed: _skipLoginIntro,
+                                    child: const Text('Omitir introducción'),
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        )
+                      : null,
+                  child: widget.child,
                 ),
               ),
             ),
-      ],
+          ),
+          if (_visible)
+            if (_login)
+              DevPremiumLoginPreview(
+                progress: _progress,
+                sceneProgress: _sceneProgress,
+                vehicleProgress: _vehicleProgress,
+                onSkip: _skipLoginIntro,
+                onClose: _finish,
+              )
+            else
+              Semantics(
+                button: true,
+                label: _closure
+                    ? 'Cierre de marca URBES. Toca para cerrar'
+                    : _beacon
+                    ? 'Baliza flotante URBES D. Toca para cerrar'
+                    : _sceneBuild
+                    ? 'Construcción de escena URBES. Toca para cerrar'
+                    : _vehicleMotion
+                    ? 'Recorrido del vehículo URBES. Toca para cerrar'
+                    : _showPremiumScene
+                    ? 'Escena estática URBES Premium D. Toca para cerrar'
+                    : 'Introducción URBES. Toca para continuar',
+                onTap: _finish,
+                child: GestureDetector(
+                  excludeFromSemantics: true,
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _finish,
+                  child: ExcludeSemantics(
+                    child: RepaintBoundary(
+                      child: _closure
+                          ? PremiumClosurePreview(
+                              progress: _progress,
+                              sceneProgress: _sceneProgress,
+                              vehicleProgress: _vehicleProgress,
+                            )
+                          : _showPremiumScene
+                          ? PremiumScenePreview(
+                              vehicleProgress: _vehicleMotion
+                                  ? _progress
+                                  : null,
+                              sceneProgress: _sceneBuild
+                                  ? _sceneProgress
+                                  : null,
+                              beaconProgress: _beacon ? _progress : null,
+                            )
+                          : CustomPaint(painter: BrandIntroPainter(_progress)),
+                    ),
+                  ),
+                ),
+              ),
+        ],
+      ),
     );
   }
 }

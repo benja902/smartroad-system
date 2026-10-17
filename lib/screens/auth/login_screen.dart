@@ -8,6 +8,7 @@ import '../../repositories/auth_repository.dart';
 import '../../state/session_provider.dart';
 import '../../widgets/primary_button.dart';
 import 'login_form_parts.dart';
+import 'login_visual_style.dart';
 import 'premium_login_form.dart';
 import 'premium_login_presentation.dart';
 export 'login_form_parts.dart';
@@ -26,6 +27,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isSubmitting = false;
   String? _errorMessage;
+  bool _passwordVisible = false;
+  LoginVisualVariant _visualVariant = LoginVisualVariant.defaultVariant;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final variant = LoginVisualScope.variantOf(context);
+    if (variant != _visualVariant) _passwordVisible = false;
+    _visualVariant = variant;
+  }
 
   @override
   void dispose() {
@@ -82,15 +93,38 @@ class _LoginScreenState extends State<LoginScreen> {
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
       autofillHints: const [AutofillHints.email],
-      decoration: const InputDecoration(labelText: 'CORREO'),
+      decoration: _visualVariant.experimental
+          ? const InputDecoration(
+              labelText: 'Correo electrónico',
+              prefixIcon: Icon(Icons.mail_outline_rounded, size: 22),
+            )
+          : const InputDecoration(labelText: 'CORREO'),
       validator: (value) =>
           (value == null || value.trim().isEmpty) ? 'Ingresa tu correo' : null,
     ),
     password: TextFormField(
       controller: _passwordController,
-      obscureText: true,
+      obscureText: !_visualVariant.experimental || !_passwordVisible,
       autofillHints: const [AutofillHints.password],
-      decoration: const InputDecoration(labelText: 'CONTRASEÑA'),
+      decoration: _visualVariant.experimental
+          ? InputDecoration(
+              labelText: 'Contraseña',
+              prefixIcon: const Icon(Icons.lock_outline_rounded, size: 22),
+              suffixIcon: IconButton(
+                tooltip: _passwordVisible
+                    ? 'Ocultar contraseña'
+                    : 'Mostrar contraseña',
+                isSelected: _passwordVisible,
+                onPressed: () =>
+                    setState(() => _passwordVisible = !_passwordVisible),
+                icon: const Icon(Icons.visibility_outlined, size: 22),
+                selectedIcon: const Icon(
+                  Icons.visibility_off_outlined,
+                  size: 22,
+                ),
+              ),
+            )
+          : const InputDecoration(labelText: 'CONTRASEÑA'),
       validator: (value) =>
           (value == null || value.isEmpty) ? 'Ingresa tu contraseña' : null,
       onFieldSubmitted: (_) => _submit(),
@@ -99,11 +133,16 @@ class _LoginScreenState extends State<LoginScreen> {
         ? null
         : Text(
             _errorMessage!,
-            style: AppTypography.bodyMd.copyWith(color: AppColors.critical),
+            style: AppTypography.bodyMd.copyWith(
+              color: _visualVariant.experimental
+                  ? LoginVisualStyle.error
+                  : AppColors.critical,
+            ),
           ),
     submit: PrimaryButton(
       label: _isSubmitting ? 'Ingresando…' : 'Iniciar sesión',
       onPressed: _isSubmitting ? null : _submit,
+      isLoading: _visualVariant.experimental && _isSubmitting,
     ),
   );
 

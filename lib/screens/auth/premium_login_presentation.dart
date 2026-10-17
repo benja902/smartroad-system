@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../presentation/premium_scene/premium_scene.dart';
+import '../../presentation/premium_scene/premium_closure_motion.dart';
+import 'login_visual_style.dart';
 
 /// Presentation inputs only. The DEV host owns playback; the ordinary route
 /// defaults to the completed frame. No repository, auth or router in this scope.
@@ -50,8 +52,11 @@ class PremiumLoginPresentation extends StatelessWidget {
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
     final original = Theme.of(context);
+    final visualScope = LoginVisualScope.maybeOf(context);
+    final variant = LoginVisualScope.variantOf(context);
+    final signature = variant == LoginVisualVariant.signature;
     final progress = timeline?.progress ?? PremiumLoginTimeline.completed;
-    final theme = original.copyWith(
+    final currentTheme = original.copyWith(
       scaffoldBackgroundColor: const Color(0xFFF8F9FA),
       colorScheme: original.colorScheme.copyWith(
         primary: const Color(0xFF031B3B),
@@ -78,6 +83,13 @@ class PremiumLoginPresentation extends StatelessWidget {
         ),
       ),
     );
+    final theme = variant.experimental
+        ? LoginVisualStyle.theme(
+            original,
+            variant,
+            reducedMotion: MediaQuery.disableAnimationsOf(context),
+          )
+        : currentTheme;
     return Theme(
       data: theme,
       child: Scaffold(
@@ -92,6 +104,38 @@ class PremiumLoginPresentation extends StatelessWidget {
               );
               final dx = (constraints.maxWidth - 390 * fit) / 2;
               final dy = (fullHeight - 844 * fit) / 2;
+              final formInset = variant.experimental
+                  ? math.max(0.0, (constraints.maxWidth - 440) / 2) +
+                        (constraints.maxWidth <= 360 ? 20 : 24)
+                  : dx + 24 * fit;
+              // D's final illustration stays at (14, 71), scale .6. The panel
+              // begins below its visible ground; 312 + 28 keeps title y=340.
+              final panelTop = dy + (signature ? 312 : 340) * fit;
+              final formContent = Padding(
+                padding: EdgeInsets.fromLTRB(
+                  formInset,
+                  signature ? 28 * fit : 0,
+                  formInset,
+                  24,
+                ),
+                child: ValueListenableBuilder<double>(
+                  valueListenable: progress,
+                  builder: (context, value, child) =>
+                      value * 2600 >= 4090 ? child! : const SizedBox.shrink(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Form mounting still occurs only at D's handoff.
+                      Builder(builder: (_) => formBuilder(fit)),
+                      if (timeline?.footer != null) ...[
+                        const SizedBox(height: 16),
+                        timeline!.footer!,
+                      ],
+                    ],
+                  ),
+                ),
+              );
               return Stack(
                 children: [
                   Positioned.fill(
@@ -103,6 +147,26 @@ class PremiumLoginPresentation extends StatelessWidget {
                         constraints: BoxConstraints(minHeight: fullHeight),
                         child: Stack(
                           children: [
+                            if (variant.experimental)
+                              Positioned.fill(
+                                child: IgnorePointer(
+                                  child: ExcludeSemantics(
+                                    child: ValueListenableBuilder<double>(
+                                      valueListenable: progress,
+                                      child: ColoredBox(
+                                        color: signature
+                                            ? LoginVisualStyle.heroSurface
+                                            : Colors.white,
+                                      ),
+                                      builder: (context, value, child) =>
+                                          Opacity(
+                                            opacity: _handoffOpacity(value),
+                                            child: child,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             Positioned(
                               left: dx,
                               top: dy,
@@ -121,6 +185,9 @@ class PremiumLoginPresentation extends StatelessWidget {
                                         PremiumLoginTimeline.parkedVehicle,
                                     showDestinationLabel: false,
                                     finalSceneZoom: 1.0,
+                                    backgroundColor: variant.experimental
+                                        ? Colors.transparent
+                                        : const Color(0xFFF8F9FA),
                                   ),
                                 ),
                               ),
@@ -128,37 +195,18 @@ class PremiumLoginPresentation extends StatelessWidget {
                             Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                SizedBox(height: dy + 340 * fit),
-                                Padding(
-                                  padding: EdgeInsets.fromLTRB(
-                                    dx + 24 * fit,
-                                    0,
-                                    dx + 24 * fit,
-                                    24,
-                                  ),
-                                  child: ValueListenableBuilder<double>(
-                                    valueListenable: progress,
-                                    builder: (context, value, child) =>
-                                        value * 2600 >= 4090
-                                        ? child!
-                                        : const SizedBox.shrink(),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        // Builder defers Form mounting until the handoff.
-                                        Builder(
-                                          builder: (_) => formBuilder(fit),
-                                        ),
-                                        if (timeline?.footer != null) ...[
-                                          const SizedBox(height: 16),
-                                          timeline!.footer!,
-                                        ],
-                                      ],
+                                SizedBox(height: panelTop),
+                                if (signature)
+                                  _SignatureLoginPanel(
+                                    progress: progress,
+                                    minHeight: math.max(
+                                      0,
+                                      fullHeight - panelTop,
                                     ),
-                                  ),
-                                ),
+                                    child: formContent,
+                                  )
+                                else
+                                  formContent,
                               ],
                             ),
                           ],
@@ -172,6 +220,18 @@ class PremiumLoginPresentation extends StatelessWidget {
                       top: 0,
                       child: timeline!.headerAction!,
                     ),
+                  if (visualScope?.reviewAction != null)
+                    Positioned(
+                      right: 8,
+                      top: timeline?.headerAction != null ? 48 : 8,
+                      child: ValueListenableBuilder<double>(
+                        valueListenable: progress,
+                        child: visualScope!.reviewAction,
+                        builder: (context, value, child) => value * 2600 >= 4440
+                            ? child!
+                            : const SizedBox.shrink(),
+                      ),
+                    ),
                 ],
               );
             },
@@ -180,4 +240,62 @@ class PremiumLoginPresentation extends StatelessWidget {
       ),
     );
   }
+}
+
+double _handoffOpacity(double progress) => PremiumClosureMotion.easeOut(
+  PremiumClosureMotion.phase(progress * 2600, 4090, 4330),
+);
+
+/// One lower surface, not an extra card or form. Only its background fades;
+/// title/fields/button keep their existing entrances and interaction semantics.
+class _SignatureLoginPanel extends StatelessWidget {
+  const _SignatureLoginPanel({
+    required this.progress,
+    required this.minHeight,
+    required this.child,
+  });
+  final ValueListenable<double> progress;
+  final double minHeight;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    key: const ValueKey('signature-login-panel'),
+    width: double.infinity,
+    child: ConstrainedBox(
+      constraints: BoxConstraints(minHeight: minHeight),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: ValueListenableBuilder<double>(
+                valueListenable: progress,
+                child: const DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(32),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x0A031B3B),
+                        blurRadius: 16,
+                        offset: Offset(0, -3),
+                      ),
+                    ],
+                  ),
+                ),
+                builder: (context, value, child) => Opacity(
+                  key: const ValueKey('signature-panel-opacity'),
+                  opacity: _handoffOpacity(value),
+                  child: child,
+                ),
+              ),
+            ),
+          ),
+          child,
+        ],
+      ),
+    ),
+  );
 }
