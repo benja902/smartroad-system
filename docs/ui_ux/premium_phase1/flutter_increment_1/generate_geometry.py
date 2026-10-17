@@ -13,7 +13,7 @@ import xml.etree.ElementTree as ET
 
 BASE = Path(__file__).resolve().parents[1]
 REPO = BASE.parents[2]
-DEST = REPO / 'lib/screens/dev/premium_scene/premium_scene_geometry.g.dart'
+DEST = REPO / 'lib/presentation/premium_scene/premium_scene_geometry.g.dart'
 IDENTITY = (1., 0., 0., 1., 0., 0.)
 NS = 'http://www.w3.org/2000/svg'
 PREFIX = 'beacon-2160-'

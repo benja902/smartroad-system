@@ -18,10 +18,14 @@ import 'state/app_providers.dart';
 /// the system without hardware or a network connection. Never referenced by
 /// main.dart, so a release build (which always uses main.dart and real
 /// Firebase) cannot reach /dev.
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final auth = MockAuthRepository();
+  // Start the existing mock signed out so DEV exercises the real /login route.
+  await auth.signOut();
   runApp(
     AppProviders(
-      authRepository: MockAuthRepository(),
+      authRepository: auth,
       deviceRepository: MockDeviceRepository(),
       eventRepository: MockEventRepository(),
       vehicleRepository: MockVehicleRepository(),
@@ -29,7 +33,8 @@ void main() {
         create: (_) => DevBrandIntroController(),
         child: UrbesApp(
           includeDevRoute: true,
-          devBuilder: (context, child) => DevBrandIntroHost(child: child!),
+          devBuilder: (context, child) =>
+              DevBrandIntroHost(premiumLoginOnStartup: true, child: child!),
         ),
       ),
     ),

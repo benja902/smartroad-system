@@ -68,15 +68,23 @@ void main() {
         child: MaterialApp(theme: AppTheme.light, home: const LoginScreen()),
       ),
     );
+    await tester.ensureVisible(find.text('Iniciar sesión'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Iniciar sesión'));
     await tester.pump();
     expect(find.text('Ingresa tu correo'), findsOneWidget);
     expect(find.text('Ingresa tu contraseña'), findsOneWidget);
+    await tester.ensureVisible(find.byType(TextFormField).first);
+    await tester.pumpAndSettle();
     await tester.enterText(
       find.byType(TextFormField).first,
       'pilot@example.invalid',
     );
+    await tester.ensureVisible(find.byType(TextFormField).last);
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField).last, 'demo-only');
+    await tester.ensureVisible(find.text('Iniciar sesión'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Iniciar sesión'));
     await tester.pump();
     final session = tester

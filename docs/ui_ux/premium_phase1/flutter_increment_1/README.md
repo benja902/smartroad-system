@@ -6,13 +6,13 @@ La especificación, alcance y garantías están en [PREMIUM_SPLASH_LOGIN_FLUTTER
 
 ## Recursos y regeneración
 
-`generate_geometry.py` usa únicamente la biblioteca estándar de Python. Comprueba la procedencia contra el manifiesto de v3; genera 221 formas agrupadas en 15 capas para `lib/screens/dev/premium_scene/premium_scene_geometry.g.dart`. No modificar ese archivo a mano. No se añade un parser SVG al runtime Flutter.
+`generate_geometry.py` usa únicamente la biblioteca estándar de Python. Comprueba la procedencia contra el manifiesto de v3; genera 221 formas agrupadas en 15 capas para `lib/presentation/premium_scene/premium_scene_geometry.g.dart`. No modificar ese archivo a mano. No se añade un parser SVG al runtime Flutter.
 
 Desde la raíz del repositorio:
 
 ```powershell
 python docs/ui_ux/premium_phase1/flutter_increment_1/generate_geometry.py --reference-svg docs/ui_ux/premium_phase1/flutter_increment_1/reference_scene.svg
-dart format lib/screens/dev/premium_scene/premium_scene_geometry.g.dart
+dart format lib/presentation/premium_scene/premium_scene_geometry.g.dart
 ```
 
 `geometry_manifest.json` registra hashes, objetos y dimensiones. `reference_scene.svg` es la referencia normalizada para comparación; no sustituye los SVG originales. T4 sigue ausente y los tres trazados originales del isotipo conservan sus colores y proporciones.
@@ -41,7 +41,7 @@ Se conserva aquí la preparación de recursos para no duplicar infraestructura. 
 
 ```powershell
 node docs/ui_ux/premium_phase1/flutter_increment_1/generate_vehicle.mjs
-dart format lib/screens/dev/premium_scene/premium_vehicle_geometry.g.dart
+dart format lib/presentation/premium_scene/premium_vehicle_geometry.g.dart
 flutter test --no-pub --dart-define=URBES_EXPORT_VEHICLE=true -r expanded test/premium_vehicle_test.dart
 ```
 
@@ -89,7 +89,7 @@ Acción **Reproducir cierre de marca D** en el panel existente. Se usa el artboa
 
 ```powershell
 python docs/ui_ux/premium_phase1/flutter_increment_1/generate_wordmark.py
-dart format lib/screens/dev/premium_scene/premium_wordmark.g.dart
+dart format lib/presentation/premium_scene/premium_wordmark.g.dart
 node docs/ui_ux/premium_phase1/flutter_increment_1/generate_closure_reference.mjs
 node docs/ui_ux/premium_phase1/flutter_increment_1/export_closure_browser.mjs
 flutter test --no-pub --dart-define=URBES_EXPORT_CLOSURE=true -r expanded test/premium_closure_test.dart
@@ -111,3 +111,7 @@ flutter test --no-pub --dart-define=URBES_EXPORT_LOGIN=true -r expanded test/pre
 ```
 
 La segunda orden genera únicamente `login_flutter_4440.png`, evidencia propia opcional con Manrope local. No se incorpora fuente ni dependencia nueva a Flutter. Ver la especificación SDD para aislamiento, validación, diferencias Material/HTML e instrucciones de revisión física. Los recursos originales y las capturas locales anteriores permanecen intactos.
+
+## Integración compartida posterior (17 de octubre)
+
+La geometría y los modelos ahora viven en `lib/presentation/premium_scene/`; los generadores escriben allí. No se duplican ni regeneran recursos para el traslado. El Login habitual y la reproducción DEV reutilizan `PremiumLoginPresentation`/`PremiumLoginForm` con un único `LoginScreen`. La revisión aislada del panel conserva su wrapper mock; la ruta real usa la sesión de la aplicación. Ver [arquitectura y revisión Edge/Hot Reload](../FLUTTER_LOGIN_INTEGRATION.md).

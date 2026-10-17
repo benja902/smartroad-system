@@ -3,12 +3,6 @@ import 'dart:ui' show Picture, PictureRecorder;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
-
-import '../../auth/login_screen.dart';
-import '../../../state/session_provider.dart';
-import '../../../repositories/mock/mock_auth_repository.dart';
-import '../../../core/theme/app_typography.dart';
 
 import 'premium_vehicle.dart';
 import 'premium_scene_motion.dart';
@@ -19,7 +13,6 @@ part 'premium_scene_geometry.g.dart';
 part 'premium_beacon_painter.dart';
 part 'premium_closure_preview.dart';
 part 'premium_wordmark.g.dart';
-part 'premium_login_preview.dart';
 
 /// DEV increment 1: static approved D, before the vehicle encounter.
 /// Illustration paths are prepared once; layout and movement stay separate.

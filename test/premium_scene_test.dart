@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:smartroad/repositories/event_repository.dart';
 import 'package:smartroad/repositories/mock/mock_event_repository.dart';
 import 'package:smartroad/screens/dev/brand_intro/dev_brand_intro.dart';
-import 'package:smartroad/screens/dev/premium_scene/premium_scene.dart';
+import 'package:smartroad/presentation/premium_scene/premium_scene.dart';
 
 import 'brand_intro_test.dart' show devBrandApp, scene;
 

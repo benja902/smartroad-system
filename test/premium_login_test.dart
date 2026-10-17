@@ -16,7 +16,9 @@ import 'package:smartroad/repositories/auth_repository.dart';
 import 'package:smartroad/repositories/event_repository.dart';
 import 'package:smartroad/repositories/mock/mock_event_repository.dart';
 import 'package:smartroad/screens/auth/login_screen.dart';
-import 'package:smartroad/screens/dev/premium_scene/premium_scene.dart';
+import 'package:smartroad/screens/auth/premium_login_form.dart';
+import 'package:smartroad/screens/dev/premium_login_preview.dart';
+import 'package:smartroad/presentation/premium_scene/premium_scene.dart';
 import 'package:smartroad/state/session_provider.dart';
 import 'package:smartroad/widgets/screen_entrance.dart';
 
@@ -129,15 +131,16 @@ void main() {
           }
         });
       }
-      expect(find.byType(LoginScreen), findsNothing);
+      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(find.byType(Form), findsNothing);
       await tester.pump(const Duration(milliseconds: 4080));
-      expect(find.byType(LoginScreen), findsNothing);
+      expect(find.byType(Form), findsNothing);
       await tester.pump(const Duration(milliseconds: 10));
       expect(find.byType(LoginScreen), findsOneWidget);
       expect(find.byType(Form), findsOneWidget);
       expect(find.byType(ScreenEntrance), findsNothing);
       final sections = tester
-          .widgetList<DevLoginEntrance>(find.byType(DevLoginEntrance))
+          .widgetList<PremiumLoginEntrance>(find.byType(PremiumLoginEntrance))
           .toList();
       expect(sections.map((s) => s.start), orderedEquals([4090, 4130, 4170]));
       expect(
@@ -261,12 +264,11 @@ void main() {
               home: Scaffold(
                 body: SingleChildScrollView(
                   child: LoginScreen(
-                    presentationBuilder: (context, parts) =>
-                        DevPremiumLoginForm(
-                          parts: parts,
-                          progress: clock,
-                          translationScale: 1,
-                        ),
+                    presentationBuilder: (context, parts) => PremiumLoginForm(
+                      parts: parts,
+                      progress: clock,
+                      translationScale: 1,
+                    ),
                   ),
                 ),
               ),

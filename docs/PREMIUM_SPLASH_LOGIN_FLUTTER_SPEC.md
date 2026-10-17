@@ -2,6 +2,8 @@
 
 16 de octubre de 2026. **Variante D aprobada como referencia artística y de movimiento.** Implementación incremental; aprobación visual no equivale a aprobación de rendimiento Android ni del Design System global.
 
+**Integración compartida del 17 de octubre de 2026:** [flujo, arquitectura, límites y revisión Edge/Hot Reload](ui_ux/premium_phase1/FLUTTER_LOGIN_INTEGRATION.md). `LoginScreen` reutiliza una única presentación premium; el reloj D se conecta a la ruta habitual exclusivamente desde el host DEV. En producción el Login usa el destino estático, sin activar automáticamente el Splash. Los recursos se trasladan a `lib/presentation/premium_scene/`, conservando geometría y motion. Las rutas anteriores en la trazabilidad siguiente son históricas.
+
 ## Consolidación y trazabilidad
 
 Fuentes vigentes: `docs/ui_ux/premium_phase1/motion_prototype_01/` (`mode=beacon`) y `composition_v3/`. Las variantes A–D quedaron guardadas en `bc1b10d`; v3 en `d06096d`; propuesta estática sin T4 en `d6d73c9`. La comprobación previa encontró estas fuentes sin cambios pendientes. Solo permanece ajena al incremento la captura local `05_urbes_login_prototipo.png`, sin versionar. No se necesita otro checkpoint visual antes de comenzar; no se ejecutan commits aquí.

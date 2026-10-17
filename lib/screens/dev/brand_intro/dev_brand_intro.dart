@@ -7,11 +7,14 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../state/event_provider.dart';
-import '../premium_scene/premium_scene.dart';
-import '../premium_scene/premium_vehicle.dart';
-import '../premium_scene/premium_scene_motion.dart';
-import '../premium_scene/premium_beacon_motion.dart';
-import '../premium_scene/premium_closure_motion.dart';
+import '../../../state/session_provider.dart';
+import '../../auth/premium_login_presentation.dart';
+import '../premium_login_preview.dart';
+import '../../../presentation/premium_scene/premium_scene.dart';
+import '../../../presentation/premium_scene/premium_vehicle.dart';
+import '../../../presentation/premium_scene/premium_scene_motion.dart';
+import '../../../presentation/premium_scene/premium_beacon_motion.dart';
+import '../../../presentation/premium_scene/premium_closure_motion.dart';
 
 /// Exists only in main_dev.dart. The simulator requests a new presentation
 /// without changing the router, session, or any repository.
@@ -91,10 +94,12 @@ class DevBrandIntroHost extends StatefulWidget {
     super.key,
     required this.child,
     this.firstFrameReady,
+    this.premiumLoginOnStartup = false,
   });
 
   static const duration = Duration(milliseconds: 1900);
   final Widget child;
+  final bool premiumLoginOnStartup;
 
   /// Overrides the engine signal in widget tests, which have no raster thread.
   final Future<void>? firstFrameReady;
@@ -117,6 +122,8 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
   Duration? _motionStart;
   DevBrandIntroController? _trigger;
   EventProvider? _events;
+  SessionProvider? _session;
+  bool _routeLogin = false;
   int _shownRevision = -1;
   bool _visible = false;
   bool _showPremiumScene = false;
@@ -132,17 +139,56 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
     if (_trigger == null) {
       _trigger = context.read<DevBrandIntroController>();
       _events = context.read<EventProvider>();
+      _session = context.read<SessionProvider>();
       _trigger!.addListener(_onReplay);
       _events!.addListener(_onEventsChanged);
+      _session!.addListener(_onSessionChanged);
       WidgetsBinding.instance.addObserver(this);
-      _onReplay(initial: true);
+      if (widget.premiumLoginOnStartup && !_session!.isSignedIn) {
+        _startRouteLogin(initial: true);
+      } else {
+        _onReplay(initial: true);
+      }
     } else if (MediaQuery.disableAnimationsOf(context)) {
-      if (_login) {
+      if (_login || _routeLogin) {
         _skipLoginIntro();
       } else {
         _finish();
       }
     }
+  }
+
+  void _onSessionChanged() {
+    // Session changes may finish startup decoration, never request a replay.
+    if (_session!.isSignedIn && _routeLogin) {
+      _ticker.stop();
+      _routeLogin = false;
+      if (mounted) setState(() {});
+    }
+  }
+
+  void _startRouteLogin({bool initial = false}) {
+    _ticker.stop();
+    _routeLogin = true;
+    _visible = false;
+    _login = false;
+    _vehicleMotion = true;
+    _sceneBuild = true;
+    _beacon = true;
+    _closure = true;
+    _shownRevision = _trigger!.revision;
+    _previousFrameElapsed = null;
+    _motionStart = null;
+    _progress.value = 0;
+    _sceneProgress.value = 0;
+    _vehicleProgress.value = 0;
+    if (MediaQuery.disableAnimationsOf(context) ||
+        _events!.criticalEvent != null) {
+      _skipLoginIntro();
+    } else {
+      _startWhenFirstFrameIsReady(_shownRevision);
+    }
+    if (mounted && !initial) setState(() {});
   }
 
   void _onReplay({bool initial = false}) {
@@ -184,7 +230,11 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
     // Keep the native-matching road still until the first Flutter frame has
     // actually been rasterized. Startup work must not consume the timeline.
     (widget.firstFrameReady ?? binding.waitUntilFirstFrameRasterized).then((_) {
-      if (!mounted || !_visible || _shownRevision != revision) return;
+      if (!mounted ||
+          (!_visible && !_routeLogin) ||
+          _shownRevision != revision) {
+        return;
+      }
       _ticker.start();
     });
   }
@@ -235,6 +285,10 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
   }
 
   void _finish() {
+    if (_routeLogin) {
+      _skipLoginIntro();
+      return;
+    }
     if (!_visible) return;
     _ticker.stop();
     if (_login) FocusManager.instance.primaryFocus?.unfocus();
@@ -243,8 +297,8 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
   }
 
   void _skipLoginIntro() {
-    if (!_visible || !_login) return;
-    if (_events!.criticalEvent != null) {
+    if (!_routeLogin && (!_visible || !_login)) return;
+    if (!_routeLogin && _events!.criticalEvent != null) {
       _finish();
       return;
     }
@@ -264,6 +318,7 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
     WidgetsBinding.instance.removeObserver(this);
     _trigger?.removeListener(_onReplay);
     _events?.removeListener(_onEventsChanged);
+    _session?.removeListener(_onSessionChanged);
     _ticker.dispose();
     _progress.dispose();
     _sceneProgress.dispose();
@@ -280,7 +335,37 @@ class _DevBrandIntroHostState extends State<DevBrandIntroHost>
           excluding: _visible,
           child: IgnorePointer(
             ignoring: _visible,
-            child: ExcludeSemantics(excluding: _visible, child: widget.child),
+            child: ExcludeSemantics(
+              excluding: _visible,
+              child: PremiumLoginTimeline(
+                progress: _routeLogin
+                    ? _progress
+                    : PremiumLoginTimeline.completed,
+                sceneProgress: _routeLogin
+                    ? _sceneProgress
+                    : PremiumLoginTimeline.builtScene,
+                vehicleProgress: _routeLogin
+                    ? _vehicleProgress
+                    : PremiumLoginTimeline.parkedVehicle,
+                headerAction: _routeLogin
+                    ? ValueListenableBuilder<double>(
+                        valueListenable: _progress,
+                        builder: (context, value, _) => value * 2600 < 4440
+                            ? ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 140,
+                                ),
+                                child: TextButton(
+                                  onPressed: _skipLoginIntro,
+                                  child: const Text('Omitir introducción'),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      )
+                    : null,
+                child: widget.child,
+              ),
+            ),
           ),
         ),
         if (_visible)

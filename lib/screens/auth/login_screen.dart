@@ -3,29 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../repositories/auth_repository.dart';
 import '../../state/session_provider.dart';
 import '../../widgets/primary_button.dart';
-import '../../widgets/screen_entrance.dart';
-
-/// Presentation slots only: ownership, validation and submit remain in LoginScreen.
-class LoginFormParts {
-  const LoginFormParts({
-    required this.email,
-    required this.password,
-    required this.submit,
-    this.error,
-  });
-  final Widget email, password, submit;
-  final Widget? error;
-}
-
-typedef LoginPresentationBuilder = Widget Function(
-  BuildContext context,
-  LoginFormParts parts,
-);
+import 'login_form_parts.dart';
+import 'premium_login_form.dart';
+import 'premium_login_presentation.dart';
+export 'login_form_parts.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key, this.presentationBuilder});
@@ -131,72 +116,15 @@ class _LoginScreenState extends State<LoginScreen> {
         child: widget.presentationBuilder!(context, parts),
       );
     }
-    return ScreenEntrance(
-      builder: (context, entrance) => Scaffold(
-        body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: AppSpacing.contentMaxWidth,
-              ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppSpacing.edgeMargin),
-                child: EntranceSection(
-                  animation: entrance,
-                  fade: true,
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 72,
-                          height: 72,
-                          alignment: Alignment.center,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.shield_outlined,
-                            color: AppColors.onPrimary,
-                            size: 36,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        Text(
-                          'URBES',
-                          textAlign: TextAlign.center,
-                          style: AppTypography.displayLgMobile.copyWith(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.base),
-                        Text(
-                          'Inicia sesión para monitorear tu vehículo',
-                          textAlign: TextAlign.center,
-                          style: AppTypography.bodyMd.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-                        parts.email,
-                        const SizedBox(height: AppSpacing.sm),
-                        parts.password,
-                        if (_errorMessage != null) ...[
-                          const SizedBox(height: AppSpacing.sm),
-                          parts.error!,
-                        ],
-                        const SizedBox(height: AppSpacing.md),
-                        parts.submit,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+    final timeline = PremiumLoginTimeline.maybeOf(context);
+    return PremiumLoginPresentation(
+      timeline: timeline,
+      formBuilder: (fit) => Form(
+        key: _formKey,
+        child: PremiumLoginForm(
+          parts: parts,
+          progress: timeline?.progress ?? PremiumLoginTimeline.completed,
+          translationScale: fit,
         ),
       ),
     );
