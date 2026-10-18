@@ -259,7 +259,7 @@ class _NavigationPreviewItemState extends State<_NavigationPreviewItem> {
                         data: IconThemeData(
                           size: 24,
                           color: widget.selected
-                              ? NavigationPreviewStyle.teal
+                              ? NavigationPreviewStyle.navy
                               : AppColors.onSurfaceVariant,
                         ),
                         child: widget.selected
@@ -283,7 +283,7 @@ class _NavigationPreviewItemState extends State<_NavigationPreviewItem> {
                     duration: duration,
                     style: widget.labelStyle.copyWith(
                       color: widget.selected
-                          ? NavigationPreviewStyle.teal
+                          ? NavigationPreviewStyle.navy
                           : AppColors.onSurfaceVariant,
                       fontWeight: widget.selected
                           ? FontWeight.w700

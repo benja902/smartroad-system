@@ -14,6 +14,7 @@ class DevNavigationReview extends StatefulWidget {
 class _DevNavigationReviewState extends State<DevNavigationReview> {
   NavigationPreviewVariant _variant = NavigationPreviewVariant.defaultVariant;
   HomePreviewVariant _home = HomePreviewVariant.current;
+  GuardianArtwork _artwork = GuardianArtwork.lineArt;
   @override
   Widget build(BuildContext context) => NavigationVisualPreview(
     variant: _variant,
@@ -41,6 +42,18 @@ class _DevNavigationReviewState extends State<DevNavigationReview> {
               child: Text(variant.label),
             ),
           ),
+        if (_home == HomePreviewVariant.guardianDeck) ...[
+          const Divider(),
+          for (final artwork in GuardianArtwork.values)
+            MenuItemButton(
+              key: ValueKey('dev-guardian-${artwork.name}'),
+              onPressed: () => setState(() => _artwork = artwork),
+              leadingIcon: Icon(
+                _artwork == artwork ? Icons.check_rounded : null,
+              ),
+              child: Text(artwork.label),
+            ),
+        ],
       ],
       builder: (context, controller, child) => IconButton.filledTonal(
         key: const ValueKey('dev-nav-variant-menu'),
@@ -51,6 +64,10 @@ class _DevNavigationReviewState extends State<DevNavigationReview> {
         style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
       ),
     ),
-    child: HomeVisualPreview(variant: _home, child: widget.child),
+    child: HomeVisualPreview(
+      variant: _home,
+      artwork: _artwork,
+      child: widget.child,
+    ),
   );
 }

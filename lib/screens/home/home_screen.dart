@@ -47,6 +47,7 @@ class HomeScreen extends StatelessWidget {
     if (variant != HomePreviewVariant.current) {
       return PremiumHomeContent(
         variant: variant,
+        guardianArtwork: HomeVisualPreview.artworkOf(context),
         userName: user?.name ?? 'Usuario',
         vehicle: vehicle,
         status: deviceStatus,

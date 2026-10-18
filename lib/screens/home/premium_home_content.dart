@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../presentation/premium_scene/premium_scene.dart';
+import '../../presentation/premium_scene/premium_vehicle.dart';
+
 import '../../core/utils/date_time_formatting.dart';
 import '../../models/accident_event.dart';
 import '../../models/device_status.dart';
@@ -9,6 +12,7 @@ import 'home_visual_preview.dart';
 import 'widgets/recent_alerts_preview.dart';
 
 part 'signature_home_directions.dart';
+part 'guardian_deck_refinement.dart';
 
 // Local review palette. No change to AppTheme or the global Design System.
 const _navy = Color(0xFF031B3B);
@@ -30,6 +34,7 @@ class PremiumHomeContent extends StatelessWidget {
     required this.eventError,
     required this.attention,
     required this.onOpenAlerts,
+    this.guardianArtwork = GuardianArtwork.lineArt,
   });
 
   final HomePreviewVariant variant;
@@ -40,6 +45,7 @@ class PremiumHomeContent extends StatelessWidget {
   final bool eventError;
   final Widget? attention;
   final VoidCallback onOpenAlerts;
+  final GuardianArtwork guardianArtwork;
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +109,11 @@ class PremiumHomeContent extends StatelessWidget {
                         if (crafted)
                           editorial
                               ? _SignalFlow(vehicle: vehicle, status: status)
-                              : _GuardianDeck(vehicle: vehicle, status: status)
+                              : _GuardianDeck(
+                                  vehicle: vehicle,
+                                  status: status,
+                                  artwork: guardianArtwork,
+                                )
                         else if (vehicleFocus) ...[
                           vehicleSection,
                           const SizedBox(height: 24),
@@ -122,7 +132,10 @@ class PremiumHomeContent extends StatelessWidget {
                         else
                           _PositionReport(status: status),
                         const SizedBox(height: 20),
-                        _Connectivity(status: status),
+                        if (variant == HomePreviewVariant.guardianDeck)
+                          _GuardianConnectivity(status: status)
+                        else
+                          _Connectivity(status: status),
                         const SizedBox(height: 28),
                         if (eventError) ...[
                           Semantics(
@@ -147,6 +160,7 @@ class PremiumHomeContent extends StatelessWidget {
                           events: events,
                           neutralEmpty: true,
                           editorial: crafted,
+                          guardian: variant == HomePreviewVariant.guardianDeck,
                         ),
                         const SizedBox(height: 12),
                         Align(

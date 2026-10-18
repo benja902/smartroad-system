@@ -16,12 +16,14 @@ class RecentAlertsPreview extends StatelessWidget {
   final List<AccidentEvent> events;
   final bool neutralEmpty;
   final bool editorial;
+  final bool guardian;
 
   const RecentAlertsPreview({
     super.key,
     required this.events,
     this.neutralEmpty = false,
     this.editorial = false,
+    this.guardian = false,
   });
 
   @override
@@ -35,8 +37,10 @@ class RecentAlertsPreview extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Alertas recientes',
-          style: AppTypography.headlineMd.copyWith(color: AppColors.primary),
+          guardian ? 'Actividad reciente' : 'Alertas recientes',
+          style: AppTypography.headlineMd.copyWith(
+            color: guardian ? const Color(0xFF031B3B) : AppColors.primary,
+          ),
         ),
         const SizedBox(height: AppSpacing.sm),
         if (recent.isEmpty)
@@ -53,6 +57,7 @@ class RecentAlertsPreview extends StatelessWidget {
                 : 'Todo en orden',
             emphasized: true,
             editorial: editorial,
+            guardian: guardian,
           )
         else
           Column(
@@ -68,6 +73,7 @@ class RecentAlertsPreview extends StatelessWidget {
                     AlertPresentation.attention,
                   }.contains(classify(event)),
                   editorial: editorial,
+                  guardian: guardian,
                 ),
                 if (event != recent.last)
                   const SizedBox(height: AppSpacing.gutter),
@@ -84,12 +90,17 @@ class RecentAlertsPreview extends StatelessWidget {
       return Icons.cancel_outlined;
     }
     if (presentation == AlertPresentation.attended) {
-      return Icons.check_circle_outline;
+      return guardian ? Icons.visibility_outlined : Icons.check_circle_outline;
     }
     if (presentation == AlertPresentation.technical) {
       return Icons.build_outlined;
     }
     switch (event.type) {
+      case AccidentEventType.crash:
+        if (guardian) return Icons.car_crash_outlined;
+        return presentation == AlertPresentation.informative
+            ? Icons.info_outline
+            : Icons.warning_amber_outlined;
       case AccidentEventType.sos:
         return Icons.emergency_share;
       case AccidentEventType.rollover:
@@ -108,7 +119,7 @@ class RecentAlertsPreview extends StatelessWidget {
       case AlertPresentation.attention:
         return AppColors.warning;
       case AlertPresentation.informative:
-        return AppColors.success;
+        return guardian ? const Color(0xFF006D68) : AppColors.success;
       default:
         return AppColors.onSurfaceVariant;
     }
@@ -143,6 +154,7 @@ class _AlertRow extends StatelessWidget {
   final String subtitle;
   final bool emphasized;
   final bool editorial;
+  final bool guardian;
 
   const _AlertRow({
     required this.icon,
@@ -151,6 +163,7 @@ class _AlertRow extends StatelessWidget {
     required this.subtitle,
     required this.emphasized,
     this.editorial = false,
+    this.guardian = false,
   });
 
   @override
@@ -175,7 +188,8 @@ class _AlertRow extends StatelessWidget {
             height: 40,
             decoration: BoxDecoration(
               color: AppColors.chipBackground(iconColor),
-              shape: BoxShape.circle,
+              shape: guardian ? BoxShape.rectangle : BoxShape.circle,
+              borderRadius: guardian ? BorderRadius.circular(12) : null,
             ),
             child: Icon(icon, color: iconColor),
           ),
@@ -188,7 +202,9 @@ class _AlertRow extends StatelessWidget {
                   title,
                   style: AppTypography.bodyMd.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
+                    color: guardian
+                        ? const Color(0xFF031B3B)
+                        : AppColors.primary,
                   ),
                 ),
                 Text(

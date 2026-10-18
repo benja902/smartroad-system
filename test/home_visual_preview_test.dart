@@ -20,6 +20,7 @@ import 'package:smartroad/screens/home/premium_home_content.dart';
 import 'package:smartroad/state/event_provider.dart';
 import 'package:smartroad/state/app_providers.dart';
 import 'package:smartroad/widgets/attention_banner.dart';
+import 'package:smartroad/screens/home/widgets/recent_alerts_preview.dart';
 
 import 'test_helpers.dart';
 
@@ -81,6 +82,7 @@ Widget presentation(
   double textScale = 1,
   bool reduced = false,
   VoidCallback? onOpenAlerts,
+  GuardianArtwork guardianArtwork = GuardianArtwork.lineArt,
 }) => MaterialApp(
   theme: AppTheme.light,
   home: MediaQuery(
@@ -90,6 +92,7 @@ Widget presentation(
     ),
     child: PremiumHomeContent(
       variant: variant,
+      guardianArtwork: guardianArtwork,
       userName: 'Persona de prueba',
       vehicle: absentVehicle ? null : MockDataSeed.vehicle,
       status: status,
@@ -102,6 +105,74 @@ Widget presentation(
 );
 
 void main() {
+  testWidgets(
+    'Guardian impact icon does not imply resolution; acknowledgement uses visibility',
+    (tester) async {
+      final repo = MockEventRepository();
+      final event = repo.triggerCrash(severity: AccidentSeverity.leve);
+      Future<void> showEvents() async {
+        final events = await repo.watchEvents(MockDataSeed.userId).first;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: RecentAlertsPreview(
+                events: events,
+                guardian: true,
+                editorial: true,
+                neutralEmpty: true,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      await showEvents();
+      expect(find.byIcon(Icons.car_crash_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle_outline), findsNothing);
+      await repo.acknowledge(event.dedupKey, userId: MockDataSeed.userId);
+      await showEvents();
+      expect(find.byIcon(Icons.visibility_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle_outline), findsNothing);
+    },
+  );
+  testWidgets(
+    'Guardian switches only artwork, preserving data, official brand and visible connectivity',
+    (tester) async {
+      await app(tester);
+      await chooseHome(tester, HomePreviewVariant.guardianDeck);
+      final provider = tester
+          .element(find.byType(PremiumHomeContent))
+          .read<EventProvider>();
+      expect(
+        find.byKey(const ValueKey('guardian-official-brand')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('guardian-art-lineArt')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('dev-nav-variant-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('dev-guardian-isometric')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('guardian-art-isometric')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('guardian-art-lineArt')), findsNothing);
+      expect(
+        tester.element(find.byType(PremiumHomeContent)).read<EventProvider>(),
+        same(provider),
+      );
+      await reveal(tester, find.text('Conectividad reportada'));
+      expect(find.text('Red móvil'), findsOneWidget);
+      expect(find.text('GNSS'), findsOneWidget);
+      expect(find.text('LTE'), findsOneWidget);
+      expect(find.text('Fix reportado'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets(
     'DEV starts with current Home; A/B select without changing branches or nav',
     (tester) async {
@@ -306,47 +377,60 @@ void main() {
     );
 
     for (final width in [320.0, 360.0, 390.0]) {
-      testWidgets(
-        '${variant.name}: ${width.toInt()} dp, 200% text, reduced motion, connectivity and action',
-        (tester) async {
-          tester.view.physicalSize = Size(width, 640);
-          tester.view.devicePixelRatio = 1;
-          addTearDown(tester.view.resetPhysicalSize);
-          addTearDown(tester.view.resetDevicePixelRatio);
-          var opens = 0;
-          await tester.pumpWidget(
-            presentation(
-              variant,
-              status: MockDataSeed.initialDeviceStatus,
-              textScale: 2,
-              reduced: true,
-              onOpenAlerts: () => opens++,
-            ),
-          );
-          await tester.pumpAndSettle();
-          expect(tester.binding.hasScheduledFrame, isFalse);
-          final tile = find.byType(ExpansionTile);
-          await reveal(tester, tile);
-          await tester.tap(tile);
-          await tester.pumpAndSettle();
-          expect(find.text('Tecnología de red'), findsOneWidget);
-          expect(find.text('LTE'), findsOneWidget);
-          expect(
-            tester.widget<ExpansionTile>(tile).expansionAnimationStyle,
-            AnimationStyle.noAnimation,
-          );
-          final action = find.byKey(const ValueKey('home-open-alerts'));
-          await reveal(tester, action);
-          expect(tester.getSize(action).height, greaterThanOrEqualTo(48));
-          Focus.of(tester.element(find.text('Consultar alertas')))
-              .requestFocus();
-          await tester.pump();
-          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-          await tester.pumpAndSettle();
-          expect(opens, 1);
-          expect(tester.takeException(), isNull);
-        },
-      );
+      for (final artwork
+          in variant == HomePreviewVariant.guardianDeck
+              ? GuardianArtwork.values
+              : [GuardianArtwork.lineArt]) {
+        testWidgets(
+          '${variant.name}/${artwork.name}: ${width.toInt()} dp, 200% text, reduced motion, connectivity and action',
+          (tester) async {
+            tester.view.physicalSize = Size(width, 640);
+            tester.view.devicePixelRatio = 1;
+            addTearDown(tester.view.resetPhysicalSize);
+            addTearDown(tester.view.resetDevicePixelRatio);
+            var opens = 0;
+            await tester.pumpWidget(
+              presentation(
+                variant,
+                guardianArtwork: artwork,
+                status: MockDataSeed.initialDeviceStatus,
+                textScale: 2,
+                reduced: true,
+                onOpenAlerts: () => opens++,
+              ),
+            );
+            await tester.pumpAndSettle();
+            expect(tester.binding.hasScheduledFrame, isFalse);
+            final tile = find.byType(ExpansionTile);
+            await reveal(tester, tile);
+            await tester.tap(tile);
+            await tester.pumpAndSettle();
+            expect(
+              find.text(
+                variant == HomePreviewVariant.guardianDeck
+                    ? 'Voltaje de batería'
+                    : 'Tecnología de red',
+              ),
+              findsOneWidget,
+            );
+            expect(find.text('LTE'), findsOneWidget);
+            expect(
+              tester.widget<ExpansionTile>(tile).expansionAnimationStyle,
+              AnimationStyle.noAnimation,
+            );
+            final action = find.byKey(const ValueKey('home-open-alerts'));
+            await reveal(tester, action);
+            expect(tester.getSize(action).height, greaterThanOrEqualTo(48));
+            Focus.of(tester.element(find.text('Consultar alertas')))
+                .requestFocus();
+            await tester.pump();
+            await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+            await tester.pumpAndSettle();
+            expect(opens, 1);
+            expect(tester.takeException(), isNull);
+          },
+        );
+      }
     }
   }
 }

@@ -1,5 +1,7 @@
 # Inicio — Guardian Deck y Signal Flow
 
+**Evolución posterior:** el usuario seleccionó Guardian Deck como base de trabajo, sin aprobar su acabado. Su refinamiento y la comparación de dos ilustraciones dentro del mismo módulo están en [GUARDIAN_REFINEMENT.md](GUARDIAN_REFINEMENT.md). Signal Flow permanece como referencia; MAIN no cambia. Las descripciones C de este documento corresponden al checkpoint `3141a57`.
+
 Propuestas C/D exclusivamente DEV, pendientes de revisión visual humana. No es otra auditoría funcional. Se mantiene el contenido aprobado; Actual, A y B continúan disponibles y MAIN conserva Inicio actual.
 
 ## Decisiones artísticas
