@@ -124,6 +124,9 @@ void main() {
   late List<Set<String>> results;
   late List<Object> errors;
   late StreamSubscription<Set<String>> subscription;
+  StreamSubscription<bool>? invitationSubscription;
+  late List<bool> invitations;
+  late List<Object> invitationErrors;
 
   setUp(() async {
     auth = _Auth();
@@ -138,6 +141,8 @@ void main() {
   });
 
   tearDown(() async {
+    await invitationSubscription?.cancel();
+    invitationSubscription = null;
     await subscription.cancel();
     await database.close();
     await auth.changes.close();
@@ -154,6 +159,197 @@ void main() {
     await _tick();
     expect(results.last, {'vehicle-test'});
   }
+
+  Future<void> watchInvitation([String reference = 'vehicle-test']) async {
+    // Switch the fixture from the active reader to the invitation reader.
+    // Session tests below never cancel the consumer during identity changes.
+    await subscription.cancel();
+    database.reads.clear();
+    invitations = [];
+    invitationErrors = [];
+    invitationSubscription =
+        FirebaseContactRelationRepository(auth: auth, database: database)
+            .watchPendingInvitation(reference)
+            .listen(invitations.add, onError: invitationErrors.add);
+    await _tick();
+  }
+
+  test(
+    'pending invitation reads only the own relation without a discovery index',
+    () async {
+      await watchInvitation();
+      expect(invitations.last, isFalse);
+      expect(database.reads, [_relationPath]);
+      database.emit(_relationPath, {
+        'status': 'pending',
+        'privateMetadata': 'not exposed',
+      });
+      await _tick();
+      expect(invitations.last, isTrue);
+      expect(results, everyElement(isEmpty));
+      expect(database.reads, [_relationPath]);
+    },
+  );
+
+  for (final value in [
+    null,
+    'pending',
+    ['pending'],
+    {'status': 'unknown'},
+    {'status': true},
+    _active,
+    {'status': 'revoked'},
+    {'status': 'pending', 'activeFrom': 1000},
+    {'status': 'pending', 'revokedAt': 2000},
+  ]) {
+    test(
+      'pending invitation rejects missing, non-pending or inconsistent value $value',
+      () async {
+        await watchInvitation();
+        database.emit(_relationPath, value);
+        await _tick();
+        expect(invitations.last, isFalse);
+      },
+    );
+  }
+
+  test(
+    'pending invitation rejects invalid references without RTDB reads',
+    () async {
+      await watchInvitation('bad/path');
+      expect(invitations.last, isFalse);
+      expect(database.reads, isEmpty);
+    },
+  );
+
+  test('pending invitation waits for authentication and uses only the signed-in UID', () async {
+    await auth.signOut();
+    await watchInvitation();
+    expect(invitations.last, isFalse);
+    expect(database.reads, isEmpty);
+    auth.changeUid('contact-test');
+    await _tick();
+    expect(database.reads, [_relationPath]);
+    database.emit(_relationPath, {'status': 'pending'});
+    await _tick();
+    expect(invitations.last, isTrue);
+  });
+
+  test(
+    'pending invitation disappears when removed or its status changes',
+    () async {
+      await watchInvitation();
+      for (final value in [
+        null,
+        _active,
+        {'status': 'revoked'},
+      ]) {
+        database.emit(_relationPath, {'status': 'pending'});
+        await _tick();
+        expect(invitations.last, isTrue);
+        database.emit(_relationPath, value);
+        await _tick();
+        expect(invitations.last, isFalse);
+      }
+    },
+  );
+
+  test(
+    'pending invitation read error clears a previously visible proposal',
+    () async {
+      await watchInvitation();
+      database.emit(_relationPath, {'status': 'pending'});
+      await _tick();
+      expect(invitations.last, isTrue);
+      final error = StateError('read denied');
+      database.streams[_relationPath]!.addError(error);
+      await _tick();
+      expect(invitations.last, isFalse);
+      expect(invitationErrors, [same(error)]);
+    },
+  );
+
+  test(
+    'pending invitation logout cancels the old read and ignores late responses',
+    () async {
+      await watchInvitation();
+      final oldResponse = database.callbacks[_relationPath]!.single;
+      database.emit(_relationPath, {'status': 'pending'});
+      await _tick();
+      expect(invitations.last, isTrue);
+      await auth.signOut();
+      await _tick();
+      expect(invitations.last, isFalse);
+      expect(database.streams[_relationPath]!.hasListener, isFalse);
+      oldResponse(_Event({'status': 'pending'}));
+      await _tick();
+      expect(invitations.last, isFalse);
+    },
+  );
+
+  test('pending invitation UID change verifies the new recipient and ignores old callbacks', () async {
+    await watchInvitation();
+    final oldResponse = database.callbacks[_relationPath]!.single;
+    database.emit(_relationPath, {'status': 'pending'});
+    await _tick();
+    auth.changeUid('other-contact');
+    await _tick();
+    expect(invitations.last, isFalse);
+    expect(database.streams[_relationPath]!.hasListener, isFalse);
+    oldResponse(_Event({'status': 'pending'}));
+    await _tick();
+    expect(invitations.last, isFalse);
+    database.emit('vehicleContacts/vehicle-test/other-contact', {
+      'status': 'pending',
+    });
+    await _tick();
+    expect(invitations.last, isTrue);
+    auth.changeUid('other-contact');
+    await _tick();
+    expect(
+      database.reads.where((path) => path.endsWith('/other-contact')).length,
+      1,
+    );
+  });
+
+  test('pending invitation queued response cannot survive an identity or status change', () async {
+    await watchInvitation();
+    var count = invitations.length;
+    database.emit(_relationPath, {'status': 'pending'});
+    database.emit(_relationPath, {'status': 'revoked'});
+    await _tick();
+    expect(invitations.skip(count), everyElement(isFalse));
+    count = invitations.length;
+    database.emit(_relationPath, {'status': 'pending'});
+    auth.changeUid('other-contact');
+    await _tick();
+    expect(invitations.skip(count), everyElement(isFalse));
+  });
+
+  test(
+    'pending invitation Auth error clears the proposal and releases its read',
+    () async {
+      await watchInvitation();
+      database.emit(_relationPath, {'status': 'pending'});
+      await _tick();
+      final error = StateError('auth failed');
+      auth.changes.addError(error);
+      await _tick();
+      expect(invitations.last, isFalse);
+      expect(invitationErrors, [same(error)]);
+      expect(database.streams[_relationPath]!.hasListener, isFalse);
+    },
+  );
+
+  test(
+    'pending invitation cancellation releases Auth and RTDB listeners',
+    () async {
+      await watchInvitation();
+      await invitationSubscription!.cancel();
+      expect(auth.changes.hasListener, isFalse);
+      expect(database.streams[_relationPath]!.hasListener, isFalse);
+    },
+  );
 
   test(
     'map discovers candidates but only the own active relationship authorizes',

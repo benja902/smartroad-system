@@ -20,6 +20,109 @@ class FirebaseContactRelationRepository {
          'vehicleContacts',
        );
 
+  /// Resolves only the signed-in user's pending invitation at an explicit
+  /// vehicle reference. True means a proposal exists, never authorization.
+  /// No vehicle, owner, SDA or incident data is read or returned.
+  Stream<bool> watchPendingInvitation(String vehicleId) {
+    if (!_isKey(vehicleId)) return Stream.value(false);
+
+    late StreamController<(int, bool)> controller;
+    StreamSubscription<fb_auth.User?>? authSubscription;
+    StreamSubscription<DatabaseEvent>? relationSubscription;
+    String? sessionUid;
+    var sessionGeneration = 0;
+    var resultVersion = 0;
+    var cancelled = false;
+
+    void emit(bool pending) => controller.add((++resultVersion, pending));
+
+    void clearSession() {
+      sessionGeneration++;
+      sessionUid = null;
+      relationSubscription?.cancel();
+      relationSubscription = null;
+      emit(false);
+    }
+
+    void followUser(fb_auth.User? user) {
+      if (cancelled) return;
+      final userId = user?.uid;
+      if (userId == sessionUid &&
+          relationSubscription != null &&
+          _auth.currentUser?.uid == userId) {
+        return;
+      }
+      clearSession();
+      if (userId == null ||
+          !_isKey(userId) ||
+          _auth.currentUser?.uid != userId) {
+        return;
+      }
+      sessionUid = userId;
+      final currentSession = sessionGeneration;
+      bool isCurrentSession() =>
+          !cancelled &&
+          currentSession == sessionGeneration &&
+          _auth.currentUser?.uid == userId;
+
+      relationSubscription = _contactsRef
+          .child(vehicleId)
+          .child(userId)
+          .onValue
+          .listen(
+            (event) {
+              if (!isCurrentSession()) return;
+              final value = event.snapshot.value;
+              emit(
+                value is Map &&
+                    value['status'] == 'pending' &&
+                    value['activeFrom'] == null &&
+                    value['revokedAt'] == null,
+              );
+            },
+            onError: (Object error, StackTrace stackTrace) {
+              if (!isCurrentSession()) return;
+              emit(false);
+              controller.addError(error, stackTrace);
+            },
+            onDone: () {
+              if (isCurrentSession()) emit(false);
+            },
+          );
+    }
+
+    controller = StreamController<(int, bool)>(
+      onListen: () {
+        emit(false);
+        authSubscription = _auth.authStateChanges().listen(
+          followUser,
+          onError: (Object error, StackTrace stackTrace) {
+            clearSession();
+            controller.addError(error, stackTrace);
+          },
+          onDone: () {
+            clearSession();
+            controller.close();
+          },
+        );
+      },
+      onCancel: () async {
+        cancelled = true;
+        sessionGeneration++;
+        resultVersion++;
+        await authSubscription?.cancel();
+        await relationSubscription?.cancel();
+      },
+    );
+    return controller.stream.map(
+      (result) =>
+          !cancelled &&
+          result.$1 == resultVersion &&
+          sessionUid == _auth.currentUser?.uid &&
+          result.$2,
+    );
+  }
+
   /// Follows Firebase Authentication, including sign-out and UID changes.
   /// vehicleIds is only a discovery map; each candidate needs an active relation.
   Stream<Set<String>> watchAuthorizedVehicleIds() {
@@ -65,7 +168,9 @@ class FirebaseContactRelationRepository {
         return;
       }
       clearSession();
-      if (userId == null || !_isKey(userId) || _auth.currentUser?.uid != userId) {
+      if (userId == null ||
+          !_isKey(userId) ||
+          _auth.currentUser?.uid != userId) {
         return;
       }
       sessionUid = userId;

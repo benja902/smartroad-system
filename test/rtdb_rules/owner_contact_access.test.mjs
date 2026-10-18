@@ -225,6 +225,32 @@ test('pending contact reads only their profile and own relation, not owner data'
   await assertFails(db('pending').ref('contactIncidents/owned').once('value'));
 });
 
+test('pending invitation reference resolves only the own proposal without vehicleIds', async () => {
+  const profile = await assertSucceeds(db('pending').ref('users/pending').once('value'));
+  assert.equal(profile.hasChild('vehicleIds'), false);
+  const proposal = await assertSucceeds(db('pending').ref('vehicleContacts/owned/pending').once('value'));
+  assert.deepEqual(proposal.val(), { status: 'pending' });
+  await assertFails(db('stranger').ref('vehicleContacts/owned/pending').once('value'));
+  await assertFails(db(null).ref('vehicleContacts/owned/pending').once('value'));
+  await assertFails(db('pending').ref('vehicleContacts/owned/active').once('value'));
+  await assertFails(db('pending').ref('vehicleContacts/other/pending').once('value'));
+  await assertFails(db('pending').ref('vehicleContacts/owned').once('value'));
+  for (const path of ['users/owner', 'vehicles/owned', 'devices/SDA-OWNED',
+    'deviceRegistry/SDA-OWNED', 'events/current', 'contactIncidents/owned']) {
+    await assertFails(db('pending').ref(path).once('value'));
+  }
+});
+
+test('pending invitation reference cannot activate a relation or write a discovery index', async () => {
+  await assertFails(db('pending').ref('vehicleContacts/owned/pending')
+    .set({ status: 'active', activeFrom: 1000 }));
+  await assertFails(db('pending').ref('users/pending/vehicleIds/owned').set(true));
+  await assertFails(db('pending').ref('vehicleContacts/owned/pending').remove());
+  const proposal = await assertSucceeds(db('pending').ref('vehicleContacts/owned/pending').once('value'));
+  assert.deepEqual(proposal.val(), { status: 'pending' });
+  await assertFails(db('pending').ref('contactIncidents/owned').once('value'));
+});
+
 test('pending or active contact cannot directly query canonical events, even when tagged', async () => {
   for (const uid of ['pending', 'active']) {
     await assertFails(db(uid).ref('events').once('value'));
