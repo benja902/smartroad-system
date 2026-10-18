@@ -83,6 +83,7 @@ Widget presentation(
   bool reduced = false,
   VoidCallback? onOpenAlerts,
   GuardianArtwork guardianArtwork = GuardianArtwork.lineArt,
+  GuardianHeader guardianHeader = GuardianHeader.signature,
 }) => MaterialApp(
   theme: AppTheme.light,
   home: MediaQuery(
@@ -93,6 +94,7 @@ Widget presentation(
     child: PremiumHomeContent(
       variant: variant,
       guardianArtwork: guardianArtwork,
+      guardianHeader: guardianHeader,
       userName: 'Persona de prueba',
       vehicle: absentVehicle ? null : MockDataSeed.vehicle,
       status: status,
@@ -105,6 +107,92 @@ Widget presentation(
 );
 
 void main() {
+  testWidgets(
+    'Guardian header switch changes presentation only, retains card and technical expansion',
+    (tester) async {
+      await app(tester);
+      await chooseHome(tester, HomePreviewVariant.guardianDeck);
+      final provider = tester
+          .element(find.byType(PremiumHomeContent))
+          .read<EventProvider>();
+      final cardSize = tester.getSize(
+        find.byKey(const ValueKey('home-guardian-deck')),
+      );
+      expect(
+        find.byKey(const ValueKey('guardian-header-editorial')),
+        findsOneWidget,
+      );
+      await reveal(tester, find.byType(ExpansionTile));
+      await tester.tap(find.byType(ExpansionTile));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('dev-nav-variant-menu')));
+      await tester.pumpAndSettle();
+      final headerMenu = find.byKey(const ValueKey('dev-guardian-header-menu'));
+      await tester.ensureVisible(headerMenu);
+      await tester.tap(headerMenu);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('dev-guardian-header-signature')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<PremiumHomeContent>(find.byType(PremiumHomeContent))
+            .guardianHeader,
+        GuardianHeader.signature,
+      );
+      expect(
+        tester.element(find.byType(PremiumHomeContent)).read<EventProvider>(),
+        same(provider),
+      );
+      expect(find.text('Voltaje de batería'), findsOneWidget);
+      await reveal(
+        tester,
+        find.byKey(const ValueKey('home-guardian-deck')),
+        delta: -180,
+      );
+      expect(
+        tester.getSize(find.byKey(const ValueKey('home-guardian-deck'))),
+        cardSize,
+      );
+      await reveal(
+        tester,
+        find.byKey(const ValueKey('guardian-header-signature')),
+        delta: -180,
+      );
+      expect(
+        find.byKey(const ValueKey('guardian-header-signature')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Editorial header remains readable at 320dp and 200% text with reduced motion',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        presentation(
+          HomePreviewVariant.guardianDeck,
+          guardianHeader: GuardianHeader.editorial,
+          status: MockDataSeed.initialDeviceStatus,
+          textScale: 2,
+          reduced: true,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('guardian-header-editorial')),
+        findsOneWidget,
+      );
+      await reveal(tester, find.byKey(const ValueKey('home-open-alerts')));
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets(
     'Guardian aligns brand and content; connectivity owns position without duplicate fix',
     (tester) async {
@@ -162,10 +250,13 @@ void main() {
 
       await showEvents();
       expect(find.byIcon(Icons.car_crash_outlined), findsOneWidget);
+      expect(find.text('Evento informativo'), findsOneWidget);
+      expect(find.byType(InkWell), findsNothing);
       expect(find.byIcon(Icons.check_circle_outline), findsNothing);
       await repo.acknowledge(event.dedupKey, userId: MockDataSeed.userId);
       await showEvents();
       expect(find.byIcon(Icons.visibility_outlined), findsOneWidget);
+      expect(find.text('Visto por ti'), findsOneWidget);
       expect(find.byIcon(Icons.check_circle_outline), findsNothing);
     },
   );
@@ -207,10 +298,15 @@ void main() {
     },
   );
   testWidgets(
-    'DEV starts with current Home; A/B select without changing branches or nav',
+    'DEV starts with approved Guardian; A/B and current remain experimental without losing branches',
     (tester) async {
       await app(tester);
-      expect(find.byType(PremiumHomeContent), findsNothing);
+      final initial = tester.widget<PremiumHomeContent>(
+        find.byType(PremiumHomeContent),
+      );
+      expect(initial.variant, HomePreviewVariant.guardianDeck);
+      expect(initial.guardianHeader, GuardianHeader.editorial);
+      expect(initial.guardianArtwork, GuardianArtwork.lineArt);
       await chooseHome(tester, HomePreviewVariant.vehicleFocus);
       expect(find.byKey(const ValueKey('home-vehicle-hero')), findsOneWidget);
       final context = tester.element(find.byType(PremiumHomeContent));
@@ -264,16 +360,23 @@ void main() {
     await tester.pumpWidget(
       mockAppProviders(
         child: HomeVisualPreview(
-          variant: HomePreviewVariant.vehicleFocus,
+          variant: HomePreviewVariant.signalFlow,
+          header: GuardianHeader.signature,
+          artwork: GuardianArtwork.isometric,
           child: const UrbesApp(),
         ),
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.byType(PremiumHomeContent), findsNothing);
+    final home = tester.widget<PremiumHomeContent>(
+      find.byType(PremiumHomeContent),
+    );
+    expect(home.variant, HomePreviewVariant.guardianDeck);
+    expect(home.guardianHeader, GuardianHeader.editorial);
+    expect(home.guardianArtwork, GuardianArtwork.lineArt);
     expect(
       find.text('Tu sistema URBES está funcionando correctamente'),
-      findsOneWidget,
+      findsNothing,
     );
     expect(find.byKey(const ValueKey('dev-home-vehicleFocus')), findsNothing);
   });

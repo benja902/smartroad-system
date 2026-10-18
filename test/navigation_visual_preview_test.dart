@@ -12,6 +12,8 @@ import 'package:smartroad/repositories/event_repository.dart';
 import 'package:smartroad/repositories/mock/mock_event_repository.dart';
 import 'package:smartroad/screens/dev/dev_navigation_review.dart';
 import 'package:smartroad/screens/home/home_screen.dart';
+import 'package:smartroad/screens/home/home_visual_preview.dart';
+import 'package:smartroad/screens/home/premium_home_content.dart';
 import 'package:smartroad/widgets/screen_entrance.dart';
 
 import 'test_helpers.dart';
@@ -70,6 +72,12 @@ void main() {
       await tester.ensureVisible(find.text('Iniciar sesión'));
       await tester.tap(find.text('Iniciar sesión'));
       await tester.pumpAndSettle();
+      final home = tester.widget<PremiumHomeContent>(
+        find.byType(PremiumHomeContent),
+      );
+      expect(home.variant, HomePreviewVariant.guardianDeck);
+      expect(home.guardianHeader, GuardianHeader.editorial);
+      expect(home.guardianArtwork, GuardianArtwork.lineArt);
       expect(
         tester
             .widget<PremiumNavigationPreviewBar>(

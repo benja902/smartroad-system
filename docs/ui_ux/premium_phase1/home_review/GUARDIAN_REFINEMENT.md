@@ -1,5 +1,9 @@
 # Guardian Deck — marca, vehículo y lectura de conectividad
 
+**Estado vigente:** combinación Guardian Deck / Editorial Minimal / Lineal aprobada como predeterminada compartida; [ADOPTION.md](ADOPTION.md) documenta la adopción. Las referencias a MAIN con Inicio actual o acabado pendiente en las secciones históricas siguientes corresponden a las revisiones previas.
+
+**Iteración vigente de cabecera/conectividad/actividad:** ver [GUARDIAN_COMPONENT_POLISH.md](GUARDIAN_COMPONENT_POLISH.md). Incorpora Editorial Minimal y Signature Header seleccionables dentro de Guardian, sin modificar el módulo Navy de esta base. Los apartados siguientes conservan la trazabilidad de las iteraciones anteriores.
+
 **Pulido posterior de jerarquía y proporciones:** Guardian conserva la marca oficial alineada a la izquierda, sin avatar. Se reduce el espacio marca–saludo de 26 a 18 dp, los márgenes entre módulos de 24 a 20 dp y el área gráfica de 132 a 120 dp. En la ilustración 2.5D se ajusta el encuadre de 140 a 126 unidades: el vehículo mantiene prácticamente su tamaño aparente, sin alterar su geometría ni perspectiva. La tarjeta alinea disponibilidad y última comunicación en una columna junto al distintivo, retirando la explicación redundante inferior.
 
 Red móvil, GNSS y posición ahora comparten una sola superficie compacta. La disponibilidad del fix se muestra una vez; las coordenadas quedan como lectura secundaria bajo un divisor. Se conserva el criterio anterior de no mostrar coordenadas sin fix, con «Sin coordenadas para mostrar» en esa línea y el estado del fix en GNSS. Los datos técnicos siguen desplegables. No hay cambios de datos, reconocimiento, clasificación ni prioridad de atención/Emergencia. MAIN y las otras composiciones se conservan.

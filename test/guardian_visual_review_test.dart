@@ -89,10 +89,22 @@ void main() {
       );
       await tester.pumpAndSettle();
       await chooseHome(tester, HomePreviewVariant.guardianDeck);
+      await tester.tap(find.byKey(const ValueKey('dev-nav-variant-menu')));
+      await tester.pumpAndSettle();
+      final artwork = find.byKey(const ValueKey('dev-guardian-isometric'));
+      await tester.ensureVisible(artwork);
+      await tester.tap(artwork);
+      await tester.pumpAndSettle();
       if (width == 320) {
         await tester.tap(find.byKey(const ValueKey('dev-nav-variant-menu')));
         await tester.pumpAndSettle();
-        await tester.tap(find.byKey(const ValueKey('dev-guardian-isometric')));
+        final header = find.byKey(const ValueKey('dev-guardian-header-menu'));
+        await tester.ensureVisible(header);
+        await tester.tap(header);
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(const ValueKey('dev-guardian-header-editorial')),
+        );
         await tester.pumpAndSettle();
       }
       expect(tester.takeException(), isNull);
@@ -102,8 +114,10 @@ void main() {
       await tester.runAsync(() async {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-        await File('docs/ui_ux/premium_phase1/home_review/guardian_$width.png')
-            .writeAsBytes(bytes!.buffer.asUint8List());
+        final treatment = width == 390 ? 'signature' : 'editorial';
+        await File(
+          'docs/ui_ux/premium_phase1/home_review/guardian_header_$treatment.png',
+        ).writeAsBytes(bytes!.buffer.asUint8List());
         image.dispose();
       });
     }, skip: !const bool.fromEnvironment('URBES_EXPORT_GUARDIAN'));

@@ -13,6 +13,7 @@ import 'widgets/recent_alerts_preview.dart';
 
 part 'signature_home_directions.dart';
 part 'guardian_deck_refinement.dart';
+part 'guardian_header.dart';
 
 // Local review palette. No change to AppTheme or the global Design System.
 const _navy = Color(0xFF031B3B);
@@ -34,7 +35,8 @@ class PremiumHomeContent extends StatelessWidget {
     required this.eventError,
     required this.attention,
     required this.onOpenAlerts,
-    this.guardianArtwork = GuardianArtwork.lineArt,
+    this.guardianArtwork = GuardianArtwork.defaultVariant,
+    this.guardianHeader = GuardianHeader.defaultVariant,
   });
 
   final HomePreviewVariant variant;
@@ -46,6 +48,7 @@ class PremiumHomeContent extends StatelessWidget {
   final Widget? attention;
   final VoidCallback onOpenAlerts;
   final GuardianArtwork guardianArtwork;
+  final GuardianHeader guardianHeader;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +77,9 @@ class PremiumHomeContent extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 96),
                     sliver: SliverList.list(
                       children: [
-                        if (crafted)
+                        if (variant == HomePreviewVariant.guardianDeck)
+                          _GuardianHeader(name: name, treatment: guardianHeader)
+                        else if (crafted)
                           _SignatureMasthead(name: name, editorial: editorial),
                         if (!crafted)
                           Text(
@@ -188,6 +193,10 @@ class PremiumHomeContent extends StatelessWidget {
                             label: const Text('Consultar alertas'),
                             style: TextButton.styleFrom(
                               foregroundColor: _teal,
+                              backgroundColor:
+                                  variant == HomePreviewVariant.guardianDeck
+                                  ? const Color(0xFFE7F2F0)
+                                  : null,
                               minimumSize: const Size(48, 48),
                               textStyle: _type(14, weight: FontWeight.w700),
                             ),

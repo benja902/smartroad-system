@@ -13,8 +13,9 @@ class DevNavigationReview extends StatefulWidget {
 
 class _DevNavigationReviewState extends State<DevNavigationReview> {
   NavigationPreviewVariant _variant = NavigationPreviewVariant.defaultVariant;
-  HomePreviewVariant _home = HomePreviewVariant.current;
-  GuardianArtwork _artwork = GuardianArtwork.lineArt;
+  HomePreviewVariant _home = HomePreviewVariant.defaultVariant;
+  GuardianArtwork _artwork = GuardianArtwork.defaultVariant;
+  GuardianHeader _header = GuardianHeader.defaultVariant;
   @override
   Widget build(BuildContext context) => NavigationVisualPreview(
     variant: _variant,
@@ -44,6 +45,21 @@ class _DevNavigationReviewState extends State<DevNavigationReview> {
           ),
         if (_home == HomePreviewVariant.guardianDeck) ...[
           const Divider(),
+          SubmenuButton(
+            key: const ValueKey('dev-guardian-header-menu'),
+            menuChildren: [
+              for (final header in GuardianHeader.values)
+                MenuItemButton(
+                  key: ValueKey('dev-guardian-header-${header.name}'),
+                  onPressed: () => setState(() => _header = header),
+                  leadingIcon: Icon(
+                    _header == header ? Icons.check_rounded : null,
+                  ),
+                  child: Text(header.label),
+                ),
+            ],
+            child: const Text('Cabecera de Guardian'),
+          ),
           for (final artwork in GuardianArtwork.values)
             MenuItemButton(
               key: ValueKey('dev-guardian-${artwork.name}'),
@@ -67,6 +83,7 @@ class _DevNavigationReviewState extends State<DevNavigationReview> {
     child: HomeVisualPreview(
       variant: _home,
       artwork: _artwork,
+      header: _header,
       child: widget.child,
     ),
   );

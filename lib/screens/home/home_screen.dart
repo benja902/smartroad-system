@@ -41,13 +41,19 @@ class HomeScreen extends StatelessWidget {
         ? null
         : attentionEvents.last;
 
-    final variant = context.watch<DevModeFlag>().enabled
+    final dev = context.watch<DevModeFlag>().enabled;
+    final variant = dev
         ? HomeVisualPreview.of(context)
-        : HomePreviewVariant.current;
+        : HomePreviewVariant.defaultVariant;
     if (variant != HomePreviewVariant.current) {
       return PremiumHomeContent(
         variant: variant,
-        guardianArtwork: HomeVisualPreview.artworkOf(context),
+        guardianArtwork: dev
+            ? HomeVisualPreview.artworkOf(context)
+            : GuardianArtwork.defaultVariant,
+        guardianHeader: dev
+            ? HomeVisualPreview.headerOf(context)
+            : GuardianHeader.defaultVariant,
         userName: user?.name ?? 'Usuario',
         vehicle: vehicle,
         status: deviceStatus,

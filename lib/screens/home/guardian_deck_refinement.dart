@@ -231,63 +231,47 @@ class _GuardianConnectivity extends StatelessWidget {
             style: _type(16, weight: FontWeight.w700),
           ),
           const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final stacked = MediaQuery.textScalerOf(context).scale(14) > 21;
-              final mobile = _ConnectionReading(
-                icon: Icons.signal_cellular_alt,
-                label: 'Red móvil',
-                value: modem?.tech ?? 'Tecnología no informada',
-                detail: modem == null
-                    ? 'Registro no informado'
-                    : modem.registered
-                    ? 'Registro celular reportado'
-                    : 'Sin registro celular reportado',
-              );
-              final position = _ConnectionReading(
-                icon: Icons.satellite_alt_outlined,
-                label: 'GNSS',
-                value: gnss == null
-                    ? 'Sin datos'
-                    : gnss.fix
-                    ? 'Fix reportado'
-                    : 'Sin fix reportado',
-                detail: 'Según el dato recibido',
-              );
-              return stacked
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [mobile, const SizedBox(height: 14), position],
-                    )
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(child: mobile),
-                        const SizedBox(width: 20),
-                        Expanded(child: position),
-                      ],
-                    );
-            },
+          _ConnectionReading(
+            icon: Icons.signal_cellular_alt,
+            label: 'Red móvil',
+            value: modem?.tech ?? 'Tecnología no informada',
+            detail: modem == null
+                ? 'Registro no informado'
+                : modem.registered
+                ? 'Registro celular reportado'
+                : 'Sin registro celular reportado',
           ),
-          const SizedBox(height: 14),
-          const Divider(height: 1, color: _line),
+          const Padding(
+            padding: EdgeInsets.only(left: 46),
+            child: Divider(height: 25, color: _line),
+          ),
+          _ConnectionReading(
+            icon: Icons.satellite_alt_outlined,
+            label: 'GNSS',
+            value: gnss == null
+                ? 'Sin datos'
+                : gnss.fix
+                ? 'Fix reportado'
+                : 'Sin fix reportado',
+            detail: '',
+          ),
+          const Padding(
+            padding: EdgeInsets.only(left: 46),
+            child: Divider(height: 25, color: _line),
+          ),
           Padding(
             key: const ValueKey('home-position'),
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Posición recibida', style: _type(12, color: _ink)),
-                const SizedBox(height: 4),
-                Text(
-                  gnss == null
-                      ? 'Sin datos de ubicación'
-                      : !gnss.fix
-                      ? 'Sin coordenadas para mostrar'
-                      : '${gnss.latitude.toStringAsFixed(5)}, ${gnss.longitude.toStringAsFixed(5)}',
-                  style: _type(13),
-                ),
-              ],
+            padding: const EdgeInsets.only(bottom: 14),
+            child: _ConnectionReading(
+              icon: Icons.location_on_outlined,
+              label: 'Posición recibida',
+              value: gnss == null
+                  ? 'Sin datos de ubicación'
+                  : !gnss.fix
+                  ? 'Sin coordenadas para mostrar'
+                  : '${gnss.latitude.toStringAsFixed(5)}, ${gnss.longitude.toStringAsFixed(5)}',
+              detail: gnss?.fix == true ? 'Coordenadas del dato recibido.' : '',
+              valueSize: 13,
             ),
           ),
           if (status?.power?.batteryV != null ||
@@ -338,26 +322,39 @@ class _ConnectionReading extends StatelessWidget {
     required this.label,
     required this.value,
     required this.detail,
+    this.valueSize = 14,
   });
   final IconData icon;
   final String label, value, detail;
+  final double valueSize;
   @override
-  Widget build(BuildContext context) => Column(
+  Widget build(BuildContext context) => Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Row(
-        children: [
-          Icon(icon, size: 18, color: _teal),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(label, style: _type(13, color: _ink)),
-          ),
-        ],
+      Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0F5F5),
+          borderRadius: BorderRadius.circular(11),
+        ),
+        child: Icon(icon, size: 19, color: _teal),
       ),
-      const SizedBox(height: 6),
-      Text(value, style: _type(15, weight: FontWeight.w700)),
-      const SizedBox(height: 3),
-      Text(detail, style: _type(12, color: _ink)),
+      const SizedBox(width: 12),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: _type(12, color: _ink)),
+            const SizedBox(height: 3),
+            Text(value, style: _type(valueSize, weight: FontWeight.w700)),
+            if (detail.isNotEmpty) ...[
+              const SizedBox(height: 3),
+              Text(detail, style: _type(12, color: _ink)),
+            ],
+          ],
+        ),
+      ),
     ],
   );
 }

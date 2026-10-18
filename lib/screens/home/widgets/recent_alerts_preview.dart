@@ -74,6 +74,7 @@ class RecentAlertsPreview extends StatelessWidget {
                   }.contains(classify(event)),
                   editorial: editorial,
                   guardian: guardian,
+                  statusLabel: guardian ? _statusLabelFor(event) : null,
                 ),
                 if (event != recent.last)
                   const SizedBox(height: AppSpacing.gutter),
@@ -104,13 +105,24 @@ class RecentAlertsPreview extends StatelessWidget {
       case AccidentEventType.sos:
         return Icons.emergency_share;
       case AccidentEventType.rollover:
-        return Icons.change_circle;
+        return guardian ? Icons.car_crash_outlined : Icons.change_circle;
       default:
         return presentation == AlertPresentation.informative
             ? Icons.info_outline
             : Icons.warning_amber_outlined;
     }
   }
+
+  String _statusLabelFor(AccidentEvent event) => switch (classify(event)) {
+    AlertPresentation.attended => 'Visto por ti',
+    AlertPresentation.cancelled => 'Cancelado desde el SDA',
+    AlertPresentation.deferred => 'Recepción diferida',
+    AlertPresentation.attention => 'Requiere atención',
+    AlertPresentation.activeEmergency => 'Emergencia activa',
+    AlertPresentation.technical => 'Evento técnico',
+    AlertPresentation.informative => 'Evento informativo',
+    AlertPresentation.cancellation => '',
+  };
 
   Color _colorFor(AccidentEvent event) {
     switch (classify(event)) {
@@ -155,6 +167,7 @@ class _AlertRow extends StatelessWidget {
   final bool emphasized;
   final bool editorial;
   final bool guardian;
+  final String? statusLabel;
 
   const _AlertRow({
     required this.icon,
@@ -164,59 +177,81 @@ class _AlertRow extends StatelessWidget {
     required this.emphasized,
     this.editorial = false,
     this.guardian = false,
+    this.statusLabel,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: editorial
-          ? const BoxDecoration(
-              border: Border(bottom: BorderSide(color: Color(0xFFE0E6EB))),
-            )
-          : emphasized
-          ? BoxDecoration(
-              color: AppColors.surfaceCard,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              boxShadow: AppShadows.card,
-            )
-          : null,
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.chipBackground(iconColor),
-              shape: guardian ? BoxShape.rectangle : BoxShape.circle,
-              borderRadius: guardian ? BorderRadius.circular(12) : null,
+    return Semantics(
+      container: guardian,
+      child: Container(
+        constraints: guardian ? const BoxConstraints(minHeight: 76) : null,
+        padding: guardian
+            ? const EdgeInsets.symmetric(vertical: 16)
+            : const EdgeInsets.all(AppSpacing.sm),
+        decoration: editorial
+            ? const BoxDecoration(
+                border: Border(bottom: BorderSide(color: Color(0xFFE0E6EB))),
+              )
+            : emphasized
+            ? BoxDecoration(
+                color: AppColors.surfaceCard,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                boxShadow: AppShadows.card,
+              )
+            : null,
+        child: Row(
+          crossAxisAlignment: guardian
+              ? CrossAxisAlignment.start
+              : CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.chipBackground(iconColor),
+                shape: guardian ? BoxShape.rectangle : BoxShape.circle,
+                borderRadius: guardian ? BorderRadius.circular(12) : null,
+              ),
+              child: Icon(icon, color: iconColor),
             ),
-            child: Icon(icon, color: iconColor),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTypography.bodyMd.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: guardian
-                        ? const Color(0xFF031B3B)
-                        : AppColors.primary,
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTypography.bodyMd.copyWith(
+                      fontSize: guardian ? 16 : null,
+                      fontWeight: FontWeight.w600,
+                      color: guardian
+                          ? const Color(0xFF031B3B)
+                          : AppColors.primary,
+                    ),
                   ),
-                ),
-                Text(
-                  subtitle,
-                  style: AppTypography.labelSm.copyWith(
-                    color: AppColors.onSurfaceVariant,
+                  if (guardian && statusLabel != null) ...[
+                    const SizedBox(height: 5),
+                    Text(
+                      statusLabel!,
+                      style: AppTypography.labelSm.copyWith(
+                        color: iconColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                  if (guardian) const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: AppTypography.labelSm.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
