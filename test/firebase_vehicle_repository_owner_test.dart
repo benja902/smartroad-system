@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartroad/repositories/firebase/firebase_device_repository.dart';
 import 'package:smartroad/repositories/firebase/firebase_vehicle_repository.dart';
+import 'package:smartroad/repositories/vehicle_repository.dart';
 import 'package:smartroad/state/device_status_provider.dart';
 import 'package:smartroad/state/vehicle_provider.dart';
 
@@ -33,17 +34,22 @@ class _Reference extends Fake implements DatabaseReference {
   _Reference(this.database, this.path, [this.filter]);
 
   @override
-  DatabaseReference child(String childPath) => _Reference(database, '$path/$childPath');
+  DatabaseReference child(String childPath) =>
+      _Reference(database, '$path/$childPath');
 
   @override
   Query orderByChild(String childPath) => _Reference(database, path, childPath);
 
   @override
-  Query equalTo(Object? value, {String? key}) => _Reference(database, path, 'ownerId=$value');
+  Query equalTo(Object? value, {String? key}) =>
+      _Reference(database, path, 'ownerId=$value');
 
   @override
   Stream<DatabaseEvent> get onValue => database.streams
-      .putIfAbsent(filter == null ? path : '$path/$filter', () => StreamController<DatabaseEvent>())
+      .putIfAbsent(
+        filter == null ? path : '$path/$filter',
+        () => StreamController<DatabaseEvent>(),
+      )
       .stream;
 }
 
@@ -72,9 +78,32 @@ const _owned = {
 Future<void> _tick() => Future<void>.delayed(Duration.zero);
 
 void main() {
+  test(
+    'entry resolution distinguishes the pending vehicle lookup from absence',
+    () async {
+      final database = _Database();
+      final states = <OwnerVehicleResolution>[];
+      final subscription = FirebaseVehicleRepository(database: database)
+          .watchOwnerResolution('owner')
+          .listen(states.add);
+      database.emit('users/owner/ownerVehicleId', 'owned');
+      await _tick();
+      expect(states.last.loading, isTrue);
+      expect(states.last.vehicle, isNull);
+      database.emit('vehicles/ownerId=owner', {'owned': _owned});
+      await _tick();
+      expect(states.last.loading, isFalse);
+      expect(states.last.vehicle?.id, 'owned');
+      await subscription.cancel();
+      await database.close();
+    },
+  );
+
   test('owner resolves only the indexed vehicle and its SDA', () async {
     final database = _Database();
-    final provider = VehicleProvider(FirebaseVehicleRepository(database: database));
+    final provider = VehicleProvider(
+      FirebaseVehicleRepository(database: database),
+    );
     provider.setUserId('owner');
     database.emit('users/owner/ownerVehicleId', 'owned');
     await _tick();
@@ -88,7 +117,9 @@ void main() {
 
   test('no owner relation does not query or assign a vehicle', () async {
     final database = _Database();
-    final provider = VehicleProvider(FirebaseVehicleRepository(database: database));
+    final provider = VehicleProvider(
+      FirebaseVehicleRepository(database: database),
+    );
     provider.setUserId('contact');
     database.emit('users/contact/ownerVehicleId', null);
     await _tick();
@@ -100,7 +131,9 @@ void main() {
 
   test('contradictory, ambiguous and malformed relations do not select a first row', () async {
     final database = _Database();
-    final provider = VehicleProvider(FirebaseVehicleRepository(database: database));
+    final provider = VehicleProvider(
+      FirebaseVehicleRepository(database: database),
+    );
     provider.setUserId('owner');
     database.emit('users/owner/ownerVehicleId', 'owned');
     await _tick();
@@ -113,11 +146,15 @@ void main() {
     await _tick();
     expect(provider.vehicle, isNull);
 
-    database.emit('vehicles/ownerId=owner', {'owned': {..._owned, 'ownerId': 'other'}});
+    database.emit('vehicles/ownerId=owner', {
+      'owned': {..._owned, 'ownerId': 'other'},
+    });
     await _tick();
     expect(provider.vehicle, isNull);
 
-    database.emit('vehicles/ownerId=owner', {'owned': {..._owned, 'deviceId': ''}});
+    database.emit('vehicles/ownerId=owner', {
+      'owned': {..._owned, 'deviceId': ''},
+    });
     await _tick();
     expect(provider.vehicle, isNull);
 
@@ -134,7 +171,9 @@ void main() {
 
   test('read failure clears a previously resolved vehicle', () async {
     final database = _Database();
-    final provider = VehicleProvider(FirebaseVehicleRepository(database: database));
+    final provider = VehicleProvider(
+      FirebaseVehicleRepository(database: database),
+    );
     provider.setUserId('owner');
     database.emit('users/owner/ownerVehicleId', 'owned');
     await _tick();
@@ -142,7 +181,9 @@ void main() {
     await _tick();
     expect(provider.vehicle?.id, 'owned');
 
-    database.streams['vehicles/ownerId=owner']!.addError(StateError('read denied'));
+    database.streams['vehicles/ownerId=owner']!.addError(
+      StateError('read denied'),
+    );
     await _tick();
     expect(provider.vehicle, isNull);
     provider.dispose();
@@ -151,7 +192,9 @@ void main() {
 
   test('SDA read failure clears the previously visible status', () async {
     final database = _Database();
-    final provider = DeviceStatusProvider(FirebaseDeviceRepository(database: database));
+    final provider = DeviceStatusProvider(
+      FirebaseDeviceRepository(database: database),
+    );
     provider.setDeviceId('SDA-TEST');
     database.emit('devices/SDA-TEST', {'online': true});
     await _tick();

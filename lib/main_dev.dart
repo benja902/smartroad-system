@@ -26,6 +26,7 @@ Future<void> main() async {
   await auth.signOut();
   runApp(
     AppProviders(
+      enforceAccess: false,
       authRepository: auth,
       deviceRepository: MockDeviceRepository(),
       eventRepository: MockEventRepository(),

@@ -175,6 +175,27 @@ void main() {
   }
 
   test(
+    'invitation UI resolution distinguishes loading from confirmed absence',
+    () async {
+      await subscription.cancel();
+      final states = <PendingInvitationResolution>[];
+      final reader = FirebaseContactRelationRepository(
+        auth: auth,
+        database: database,
+      ).watchPendingInvitationResolution('vehicle-test').listen(states.add);
+      await _tick();
+      expect(states.last.loading, isTrue);
+      database.emit(_relationPath, null);
+      await _tick();
+      expect(states.last, (loading: false, pending: false));
+      database.emit(_relationPath, {'status': 'pending'});
+      await _tick();
+      expect(states.last, (loading: false, pending: true));
+      await reader.cancel();
+    },
+  );
+
+  test(
     'pending invitation reads only the own relation without a discovery index',
     () async {
       await watchInvitation();

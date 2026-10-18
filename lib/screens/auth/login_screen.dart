@@ -59,10 +59,13 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
     } on AccountNotProvisionedException {
+      if (!mounted) return;
       setState(() => _errorMessage = 'Esta cuenta aún no está provisionada.');
     } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
       setState(() => _errorMessage = _messageFor(e.code));
     } catch (e) {
+      if (!mounted) return;
       setState(
         () => _errorMessage = 'No se pudo iniciar sesión. Intenta nuevamente.',
       );

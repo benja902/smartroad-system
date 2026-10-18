@@ -3,6 +3,11 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:firebase_database/firebase_database.dart';
 
+typedef PendingInvitationResolution = ({bool loading, bool pending});
+typedef PendingInvitationReader = Stream<PendingInvitationResolution> Function(
+  String reference,
+);
+
 /// Read-only contact relationship resolution, independent of provisioning.
 /// Results describe current relationships, not permission to read canonical
 /// incidents or SDA data. RTDB rules remain the security authority.
@@ -23,10 +28,19 @@ class FirebaseContactRelationRepository {
   /// Resolves only the signed-in user's pending invitation at an explicit
   /// vehicle reference. True means a proposal exists, never authorization.
   /// No vehicle, owner, SDA or incident data is read or returned.
-  Stream<bool> watchPendingInvitation(String vehicleId) {
-    if (!_isKey(vehicleId)) return Stream.value(false);
+  Stream<bool> watchPendingInvitation(String vehicleId) =>
+      watchPendingInvitationResolution(vehicleId)
+          .map((result) => result.pending);
 
-    late StreamController<(int, bool)> controller;
+  /// UI consumers must distinguish an unresolved read from confirmed absence.
+  Stream<PendingInvitationResolution> watchPendingInvitationResolution(
+    String vehicleId,
+  ) {
+    if (!_isKey(vehicleId)) {
+      return Stream.value((loading: false, pending: false));
+    }
+
+    late StreamController<(int, PendingInvitationResolution)> controller;
     StreamSubscription<fb_auth.User?>? authSubscription;
     StreamSubscription<DatabaseEvent>? relationSubscription;
     String? sessionUid;
@@ -34,14 +48,15 @@ class FirebaseContactRelationRepository {
     var resultVersion = 0;
     var cancelled = false;
 
-    void emit(bool pending) => controller.add((++resultVersion, pending));
+    void emit(bool pending, {bool loading = false}) =>
+        controller.add((++resultVersion, (loading: loading, pending: pending)));
 
     void clearSession() {
       sessionGeneration++;
       sessionUid = null;
       relationSubscription?.cancel();
       relationSubscription = null;
-      emit(false);
+      emit(false, loading: _auth.currentUser != null);
     }
 
     void followUser(fb_auth.User? user) {
@@ -91,9 +106,9 @@ class FirebaseContactRelationRepository {
           );
     }
 
-    controller = StreamController<(int, bool)>(
+    controller = StreamController<(int, PendingInvitationResolution)>(
       onListen: () {
-        emit(false);
+        emit(false, loading: _auth.currentUser != null);
         authSubscription = _auth.authStateChanges().listen(
           followUser,
           onError: (Object error, StackTrace stackTrace) {
@@ -117,9 +132,10 @@ class FirebaseContactRelationRepository {
     return controller.stream.map(
       (result) =>
           !cancelled &&
-          result.$1 == resultVersion &&
-          sessionUid == _auth.currentUser?.uid &&
-          result.$2,
+              result.$1 == resultVersion &&
+              sessionUid == _auth.currentUser?.uid
+          ? result.$2
+          : (loading: _auth.currentUser != null, pending: false),
     );
   }
 

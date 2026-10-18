@@ -28,6 +28,7 @@ Future<GlobalKey> openRouted(
   // Exercise actual DEV startup; signing out an existing session is not startup.
   await tester.pumpWidget(
     AppProviders(
+      enforceAccess: false,
       authRepository: auth,
       deviceRepository: MockDeviceRepository(),
       eventRepository: MockEventRepository(),

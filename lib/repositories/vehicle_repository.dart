@@ -1,5 +1,7 @@
 import '../models/vehicle_model.dart';
 
+typedef OwnerVehicleResolution = ({bool loading, VehicleModel? vehicle});
+
 abstract class VehicleRepository {
   /// The signed-in user's primary vehicle, or null if none is configured
   /// yet. Stream-based for the same reason DeviceRepository/EventRepository

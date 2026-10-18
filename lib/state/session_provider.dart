@@ -12,12 +12,22 @@ class SessionProvider extends ChangeNotifier {
   UserModel? _user;
   UserModel? get user => _user;
   bool get isSignedIn => _user != null;
+  Object? _error;
+  Object? get error => _error;
 
   SessionProvider(this._authRepository) {
-    _subscription = _authRepository.authStateChanges().listen((user) {
-      _user = user;
-      notifyListeners();
-    });
+    _subscription = _authRepository.authStateChanges().listen(
+      (user) {
+        _user = user;
+        _error = null;
+        notifyListeners();
+      },
+      onError: (Object error) {
+        _user = null;
+        _error = error;
+        notifyListeners();
+      },
+    );
   }
 
   Future<void> signIn(String email, String password) async {
@@ -25,7 +35,16 @@ class SessionProvider extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    await _authRepository.signOut();
+    _user = null;
+    _error = null;
+    notifyListeners();
+    try {
+      await _authRepository.signOut();
+    } catch (error) {
+      _error = error;
+      notifyListeners();
+      rethrow;
+    }
   }
 
   @override

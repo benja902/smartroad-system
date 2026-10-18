@@ -395,6 +395,7 @@ void main() {
         final baseline = mockAppProviders(child: const SizedBox.shrink());
         await tester.pumpWidget(
           AppProviders(
+            enforceAccess: false,
             authRepository: baseline.authRepository,
             deviceRepository: baseline.deviceRepository,
             vehicleRepository: baseline.vehicleRepository,

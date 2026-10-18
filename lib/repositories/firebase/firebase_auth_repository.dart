@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:firebase_database/firebase_database.dart';
 
@@ -14,17 +16,75 @@ class FirebaseAuthRepository implements AuthRepository {
   FirebaseAuthRepository({
     fb_auth.FirebaseAuth? auth,
     FirebaseDatabase? database,
-  })  : _auth = auth ?? fb_auth.FirebaseAuth.instance,
-        _usersRef = (database ?? FirebaseDatabase.instance).ref('users');
+  }) : _auth = auth ?? fb_auth.FirebaseAuth.instance,
+       _usersRef = (database ?? FirebaseDatabase.instance).ref('users');
 
   @override
   Stream<UserModel?> authStateChanges() {
-    return _auth.authStateChanges().asyncMap((user) => _toUserModel(user));
+    late StreamController<(int, UserModel?)> controller;
+    StreamSubscription<fb_auth.User?>? subscription;
+    var generation = 0;
+    var cancelled = false;
+    controller = StreamController<(int, UserModel?)>(
+      onListen: () {
+        subscription = _auth.authStateChanges().listen(
+          (user) {
+            final current = ++generation;
+            controller.add((current, null));
+            if (user == null) return;
+            // Profile reads must never delay invalidating a previous identity.
+            _toUserModel(user).then(
+              (profile) {
+                if (cancelled ||
+                    current != generation ||
+                    _auth.currentUser?.uid != user.uid) {
+                  return;
+                }
+                controller.add((current, profile));
+              },
+              onError: (Object error, StackTrace stackTrace) {
+                if (cancelled ||
+                    current != generation ||
+                    _auth.currentUser?.uid != user.uid) {
+                  return;
+                }
+                controller.addError(error, stackTrace);
+              },
+            );
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            generation++;
+            controller.add((generation, null));
+            controller.addError(error, stackTrace);
+          },
+          onDone: () {
+            generation++;
+            controller.add((generation, null));
+            controller.close();
+          },
+        );
+      },
+      onCancel: () async {
+        cancelled = true;
+        generation++;
+        await subscription?.cancel();
+      },
+    );
+    return controller.stream.map(
+      (result) =>
+          result.$1 == generation &&
+              (result.$2 == null || result.$2!.id == _auth.currentUser?.uid)
+          ? result.$2
+          : null,
+    );
   }
 
   @override
   Future<UserModel> signIn(String email, String password) async {
-    final credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
+    final credential = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
     final firebaseUser = credential.user;
     if (firebaseUser == null) {
       throw StateError('Sign-in succeeded but no Firebase user was returned.');
@@ -54,10 +114,18 @@ class FirebaseAuthRepository implements AuthRepository {
 
     return UserModel(
       id: firebaseUser.uid,
-      name: profile['name'] as String? ?? firebaseUser.displayName ?? firebaseUser.email ?? 'Usuario',
+      name:
+          profile['name'] as String? ??
+          firebaseUser.displayName ??
+          firebaseUser.email ??
+          'Usuario',
       email: profile['email'] as String? ?? firebaseUser.email ?? '',
       phone: profile['phone'] as String? ?? firebaseUser.phoneNumber,
-      vehicleIds: (profile['vehicleIds'] as Map?)?.keys.map((k) => k.toString()).toList() ?? const [],
+      vehicleIds:
+          (profile['vehicleIds'] as Map?)?.keys
+              .map((k) => k.toString())
+              .toList() ??
+          const [],
     );
   }
 }

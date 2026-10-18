@@ -19,6 +19,15 @@ class VehicleProvider extends ChangeNotifier {
 
   VehicleProvider(this._vehicleRepository);
 
+  /// Production entry already observes and validates the owner relationship.
+  void setResolvedVehicle(VehicleModel? vehicle) {
+    if (identical(_vehicle, vehicle)) return;
+    _subscription?.cancel();
+    _userId = null;
+    _vehicle = vehicle;
+    notifyListeners();
+  }
+
   void setUserId(String? userId) {
     if (_userId == userId) return;
     _userId = userId;
@@ -31,16 +40,18 @@ class VehicleProvider extends ChangeNotifier {
       return;
     }
 
-    _subscription = _vehicleRepository.watchPrimaryVehicle(userId).listen(
-      (vehicle) {
-        _vehicle = vehicle;
-        notifyListeners();
-      },
-      onError: (Object _) {
-        _vehicle = null;
-        notifyListeners();
-      },
-    );
+    _subscription = _vehicleRepository
+        .watchPrimaryVehicle(userId)
+        .listen(
+          (vehicle) {
+            _vehicle = vehicle;
+            notifyListeners();
+          },
+          onError: (Object _) {
+            _vehicle = null;
+            notifyListeners();
+          },
+        );
     notifyListeners();
   }
 

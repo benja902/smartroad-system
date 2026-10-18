@@ -15,6 +15,8 @@ import '../screens/profile/profile_screen_placeholder.dart';
 import '../screens/vehicle/vehicle_screen_placeholder.dart';
 import '../state/event_provider.dart';
 import '../state/session_provider.dart';
+import '../state/access_context_provider.dart';
+import '../screens/contacts/pending_invitation_screen.dart';
 import 'dev_navigation_override.dart';
 import 'main_shell.dart';
 
@@ -32,6 +34,7 @@ class AppRoutes {
   static const incidentDetail = '/incident';
   static const activeEmergency = '/emergency/active';
   static const dev = '/dev';
+  static const access = '/access';
 }
 
 class AppRouter {
@@ -41,18 +44,36 @@ class AppRouter {
   /// production entrypoint (main.dart) — only main_dev.dart passes true, so
   /// /dev is physically absent from release route tables.
   static GoRouter build({
-    required EventProvider eventProvider,
+    EventProvider? eventProvider,
+    AccessContextProvider? accessProvider,
     required SessionProvider sessionProvider,
     DevNavigationOverride? devOverride,
     bool includeDevRoute = false,
   }) {
     return GoRouter(
       initialLocation: AppRoutes.home,
-      refreshListenable: Listenable.merge([eventProvider, sessionProvider]),
+      refreshListenable: Listenable.merge([
+        eventProvider,
+        sessionProvider,
+        accessProvider,
+      ]),
       redirect: (context, state) {
         final location = state.matchedLocation;
         final onAuthRoute =
             location == AppRoutes.login || location == AppRoutes.register;
+
+        if (accessProvider != null) {
+          final access = accessProvider.status;
+          if (access == AccessStatus.error) {
+            return location == AppRoutes.access ? null : AppRoutes.access;
+          }
+          if (sessionProvider.isSignedIn && access != AccessStatus.owner) {
+            return location == AppRoutes.access ? null : AppRoutes.access;
+          }
+          if (access == AccessStatus.owner && location == AppRoutes.access) {
+            return AppRoutes.home;
+          }
+        }
 
         // Auth gate takes priority: an unauthenticated user can't reach any
         // screen (including a critical one) except login/register.
@@ -63,7 +84,7 @@ class AppRouter {
           return AppRoutes.home;
         }
 
-        final event = eventProvider.criticalEvent;
+        final event = eventProvider?.criticalEvent;
         final onEmergencyRoute = location == AppRoutes.activeEmergency;
         final onDevRoute = location == AppRoutes.dev;
 
@@ -94,6 +115,11 @@ class AppRouter {
         return null;
       },
       routes: [
+        if (accessProvider != null)
+          GoRoute(
+            path: AppRoutes.access,
+            builder: (_, _) => const PendingInvitationScreen(),
+          ),
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) => MainShell(shell: shell),
           branches: [

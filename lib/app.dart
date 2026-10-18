@@ -8,6 +8,7 @@ import 'navigation/dev_mode_flag.dart';
 import 'navigation/dev_navigation_override.dart';
 import 'state/event_provider.dart';
 import 'state/session_provider.dart';
+import 'state/access_context_provider.dart';
 
 class UrbesApp extends StatefulWidget {
   final bool includeDevRoute;
@@ -27,11 +28,18 @@ class _UrbesAppState extends State<UrbesApp> {
   void initState() {
     super.initState();
     _router = AppRouter.build(
-      eventProvider: context.read<EventProvider>(),
+      eventProvider: context.read<EventProvider?>(),
+      accessProvider: context.read<AccessContextProvider?>(),
       sessionProvider: context.read<SessionProvider>(),
       devOverride: _devOverride,
       includeDevRoute: widget.includeDevRoute,
     );
+  }
+
+  @override
+  void dispose() {
+    _router.dispose();
+    super.dispose();
   }
 
   @override

@@ -11,6 +11,7 @@ import 'package:smartroad/state/app_providers.dart';
 /// isn't initialized in the test environment).
 AppProviders mockAppProviders({required Widget child}) {
   return AppProviders(
+    enforceAccess: false,
     authRepository: MockAuthRepository(),
     deviceRepository: MockDeviceRepository(),
     eventRepository: MockEventRepository(),

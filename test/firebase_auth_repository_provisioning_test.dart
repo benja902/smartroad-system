@@ -67,6 +67,11 @@ class _Auth extends Fake implements fb_auth.FirebaseAuth {
   }
 
   Future<void> dispose() => _changes.close();
+
+  void changeUser(fb_auth.User? user) {
+    _current = user;
+    _changes.add(user);
+  }
 }
 
 class _Snapshot extends Fake implements DataSnapshot {
@@ -91,7 +96,11 @@ class _Reference extends Fake implements DatabaseReference {
   Future<DataSnapshot> get() async {
     database.readCount++;
     if (database.readError != null) throw database.readError!;
-    return _Snapshot(database.profiles.containsKey(uid), database.profiles[uid]);
+    if (database.pendingReads[uid] case final pending?) return pending.future;
+    return _Snapshot(
+      database.profiles.containsKey(uid),
+      database.profiles[uid],
+    );
   }
 }
 
@@ -99,6 +108,7 @@ class _Database extends Fake implements FirebaseDatabase {
   final Map<String, Object?> profiles;
   Object? readError;
   int readCount = 0;
+  final pendingReads = <String, Completer<DataSnapshot>>{};
 
   _Database(this.profiles, {this.readError});
 
@@ -158,27 +168,93 @@ void main() {
     await auth.dispose();
   });
 
-  test('explicit sign-in without RTDB profile signs out and reports provisioning', () async {
-    final auth = _Auth(identity);
-    final database = _Database({});
-    final repository = FirebaseAuthRepository(auth: auth, database: database);
+  test(
+    'explicit sign-in without RTDB profile signs out and reports provisioning',
+    () async {
+      final auth = _Auth(identity);
+      final database = _Database({});
+      final repository = FirebaseAuthRepository(auth: auth, database: database);
 
-    await expectLater(
-      repository.signIn('owner@example.test', 'password'),
-      throwsA(isA<AccountNotProvisionedException>()),
-    );
-    expect(auth.currentUser, isNull);
-    expect(auth.signOutCount, 1);
-    await auth.dispose();
-  });
+      await expectLater(
+        repository.signIn('owner@example.test', 'password'),
+        throwsA(isA<AccountNotProvisionedException>()),
+      );
+      expect(auth.currentUser, isNull);
+      expect(auth.signOutCount, 1);
+      await auth.dispose();
+    },
+  );
 
-  test('restored Auth session without RTDB profile returns to signed-out state', () async {
+  test(
+    'restored Auth session without RTDB profile returns to signed-out state',
+    () async {
+      final auth = _Auth(identity, restored: true);
+      final repository = FirebaseAuthRepository(
+        auth: auth,
+        database: _Database({}),
+      );
+
+      final values = <UserModel?>[];
+      final subscription = repository.authStateChanges().listen(values.add);
+      await Future<void>.delayed(Duration.zero);
+      expect(values, everyElement(isNull));
+      expect(auth.currentUser, isNull);
+      expect(auth.signOutCount, 1);
+      await subscription.cancel();
+      await auth.dispose();
+    },
+  );
+
+  test(
+    'UID change clears the previous profile before the next read completes',
+    () async {
+      final auth = _Auth(identity, restored: true);
+      final database = _Database({
+        'owner': {'name': 'Owner'},
+      });
+      final contactProfile = Completer<DataSnapshot>();
+      database.pendingReads['contact'] = contactProfile;
+      final values = <UserModel?>[];
+      final subscription = FirebaseAuthRepository(
+        auth: auth,
+        database: database,
+      ).authStateChanges().listen(values.add);
+      await Future<void>.delayed(Duration.zero);
+      expect(values.last?.id, 'owner');
+      auth.changeUser(_User('contact', email: 'contact@example.test'));
+      await Future<void>.delayed(Duration.zero);
+      expect(values.last, isNull);
+      contactProfile.complete(_Snapshot(true, {'name': 'Contact'}));
+      await Future<void>.delayed(Duration.zero);
+      expect(values.last?.id, 'contact');
+      await subscription.cancel();
+      await auth.dispose();
+    },
+  );
+
+  test('late previous profile cannot restore an identity after logout or UID change', () async {
     final auth = _Auth(identity, restored: true);
-    final repository = FirebaseAuthRepository(auth: auth, database: _Database({}));
-
-    expect(await repository.authStateChanges().first, isNull);
-    expect(auth.currentUser, isNull);
-    expect(auth.signOutCount, 1);
+    final database = _Database({
+      'contact': {'name': 'Contact'},
+    });
+    final oldProfile = Completer<DataSnapshot>();
+    database.pendingReads['owner'] = oldProfile;
+    final values = <UserModel?>[];
+    final subscription = FirebaseAuthRepository(
+      auth: auth,
+      database: database,
+    ).authStateChanges().listen(values.add);
+    await Future<void>.delayed(Duration.zero);
+    auth.changeUser(_User('contact', email: 'contact@example.test'));
+    await Future<void>.delayed(Duration.zero);
+    expect(values.last?.id, 'contact');
+    oldProfile.complete(_Snapshot(true, {'name': 'Old owner'}));
+    await Future<void>.delayed(Duration.zero);
+    expect(values.whereType<UserModel>().map((value) => value.id), ['contact']);
+    await auth.signOut();
+    await Future<void>.delayed(Duration.zero);
+    expect(values.last, isNull);
+    await subscription.cancel();
     await auth.dispose();
   });
 
@@ -196,7 +272,9 @@ void main() {
     await auth.dispose();
   });
 
-  testWidgets('login shows a specific message for an unprovisioned account', (tester) async {
+  testWidgets('login shows a specific message for an unprovisioned account', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         home: ChangeNotifierProvider(
@@ -206,7 +284,10 @@ void main() {
       ),
     );
 
-    await tester.enterText(find.byType(TextFormField).at(0), 'owner@example.test');
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'owner@example.test',
+    );
     await tester.enterText(find.byType(TextFormField).at(1), 'password');
     await tester.tap(find.text('Iniciar sesión'));
     await tester.pump();
