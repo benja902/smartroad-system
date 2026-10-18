@@ -15,6 +15,7 @@ import 'package:smartroad/screens/home/home_screen.dart';
 import 'package:smartroad/screens/home/home_visual_preview.dart';
 import 'package:smartroad/screens/home/premium_home_content.dart';
 import 'package:smartroad/widgets/screen_entrance.dart';
+import 'package:smartroad/widgets/profile_header_action.dart';
 
 import 'test_helpers.dart';
 import 'premium_login_test.dart' show fill;
@@ -30,7 +31,6 @@ const destinations = [
     label: 'Vehículo',
   ),
   NavigationDestination(icon: Icon(Icons.history_outlined), label: 'Historial'),
-  NavigationDestination(icon: Icon(Icons.person_outline), label: 'Perfil'),
 ];
 
 Future<void> choose(
@@ -87,7 +87,7 @@ void main() {
         NavigationPreviewVariant.pillActive,
       );
       await choose(tester, NavigationPreviewVariant.pillActive);
-      await tester.tap(find.byKey(const ValueKey('premium-nav-item-4')));
+      await tester.tap(find.byType(ProfileHeaderAction));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Cerrar sesión'));
       await tester.pumpAndSettle();
@@ -154,7 +154,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(tester.widget<Transform>(motion).transform.entry(0, 3), 0);
-        for (final index in [2, 3, 4, 0]) {
+        for (final index in [2, 3, 0]) {
           await tester.tap(find.byKey(ValueKey('premium-nav-item-$index')));
           await tester.pumpAndSettle();
           expect(
@@ -218,7 +218,7 @@ void main() {
             expect(bar.left, greaterThanOrEqualTo(12));
             expect(bar.right, lessThanOrEqualTo(width - 12));
             expect(bar.bottom, lessThanOrEqualTo(640 - 24 - 12));
-            for (var i = 0; i < 5; i++) {
+            for (var i = 0; i < destinations.length; i++) {
               final item = find.byKey(ValueKey('premium-nav-item-$i'));
               final bounds = tester.getRect(item);
               expect(bounds.width, greaterThanOrEqualTo(48));
@@ -287,7 +287,7 @@ void main() {
         const FakeAccessibilityFeatures(disableAnimations: true);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     await review(tester);
-    await tester.tap(find.byKey(const ValueKey('premium-nav-item-4')));
+    await tester.tap(find.byKey(const ValueKey('premium-nav-item-3')));
     await tester.pump();
     expect(
       tester
@@ -295,7 +295,7 @@ void main() {
             find.byType(PremiumNavigationPreviewBar),
           )
           .selectedIndex,
-      4,
+      3,
     );
     expect(
       tester
@@ -342,7 +342,7 @@ void main() {
       );
       await review(tester);
       final shellState = tester.state(find.byType(StatefulNavigationShell));
-      await tester.tap(find.byKey(const ValueKey('premium-nav-item-4')));
+      await tester.tap(find.byKey(const ValueKey('premium-nav-item-3')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 45));
       expect(
@@ -386,7 +386,7 @@ void main() {
     'Rapid selection retargets the indicator and repeated active tap does not replay content',
     (tester) async {
       await review(tester);
-      for (final index in [4, 1, 3, 0]) {
+      for (final index in [3, 1, 2, 0]) {
         await tester.tap(find.byKey(ValueKey('premium-nav-item-$index')));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 30));

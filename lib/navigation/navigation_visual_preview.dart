@@ -41,7 +41,7 @@ abstract final class NavigationPreviewStyle {
   static const feedbackDuration = Duration(milliseconds: 90);
 }
 
-/// Five real destinations, callbacks owned by the existing MainShell.
+/// Destination count comes from MainShell; no fixed count or index mapping.
 class PremiumNavigationPreviewBar extends StatelessWidget {
   const PremiumNavigationPreviewBar({
     super.key,
@@ -94,7 +94,7 @@ class PremiumNavigationPreviewBar extends StatelessWidget {
                   builder: (context, constraints) {
                     final slot =
                         (constraints.maxWidth - 16) / destinations.length;
-                    // Five labels measured on layout/configuration changes, never
+                    // Labels measured on layout/configuration changes, never
                     // inside animation ticks. Large text grows the whole surface.
                     double labelHeight = 0;
                     for (final destination in destinations) {

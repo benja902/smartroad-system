@@ -2,9 +2,14 @@ part of 'premium_home_content.dart';
 
 /// Two treatments of one header. Same official lockup, same owner and copy.
 class _GuardianHeader extends StatelessWidget {
-  const _GuardianHeader({required this.name, required this.treatment});
+  const _GuardianHeader({
+    required this.name,
+    required this.treatment,
+    this.onOpenProfile,
+  });
   final String name;
   final GuardianHeader treatment;
+  final VoidCallback? onOpenProfile;
   @override
   Widget build(BuildContext context) {
     final signature = treatment == GuardianHeader.signature;
@@ -47,7 +52,14 @@ class _GuardianHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _GuardianBrand(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const _GuardianBrand(),
+                  if (onOpenProfile != null)
+                    ProfileHeaderAction(onPressed: onOpenProfile!),
+                ],
+              ),
               const SizedBox(height: 20),
               Text(
                 'Hola, ${name.isEmpty ? 'Usuario' : name}',

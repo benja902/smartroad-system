@@ -200,9 +200,10 @@ void main() {
       await app(tester);
       await chooseHome(tester, HomePreviewVariant.routeStudio);
       expect(find.byKey(const ValueKey('studio-hero')), findsOneWidget);
-      for (var i = 0; i < 5; i++) {
+      for (var i = 0; i < 4; i++) {
         expect(find.byKey(ValueKey('premium-nav-item-$i')), findsOneWidget);
       }
+      expect(find.byKey(const ValueKey('premium-nav-item-4')), findsNothing);
       final profile = find.byKey(const ValueKey('studio-profile'));
       expect(tester.getSize(profile).shortestSide, greaterThanOrEqualTo(48));
       await tester.tap(profile);

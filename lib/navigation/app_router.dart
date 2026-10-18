@@ -51,7 +51,8 @@ class AppRouter {
       refreshListenable: Listenable.merge([eventProvider, sessionProvider]),
       redirect: (context, state) {
         final location = state.matchedLocation;
-        final onAuthRoute = location == AppRoutes.login || location == AppRoutes.register;
+        final onAuthRoute =
+            location == AppRoutes.login || location == AppRoutes.register;
 
         // Auth gate takes priority: an unauthenticated user can't reach any
         // screen (including a critical one) except login/register.
@@ -77,8 +78,11 @@ class AppRouter {
           // suppresses the redirect for the exact event you dismissed to
           // go inspect /dev, not forever. Harmless in production: /dev
           // isn't a registered route there, so onDevRoute is never true.
-          final devOverrideActive = onDevRoute && devOverride?.eventKey == event.dedupKey;
-          return (onEmergencyRoute || devOverrideActive) ? null : AppRoutes.activeEmergency;
+          final devOverrideActive =
+              onDevRoute && devOverride?.eventKey == event.dedupKey;
+          return (onEmergencyRoute || devOverrideActive)
+              ? null
+              : AppRoutes.activeEmergency;
         }
 
         devOverride?.eventKey = null;
@@ -93,32 +97,56 @@ class AppRouter {
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) => MainShell(shell: shell),
           branches: [
-            StatefulShellBranch(routes: [
-              GoRoute(path: AppRoutes.home, builder: (context, state) => const HomeScreen()),
-            ]),
-            StatefulShellBranch(routes: [
-              GoRoute(path: AppRoutes.alerts, builder: (context, state) => const AlertsScreen()),
-            ]),
-            StatefulShellBranch(routes: [
-              GoRoute(
-                path: AppRoutes.vehicle,
-                builder: (context, state) => const VehicleScreenPlaceholder(),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.home,
+                  builder: (context, state) => const HomeScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.alerts,
+                  builder: (context, state) => const AlertsScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.vehicle,
+                  builder: (context, state) => const VehicleScreenPlaceholder(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.history,
+                  builder: (context, state) => const HistoryScreenPlaceholder(),
+                ),
+              ],
+            ),
+            if (!includeDevRoute)
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.profile,
+                    builder: (context, state) =>
+                        const ProfileScreenPlaceholder(),
+                  ),
+                ],
               ),
-            ]),
-            StatefulShellBranch(routes: [
-              GoRoute(
-                path: AppRoutes.history,
-                builder: (context, state) => const HistoryScreenPlaceholder(),
-              ),
-            ]),
-            StatefulShellBranch(routes: [
-              GoRoute(
-                path: AppRoutes.profile,
-                builder: (context, state) => const ProfileScreenPlaceholder(),
-              ),
-            ]),
           ],
         ),
+        // DEV-only presentation: push over the shell preserves the origin tab.
+        if (includeDevRoute)
+          GoRoute(
+            path: AppRoutes.profile,
+            builder: (context, state) => const ProfileScreenPlaceholder(),
+          ),
         GoRoute(
           path: AppRoutes.activeEmergency,
           builder: (context, state) => const ActiveEmergencyScreen(),

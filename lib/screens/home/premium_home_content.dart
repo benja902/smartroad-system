@@ -8,6 +8,7 @@ import '../../models/accident_event.dart';
 import '../../models/device_status.dart';
 import '../../models/vehicle_model.dart';
 import '../../widgets/screen_entrance.dart';
+import '../../widgets/profile_header_action.dart';
 import 'home_visual_preview.dart';
 import 'widgets/recent_alerts_preview.dart';
 
@@ -102,16 +103,28 @@ class PremiumHomeContent extends StatelessWidget {
                             _GuardianHeader(
                               name: name,
                               treatment: guardianHeader,
+                              onOpenProfile: onOpenProfile,
                             )
                           else if (crafted)
                             _SignatureMasthead(
                               name: name,
                               editorial: editorial,
+                              onOpenProfile: onOpenProfile,
                             ),
                           if (!crafted)
-                            Text(
-                              'URBES',
-                              style: _type(18, weight: FontWeight.w800),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'URBES',
+                                    style: _type(18, weight: FontWeight.w800),
+                                  ),
+                                ),
+                                if (onOpenProfile != null)
+                                  ProfileHeaderAction(
+                                    onPressed: onOpenProfile!,
+                                  ),
+                              ],
                             ),
                           if (!crafted) const SizedBox(height: 24),
                           if (!crafted)

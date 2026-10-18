@@ -22,16 +22,9 @@ class _StudioHeader extends StatelessWidget {
             children: [
               const _GuardianBrand(),
               if (onOpenProfile != null)
-                IconButton.filledTonal(
+                ProfileHeaderAction(
                   key: const ValueKey('studio-profile'),
-                  tooltip: 'Perfil',
-                  onPressed: onOpenProfile,
-                  icon: const Icon(Icons.person_outline_rounded),
-                  style: IconButton.styleFrom(
-                    foregroundColor: _navy,
-                    backgroundColor: const Color(0xFFE6F2F2),
-                    minimumSize: const Size(48, 48),
-                  ),
+                  onPressed: onOpenProfile!,
                 ),
             ],
           ),

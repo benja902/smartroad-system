@@ -13,6 +13,7 @@ import '../../state/event_provider.dart';
 import '../../state/session_provider.dart';
 import '../../state/vehicle_provider.dart';
 import '../../widgets/attention_banner.dart';
+import '../../widgets/profile_header_action.dart';
 import '../../widgets/screen_entrance.dart';
 import 'widgets/device_indicators_grid.dart';
 import 'widgets/location_map_placeholder.dart';
@@ -72,7 +73,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
         onOpenAlerts: () => context.go(AppRoutes.alerts),
-        onOpenProfile: () => context.go(AppRoutes.profile),
+        onOpenProfile: dev ? () => context.push(AppRoutes.profile) : null,
       );
     }
 
@@ -208,25 +209,30 @@ class _Header extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const Icon(Icons.sensors, color: AppColors.onSurfaceVariant),
-              if (monitoring)
-                Positioned(
-                  top: -1,
-                  right: -1,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: AppColors.success,
-                      shape: BoxShape.circle,
+          if (context.watch<DevModeFlag>().enabled)
+            ProfileHeaderAction(
+              onPressed: () => context.push(AppRoutes.profile),
+            )
+          else
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.sensors, color: AppColors.onSurfaceVariant),
+                if (monitoring)
+                  Positioned(
+                    top: -1,
+                    right: -1,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.success,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   ),
-                ),
-            ],
-          ),
+              ],
+            ),
         ],
       ),
     );

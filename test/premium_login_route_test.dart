@@ -68,7 +68,7 @@ void main() {
       await tester.pumpAndSettle();
       await submit(tester);
       expect(key.currentContext!.read<SessionProvider>().isSignedIn, true);
-      await tester.tap(find.text('Perfil'));
+      await tester.tap(find.byTooltip('Perfil'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Cerrar sesión'));
       await tester.pump();

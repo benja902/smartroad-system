@@ -6,8 +6,8 @@ import 'app_router.dart';
 import 'dev_mode_flag.dart';
 import 'navigation_visual_preview.dart';
 
-/// Shared Pill Active navigation for the 5 normal modules, with DEV comparisons.
-/// (Home, Alertas, Vehículo, Historial, Perfil). Wraps go_router's
+/// MAIN keeps five branches; DEV reviews four with Profile outside the shell.
+/// Wraps go_router's
 /// StatefulNavigationShell so each tab preserves its own navigation state.
 class MainShell extends StatelessWidget {
   final StatefulNavigationShell shell;
@@ -50,6 +50,7 @@ class MainShell extends StatelessWidget {
         : null;
     final variant = preview?.variant ?? NavigationPreviewVariant.defaultVariant;
     final premium = variant != NavigationPreviewVariant.current;
+    final destinations = devModeEnabled ? _items.take(4).toList() : _items;
     void select(int index) =>
         shell.goBranch(index, initialLocation: index == shell.currentIndex);
 
@@ -79,7 +80,7 @@ class MainShell extends StatelessWidget {
       bottomNavigationBar: premium
           ? PremiumNavigationPreviewBar(
               variant: variant,
-              destinations: _items,
+              destinations: destinations,
               selectedIndex: shell.currentIndex,
               onDestinationSelected: select,
             )
@@ -87,7 +88,7 @@ class MainShell extends StatelessWidget {
               animationDuration: MediaQuery.disableAnimationsOf(context)
                   ? Duration.zero
                   : const Duration(milliseconds: 180),
-              destinations: _items,
+              destinations: destinations,
               selectedIndex: shell.currentIndex,
               onDestinationSelected: select,
             ),

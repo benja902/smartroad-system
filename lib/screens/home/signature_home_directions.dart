@@ -28,26 +28,42 @@ String _vehicleName(VehicleModel? vehicle) => vehicle == null
     : '${vehicle.brand} ${vehicle.model}';
 
 class _SignatureMasthead extends StatelessWidget {
-  const _SignatureMasthead({required this.name, required this.editorial});
+  const _SignatureMasthead({
+    required this.name,
+    required this.editorial,
+    this.onOpenProfile,
+  });
   final String name;
   final bool editorial;
+  final VoidCallback? onOpenProfile;
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      if (!editorial) const _GuardianBrand(),
+      if (!editorial)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const _GuardianBrand(),
+            if (onOpenProfile != null)
+              ProfileHeaderAction(onPressed: onOpenProfile!),
+          ],
+        ),
       if (editorial)
         Row(
           children: [
             Text('URBES', style: _type(18, weight: FontWeight.w800)),
             const Spacer(),
-            const ExcludeSemantics(
-              child: SizedBox(
-                width: 32,
-                height: 3,
-                child: DecoratedBox(decoration: BoxDecoration(color: _teal)),
+            if (onOpenProfile != null)
+              ProfileHeaderAction(onPressed: onOpenProfile!)
+            else
+              const ExcludeSemantics(
+                child: SizedBox(
+                  width: 32,
+                  height: 3,
+                  child: DecoratedBox(decoration: BoxDecoration(color: _teal)),
+                ),
               ),
-            ),
           ],
         ),
       SizedBox(height: editorial ? 26 : 18),

@@ -8,6 +8,8 @@ import '../../core/theme/app_typography.dart';
 import '../../core/utils/date_time_formatting.dart';
 import '../../models/alert_presentation.dart';
 import '../../navigation/app_router.dart';
+import '../../navigation/dev_mode_flag.dart';
+import '../../widgets/profile_header_action.dart';
 import '../../state/device_status_provider.dart';
 import '../../state/event_provider.dart';
 import 'widgets/active_alerts_section.dart';
@@ -25,23 +27,36 @@ class AlertsScreen extends StatelessWidget {
     final eventProvider = context.read<EventProvider>();
 
     final activeAlerts = events
-        .where((e) => const {AlertPresentation.activeEmergency, AlertPresentation.attention}.contains(classify(e)))
+        .where(
+          (e) => const {
+            AlertPresentation.activeEmergency,
+            AlertPresentation.attention,
+          }.contains(classify(e)),
+        )
         .toList();
-    final informativeEvents = events.where((e) => classify(e) == AlertPresentation.informative).toList();
-    final technicalEvents = events.where((e) => classify(e) == AlertPresentation.technical).toList();
+    final informativeEvents = events
+        .where((e) => classify(e) == AlertPresentation.informative)
+        .toList();
+    final technicalEvents = events
+        .where((e) => classify(e) == AlertPresentation.technical)
+        .toList();
     final historyEvents = events
-        .where((e) => const {
-              AlertPresentation.cancelled,
-              AlertPresentation.attended,
-              AlertPresentation.deferred,
-            }.contains(classify(e)))
+        .where(
+          (e) => const {
+            AlertPresentation.cancelled,
+            AlertPresentation.attended,
+            AlertPresentation.deferred,
+          }.contains(classify(e)),
+        )
         .toList();
 
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: AppSpacing.contentMaxWidth),
+            constraints: const BoxConstraints(
+              maxWidth: AppSpacing.contentMaxWidth,
+            ),
             child: CustomScrollView(
               slivers: [
                 const SliverToBoxAdapter(child: _Header()),
@@ -58,13 +73,19 @@ class AlertsScreen extends StatelessWidget {
                       const SizedBox(height: AppSpacing.md),
                       ActiveAlertsSection(
                         activeAlerts: activeAlerts,
-                        onViewDetails: (event) => context.push('${AppRoutes.incidentDetail}/${event.dedupKey}'),
-                        onAcknowledge: (event) => eventProvider.acknowledge(event.dedupKey),
+                        onViewDetails: (event) => context.push(
+                          '${AppRoutes.incidentDetail}/${event.dedupKey}',
+                        ),
+                        onAcknowledge: (event) =>
+                            eventProvider.acknowledge(event.dedupKey),
                       ),
                       const SizedBox(height: AppSpacing.md),
                       InformativeEventsSection(events: informativeEvents),
                       const SizedBox(height: AppSpacing.md),
-                      TechnicalStatusSection(status: deviceStatus, technicalEvents: technicalEvents),
+                      TechnicalStatusSection(
+                        status: deviceStatus,
+                        technicalEvents: technicalEvents,
+                      ),
                       const SizedBox(height: AppSpacing.md),
                       RecentHistorySection(events: historyEvents),
                     ]),
@@ -85,13 +106,27 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.edgeMargin, vertical: AppSpacing.base),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.edgeMargin,
+        vertical: AppSpacing.base,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Icon(Icons.shield_outlined, color: AppColors.onSurfaceVariant),
-          Text('URBES', style: AppTypography.headlineMd.copyWith(color: AppColors.primary, fontWeight: FontWeight.w800)),
-          const Icon(Icons.sensors, color: AppColors.onSurfaceVariant),
+          Text(
+            'URBES',
+            style: AppTypography.headlineMd.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          if (context.watch<DevModeFlag>().enabled)
+            ProfileHeaderAction(
+              onPressed: () => context.push(AppRoutes.profile),
+            )
+          else
+            const Icon(Icons.sensors, color: AppColors.onSurfaceVariant),
         ],
       ),
     );
@@ -105,17 +140,30 @@ class _TitleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final children = <Widget>[
+      Text(
+        'Alertas',
+        style: AppTypography.displayLgMobile.copyWith(color: AppColors.primary),
+      ),
+      if (lastUpdate != null)
+        Text(
+          'Actualizado ${formatRelativeTime(lastUpdate!)}',
+          style: AppTypography.labelSm.copyWith(color: AppColors.outline),
+        ),
+    ];
+    if (context.watch<DevModeFlag>().enabled) {
+      return Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.end,
+        spacing: 12,
+        runSpacing: 4,
+        children: children,
+      );
+    }
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text('Alertas', style: AppTypography.displayLgMobile.copyWith(color: AppColors.primary)),
-        if (lastUpdate != null)
-          Text(
-            'Actualizado ${formatRelativeTime(lastUpdate!)}',
-            style: AppTypography.labelSm.copyWith(color: AppColors.outline),
-          ),
-      ],
+      children: children,
     );
   }
 }
