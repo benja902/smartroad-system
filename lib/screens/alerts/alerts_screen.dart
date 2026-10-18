@@ -10,6 +10,7 @@ import '../../models/alert_presentation.dart';
 import '../../navigation/app_router.dart';
 import '../../navigation/dev_mode_flag.dart';
 import '../../widgets/profile_header_action.dart';
+import '../../widgets/pinned_profile_header.dart';
 import '../../state/device_status_provider.dart';
 import '../../state/event_provider.dart';
 import 'widgets/active_alerts_section.dart';
@@ -25,6 +26,7 @@ class AlertsScreen extends StatelessWidget {
     final events = context.watch<EventProvider>().events;
     final deviceStatus = context.watch<DeviceStatusProvider>().status;
     final eventProvider = context.read<EventProvider>();
+    final dev = context.watch<DevModeFlag>().enabled;
 
     final activeAlerts = events
         .where(
@@ -59,7 +61,13 @@ class AlertsScreen extends StatelessWidget {
             ),
             child: CustomScrollView(
               slivers: [
-                const SliverToBoxAdapter(child: _Header()),
+                if (dev)
+                  PinnedProfileHeader(
+                    title: const Text('Alertas'),
+                    onOpenProfile: () => context.push(AppRoutes.profile),
+                  )
+                else
+                  const SliverToBoxAdapter(child: _Header()),
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.edgeMargin,
@@ -69,7 +77,10 @@ class AlertsScreen extends StatelessWidget {
                   ),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      _TitleRow(lastUpdate: deviceStatus?.lastSeen),
+                      _TitleRow(
+                        lastUpdate: deviceStatus?.lastSeen,
+                        showTitle: !dev,
+                      ),
                       const SizedBox(height: AppSpacing.md),
                       ActiveAlertsSection(
                         activeAlerts: activeAlerts,
@@ -136,15 +147,19 @@ class _Header extends StatelessWidget {
 class _TitleRow extends StatelessWidget {
   final DateTime? lastUpdate;
 
-  const _TitleRow({this.lastUpdate});
+  const _TitleRow({this.lastUpdate, this.showTitle = true});
+  final bool showTitle;
 
   @override
   Widget build(BuildContext context) {
     final children = <Widget>[
-      Text(
-        'Alertas',
-        style: AppTypography.displayLgMobile.copyWith(color: AppColors.primary),
-      ),
+      if (showTitle)
+        Text(
+          'Alertas',
+          style: AppTypography.displayLgMobile.copyWith(
+            color: AppColors.primary,
+          ),
+        ),
       if (lastUpdate != null)
         Text(
           'Actualizado ${formatRelativeTime(lastUpdate!)}',

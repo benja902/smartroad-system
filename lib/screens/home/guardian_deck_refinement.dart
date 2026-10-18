@@ -1,7 +1,7 @@
 part of 'premium_home_content.dart';
 
-class _GuardianBrand extends StatelessWidget {
-  const _GuardianBrand();
+class UrbesBrandLockup extends StatelessWidget {
+  const UrbesBrandLockup({super.key});
   @override
   Widget build(BuildContext context) => Semantics(
     label: 'URBES',

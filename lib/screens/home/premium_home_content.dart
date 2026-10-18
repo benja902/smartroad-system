@@ -9,6 +9,7 @@ import '../../models/device_status.dart';
 import '../../models/vehicle_model.dart';
 import '../../widgets/screen_entrance.dart';
 import '../../widgets/profile_header_action.dart';
+import '../../widgets/pinned_profile_header.dart';
 import 'home_visual_preview.dart';
 import 'widgets/recent_alerts_preview.dart';
 
@@ -58,6 +59,7 @@ class PremiumHomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final vehicleFocus = variant == HomePreviewVariant.vehicleFocus;
     final studio = variant == HomePreviewVariant.routeStudio;
+    final pinnedHeader = onOpenProfile != null;
     final crafted =
         studio ||
         variant == HomePreviewVariant.guardianDeck ||
@@ -79,6 +81,15 @@ class PremiumHomeContent extends StatelessWidget {
               child: CustomScrollView(
                 key: const PageStorageKey('premium-home-scroll'),
                 slivers: [
+                  if (pinnedHeader)
+                    PinnedProfileHeader(
+                      title: const UrbesBrandLockup(),
+                      isBrand: true,
+                      onOpenProfile: onOpenProfile!,
+                      actionKey: studio
+                          ? const ValueKey('studio-profile')
+                          : null,
+                    ),
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 96),
                     sliver: SliverList.list(
@@ -87,6 +98,7 @@ class PremiumHomeContent extends StatelessWidget {
                           _StudioHeader(
                             name: name,
                             onOpenProfile: onOpenProfile,
+                            showBrand: !pinnedHeader,
                           ),
                           if (attention != null) ...[
                             const SizedBox(height: 16),
@@ -104,14 +116,16 @@ class PremiumHomeContent extends StatelessWidget {
                               name: name,
                               treatment: guardianHeader,
                               onOpenProfile: onOpenProfile,
+                              showBrand: !pinnedHeader,
                             )
                           else if (crafted)
                             _SignatureMasthead(
                               name: name,
                               editorial: editorial,
                               onOpenProfile: onOpenProfile,
+                              showBrand: !pinnedHeader,
                             ),
-                          if (!crafted)
+                          if (!crafted && !pinnedHeader)
                             Row(
                               children: [
                                 Expanded(
@@ -126,7 +140,8 @@ class PremiumHomeContent extends StatelessWidget {
                                   ),
                               ],
                             ),
-                          if (!crafted) const SizedBox(height: 24),
+                          if (!crafted && !pinnedHeader)
+                            const SizedBox(height: 24),
                           if (!crafted)
                             EntranceSection(
                               animation: entrance,

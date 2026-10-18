@@ -32,24 +32,26 @@ class _SignatureMasthead extends StatelessWidget {
     required this.name,
     required this.editorial,
     this.onOpenProfile,
+    this.showBrand = true,
   });
   final String name;
   final bool editorial;
   final VoidCallback? onOpenProfile;
+  final bool showBrand;
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      if (!editorial)
+      if (!editorial && showBrand)
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const _GuardianBrand(),
+            const UrbesBrandLockup(),
             if (onOpenProfile != null)
               ProfileHeaderAction(onPressed: onOpenProfile!),
           ],
         ),
-      if (editorial)
+      if (editorial && showBrand)
         Row(
           children: [
             Text('URBES', style: _type(18, weight: FontWeight.w800)),
@@ -66,7 +68,7 @@ class _SignatureMasthead extends StatelessWidget {
               ),
           ],
         ),
-      SizedBox(height: editorial ? 26 : 18),
+      if (showBrand) SizedBox(height: editorial ? 26 : 18),
       Text(
         'Hola, ${name.isEmpty ? 'Usuario' : name}',
         style: _type(

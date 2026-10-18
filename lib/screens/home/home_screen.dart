@@ -14,6 +14,7 @@ import '../../state/session_provider.dart';
 import '../../state/vehicle_provider.dart';
 import '../../widgets/attention_banner.dart';
 import '../../widgets/profile_header_action.dart';
+import '../../widgets/pinned_profile_header.dart';
 import '../../widgets/screen_entrance.dart';
 import 'widgets/device_indicators_grid.dart';
 import 'widgets/location_map_placeholder.dart';
@@ -87,9 +88,16 @@ class HomeScreen extends StatelessWidget {
               ),
               child: CustomScrollView(
                 slivers: [
-                  SliverToBoxAdapter(
-                    child: _Header(monitoring: deviceStatus?.online ?? false),
-                  ),
+                  if (dev)
+                    PinnedProfileHeader(
+                      title: const UrbesBrandLockup(),
+                      isBrand: true,
+                      onOpenProfile: () => context.push(AppRoutes.profile),
+                    )
+                  else
+                    SliverToBoxAdapter(
+                      child: _Header(monitoring: deviceStatus?.online ?? false),
+                    ),
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(
                       AppSpacing.edgeMargin,

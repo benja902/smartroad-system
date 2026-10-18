@@ -6,10 +6,12 @@ class _GuardianHeader extends StatelessWidget {
     required this.name,
     required this.treatment,
     this.onOpenProfile,
+    this.showBrand = true,
   });
   final String name;
   final GuardianHeader treatment;
   final VoidCallback? onOpenProfile;
+  final bool showBrand;
   @override
   Widget build(BuildContext context) {
     final signature = treatment == GuardianHeader.signature;
@@ -52,15 +54,16 @@ class _GuardianHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const _GuardianBrand(),
-                  if (onOpenProfile != null)
-                    ProfileHeaderAction(onPressed: onOpenProfile!),
-                ],
-              ),
-              const SizedBox(height: 20),
+              if (showBrand)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const UrbesBrandLockup(),
+                    if (onOpenProfile != null)
+                      ProfileHeaderAction(onPressed: onOpenProfile!),
+                  ],
+                ),
+              if (showBrand) const SizedBox(height: 20),
               Text(
                 'Hola, ${name.isEmpty ? 'Usuario' : name}',
                 style: _type(

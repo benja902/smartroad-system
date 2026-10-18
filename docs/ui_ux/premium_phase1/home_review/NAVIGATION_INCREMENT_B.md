@@ -1,6 +1,6 @@
 # Incremento B — cuatro destinos DEV y Perfil en cabecera
 
-Estado: implementación local para revisión humana en Android. No consolida MAIN y no crea commit ni push.
+Estado: Incremento B conservado en el checkpoint local `d700c31` (`feat(ui): incorpora cuatro destinos y Perfil en cabeceras DEV`, 17 archivos). Ajuste posterior de cabeceras persistentes pendiente de revisión humana y sin segundo commit. No consolida MAIN ni realiza push.
 
 ## Estructura
 
@@ -47,3 +47,15 @@ Detener la ejecución anterior y arrancar de nuevo `flutter run -t lib/main_dev.
 Tras el Login mock, seleccionar **Diseño 1 · Ruta y Estudio (DEV)** en el selector existente. La barra DEV ya tiene cuatro destinos automáticamente, también en las variantes anteriores. Abrir Perfil desde cada cabecera y volver mediante Atrás; comprobar pestaña/scroll, cierre de sesión y prioridad crítica desde los controles mock existentes. La elección inicial de variante de Inicio no cambia y MAIN continúa con Guardian Deck.
 
 Solo es necesaria la app DEV encendida. SDA, bridge y Firebase real pueden permanecer apagados/desconectados. Internet no es necesario para repositorios mock; las fuentes mantienen su configuración existente. El agente no usa el teléfono físico: la validación final corresponde al usuario. Se detiene aquí, sin consolidar en MAIN.
+
+## Ajuste posterior aprobado — acceso persistente a Perfil
+
+Tras conservar el Incremento B, el usuario autorizó fijar únicamente la fila compacta de cabecera. Se añade `lib/widgets/pinned_profile_header.dart`, basado en `SliverPersistentHeader(pinned: true)`, y se reutiliza `ProfileHeaderAction`. Inicio DEV muestra el lockup vectorial oficial a la izquierda y Perfil a la derecha. Saludo, subtítulo, cartografía decorativa, hero y datos siguen dentro del scroll; no se fija la cabecera completa ni se duplica la marca. La implementación vectorial existente se expone como `UrbesBrandLockup` sin alterar trazados o colores.
+
+La fila de marca tiene 64 dp de altura, con objetivo táctil de 48 dp y ancho de contenido alineado con Inicio. La variante con título permite crecer según `TextScaler` para hasta dos líneas legibles. La superficie opaca evita que los datos desplazados interfieran con el acceso a Perfil. Alertas DEV fija título y Perfil y conserva la fecha en el contenido, retirando el título duplicado de la lista. Vehículo e Historial mantienen sus AppBar existentes, ya persistentes; no se rediseñan.
+
+El ajuste se aplica también a las referencias anteriores de Inicio en DEV. MAIN continúa con cinco destinos y su cabecera previa; no cambia el router respecto al checkpoint B, los datos, la autenticación, Login o D. Los cambios funcionales de contactos desarrollados fuera de esta tarea permanecen intactos.
+
+Pruebas específicas en `test/pinned_profile_header_test.dart`: scroll de Inicio y Alertas, acceso visible y pulsable a Perfil, regreso conservando pestaña y desplazamiento, una única cabecera, objetivos táctiles y adaptación a 320/360/390 dp con texto 100/200 % y movimiento reducido; MAIN sin cabecera nueva. Resultado: 64 pruebas dirigidas distintas aprobadas entre las ejecuciones (las 57 regresiones de B y 7 casos de persistencia). Se repitieron los 7 casos nuevos después de corregir una comparación demasiado estricta de precisión decimal en el test de área táctil: 48 dp se representaba como 47,99999999999999 al restar bordes. No fue necesario cambiar el tamaño del botón. Análisis estático de 9 archivos sin incidencias. No se abrió Edge ni se usó hardware físico.
+
+Para revisar: Hot Restart en debug o detener y ejecutar de nuevo DEV en profile. Elegir Diseño 1, desplazar Inicio y Alertas y abrir Perfil sin volver arriba. No se crea un nuevo panel, no se modifica la ilustración y no se requiere SDA, bridge o Firebase real encendidos.

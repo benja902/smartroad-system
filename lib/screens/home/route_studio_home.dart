@@ -2,9 +2,14 @@ part of 'premium_home_content.dart';
 
 // Increment A: selectable in DEV only. Geometry is illustrative, not mapping.
 class _StudioHeader extends StatelessWidget {
-  const _StudioHeader({required this.name, required this.onOpenProfile});
+  const _StudioHeader({
+    required this.name,
+    required this.onOpenProfile,
+    this.showBrand = true,
+  });
   final String name;
   final VoidCallback? onOpenProfile;
+  final bool showBrand;
 
   @override
   Widget build(BuildContext context) => Stack(
@@ -17,18 +22,19 @@ class _StudioHeader extends StatelessWidget {
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const _GuardianBrand(),
-              if (onOpenProfile != null)
-                ProfileHeaderAction(
-                  key: const ValueKey('studio-profile'),
-                  onPressed: onOpenProfile!,
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          if (showBrand)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const UrbesBrandLockup(),
+                if (onOpenProfile != null)
+                  ProfileHeaderAction(
+                    key: const ValueKey('studio-profile'),
+                    onPressed: onOpenProfile!,
+                  ),
+              ],
+            ),
+          if (showBrand) const SizedBox(height: 16),
           Text(
             'Hola, ${name.isEmpty ? 'Usuario' : name}',
             style: _type(
