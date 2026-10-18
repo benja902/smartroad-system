@@ -23,7 +23,8 @@ enum HomePreviewVariant {
   vehicleFocus('A · Vehicle Focus'),
   contextualFocus('B · Contextual Focus'),
   guardianDeck('C · Guardian Deck'),
-  signalFlow('D · Signal Flow');
+  signalFlow('D · Signal Flow'),
+  routeStudio('Diseño 1 · Ruta y Estudio (DEV)');
 
   const HomePreviewVariant(this.label);
   final String label;
@@ -37,11 +38,18 @@ class HomeVisualPreview extends InheritedWidget {
     required this.variant,
     this.artwork = GuardianArtwork.defaultVariant,
     this.header = GuardianHeader.defaultVariant,
+    this.layoutDiagnostics = false,
     required super.child,
   });
   final HomePreviewVariant variant;
   final GuardianArtwork artwork;
   final GuardianHeader header;
+  final bool layoutDiagnostics;
+  static bool layoutDiagnosticsOf(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<HomeVisualPreview>()
+          ?.layoutDiagnostics ??
+      false;
   static GuardianHeader headerOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<HomeVisualPreview>()?.header ??
       GuardianHeader.defaultVariant;
@@ -61,5 +69,6 @@ class HomeVisualPreview extends InheritedWidget {
   bool updateShouldNotify(HomeVisualPreview oldWidget) =>
       oldWidget.variant != variant ||
       oldWidget.artwork != artwork ||
+      oldWidget.layoutDiagnostics != layoutDiagnostics ||
       oldWidget.header != header;
 }

@@ -14,6 +14,7 @@ import 'widgets/recent_alerts_preview.dart';
 part 'signature_home_directions.dart';
 part 'guardian_deck_refinement.dart';
 part 'guardian_header.dart';
+part 'route_studio_home.dart';
 
 // Local review palette. No change to AppTheme or the global Design System.
 const _navy = Color(0xFF031B3B);
@@ -35,6 +36,7 @@ class PremiumHomeContent extends StatelessWidget {
     required this.eventError,
     required this.attention,
     required this.onOpenAlerts,
+    this.onOpenProfile,
     this.guardianArtwork = GuardianArtwork.defaultVariant,
     this.guardianHeader = GuardianHeader.defaultVariant,
   });
@@ -47,13 +49,16 @@ class PremiumHomeContent extends StatelessWidget {
   final bool eventError;
   final Widget? attention;
   final VoidCallback onOpenAlerts;
+  final VoidCallback? onOpenProfile;
   final GuardianArtwork guardianArtwork;
   final GuardianHeader guardianHeader;
 
   @override
   Widget build(BuildContext context) {
     final vehicleFocus = variant == HomePreviewVariant.vehicleFocus;
+    final studio = variant == HomePreviewVariant.routeStudio;
     final crafted =
+        studio ||
         variant == HomePreviewVariant.guardianDeck ||
         variant == HomePreviewVariant.signalFlow;
     final editorial = variant == HomePreviewVariant.signalFlow;
@@ -77,78 +82,101 @@ class PremiumHomeContent extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 96),
                     sliver: SliverList.list(
                       children: [
-                        if (variant == HomePreviewVariant.guardianDeck)
-                          _GuardianHeader(name: name, treatment: guardianHeader)
-                        else if (crafted)
-                          _SignatureMasthead(name: name, editorial: editorial),
-                        if (!crafted)
-                          Text(
-                            'URBES',
-                            style: _type(18, weight: FontWeight.w800),
+                        if (studio) ...[
+                          _StudioHeader(
+                            name: name,
+                            onOpenProfile: onOpenProfile,
                           ),
-                        if (!crafted) const SizedBox(height: 24),
-                        if (!crafted)
-                          EntranceSection(
-                            animation: entrance,
-                            fade: true,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Hola, ${name.isEmpty ? 'Usuario' : name}',
-                                  style: _type(28, weight: FontWeight.w700),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Tu vehículo y sus últimos datos.',
-                                  style: _type(14, color: _ink),
-                                ),
-                              ],
-                            ),
-                          ),
-                        if (attention != null) ...[
-                          const SizedBox(height: 20),
-                          attention!,
-                        ],
-                        SizedBox(
-                          height: variant == HomePreviewVariant.guardianDeck
-                              ? 20
-                              : 24,
-                        ),
-                        if (crafted)
-                          editorial
-                              ? _SignalFlow(vehicle: vehicle, status: status)
-                              : _GuardianDeck(
-                                  vehicle: vehicle,
-                                  status: status,
-                                  artwork: guardianArtwork,
-                                )
-                        else if (vehicleFocus) ...[
-                          vehicleSection,
-                          const SizedBox(height: 24),
-                          report,
+                          if (attention != null) ...[
+                            const SizedBox(height: 16),
+                            attention!,
+                          ],
+                          const SizedBox(height: 16),
+                          _StudioHero(vehicle: vehicle, status: status),
+                          const SizedBox(height: 14),
+                          _StudioDevice(status: status),
+                          const SizedBox(height: 12),
+                          _StudioPosition(status: status),
                         ] else ...[
-                          report,
-                          const SizedBox(height: 20),
-                          vehicleSection,
-                        ],
-                        SizedBox(
-                          height: variant == HomePreviewVariant.guardianDeck
-                              ? 20
-                              : 24,
-                        ),
-                        if (variant == HomePreviewVariant.guardianDeck)
-                          _GuardianConnectivity(status: status)
-                        else if (crafted)
-                          _SignatureSection(
-                            editorial: editorial,
-                            child: _PositionReport(status: status),
-                          )
-                        else
-                          _PositionReport(status: status),
-                        if (variant != HomePreviewVariant.guardianDeck) ...[
-                          const SizedBox(height: 20),
-                          _Connectivity(status: status),
+                          if (variant == HomePreviewVariant.guardianDeck)
+                            _GuardianHeader(
+                              name: name,
+                              treatment: guardianHeader,
+                            )
+                          else if (crafted)
+                            _SignatureMasthead(
+                              name: name,
+                              editorial: editorial,
+                            ),
+                          if (!crafted)
+                            Text(
+                              'URBES',
+                              style: _type(18, weight: FontWeight.w800),
+                            ),
+                          if (!crafted) const SizedBox(height: 24),
+                          if (!crafted)
+                            EntranceSection(
+                              animation: entrance,
+                              fade: true,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Hola, ${name.isEmpty ? 'Usuario' : name}',
+                                    style: _type(28, weight: FontWeight.w700),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Tu vehículo y sus últimos datos.',
+                                    style: _type(14, color: _ink),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          if (attention != null) ...[
+                            const SizedBox(height: 20),
+                            attention!,
+                          ],
+                          SizedBox(
+                            height: variant == HomePreviewVariant.guardianDeck
+                                ? 20
+                                : 24,
+                          ),
+                          if (crafted)
+                            editorial
+                                ? _SignalFlow(vehicle: vehicle, status: status)
+                                : _GuardianDeck(
+                                    vehicle: vehicle,
+                                    status: status,
+                                    artwork: guardianArtwork,
+                                  )
+                          else if (vehicleFocus) ...[
+                            vehicleSection,
+                            const SizedBox(height: 24),
+                            report,
+                          ] else ...[
+                            report,
+                            const SizedBox(height: 20),
+                            vehicleSection,
+                          ],
+                          SizedBox(
+                            height: variant == HomePreviewVariant.guardianDeck
+                                ? 20
+                                : 24,
+                          ),
+                          if (variant == HomePreviewVariant.guardianDeck)
+                            _GuardianConnectivity(status: status)
+                          else if (crafted)
+                            _SignatureSection(
+                              editorial: editorial,
+                              child: _PositionReport(status: status),
+                            )
+                          else
+                            _PositionReport(status: status),
+                          if (variant != HomePreviewVariant.guardianDeck) ...[
+                            const SizedBox(height: 20),
+                            _Connectivity(status: status),
+                          ],
                         ],
                         SizedBox(
                           height: variant == HomePreviewVariant.guardianDeck
@@ -178,30 +206,45 @@ class PremiumHomeContent extends StatelessWidget {
                           events: events,
                           neutralEmpty: true,
                           editorial: crafted,
-                          guardian: variant == HomePreviewVariant.guardianDeck,
+                          guardian:
+                              studio ||
+                              variant == HomePreviewVariant.guardianDeck,
+                          headerAction: studio
+                              ? TextButton(
+                                  key: const ValueKey('home-open-alerts'),
+                                  onPressed: onOpenAlerts,
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: _teal,
+                                    minimumSize: const Size(48, 48),
+                                  ),
+                                  child: const Text('Ver todas'),
+                                )
+                              : null,
                         ),
-                        const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton.icon(
-                            key: const ValueKey('home-open-alerts'),
-                            onPressed: onOpenAlerts,
-                            icon: const Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 20,
-                            ),
-                            label: const Text('Consultar alertas'),
-                            style: TextButton.styleFrom(
-                              foregroundColor: _teal,
-                              backgroundColor:
-                                  variant == HomePreviewVariant.guardianDeck
-                                  ? const Color(0xFFE7F2F0)
-                                  : null,
-                              minimumSize: const Size(48, 48),
-                              textStyle: _type(14, weight: FontWeight.w700),
+                        if (!studio) ...[
+                          const SizedBox(height: 12),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              key: const ValueKey('home-open-alerts'),
+                              onPressed: onOpenAlerts,
+                              icon: const Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 20,
+                              ),
+                              label: const Text('Consultar alertas'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: _teal,
+                                backgroundColor:
+                                    variant == HomePreviewVariant.guardianDeck
+                                    ? const Color(0xFFE7F2F0)
+                                    : null,
+                                minimumSize: const Size(48, 48),
+                                textStyle: _type(14, weight: FontWeight.w700),
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),

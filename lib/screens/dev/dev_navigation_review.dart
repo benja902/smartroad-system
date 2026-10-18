@@ -16,6 +16,7 @@ class _DevNavigationReviewState extends State<DevNavigationReview> {
   HomePreviewVariant _home = HomePreviewVariant.defaultVariant;
   GuardianArtwork _artwork = GuardianArtwork.defaultVariant;
   GuardianHeader _header = GuardianHeader.defaultVariant;
+  bool _layoutDiagnostics = false;
   @override
   Widget build(BuildContext context) => NavigationVisualPreview(
     variant: _variant,
@@ -42,6 +43,14 @@ class _DevNavigationReviewState extends State<DevNavigationReview> {
               selected: _home == variant,
               child: Text(variant.label),
             ),
+          ),
+        if (_home == HomePreviewVariant.routeStudio)
+          CheckboxMenuButton(
+            key: const ValueKey('dev-home-layout-diagnostics'),
+            value: _layoutDiagnostics,
+            onChanged: (value) =>
+                setState(() => _layoutDiagnostics = value ?? false),
+            child: const Text('Diagnóstico de tamaño · Bento'),
           ),
         if (_home == HomePreviewVariant.guardianDeck) ...[
           const Divider(),
@@ -84,6 +93,7 @@ class _DevNavigationReviewState extends State<DevNavigationReview> {
       variant: _home,
       artwork: _artwork,
       header: _header,
+      layoutDiagnostics: _layoutDiagnostics,
       child: widget.child,
     ),
   );

@@ -72,6 +72,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
         onOpenAlerts: () => context.go(AppRoutes.alerts),
+        onOpenProfile: () => context.go(AppRoutes.profile),
       );
     }
 

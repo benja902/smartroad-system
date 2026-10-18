@@ -17,6 +17,7 @@ class RecentAlertsPreview extends StatelessWidget {
   final bool neutralEmpty;
   final bool editorial;
   final bool guardian;
+  final Widget? headerAction;
 
   const RecentAlertsPreview({
     super.key,
@@ -24,6 +25,7 @@ class RecentAlertsPreview extends StatelessWidget {
     this.neutralEmpty = false,
     this.editorial = false,
     this.guardian = false,
+    this.headerAction,
   });
 
   @override
@@ -36,12 +38,28 @@ class RecentAlertsPreview extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          guardian ? 'Actividad reciente' : 'Alertas recientes',
-          style: AppTypography.headlineMd.copyWith(
-            color: guardian ? const Color(0xFF031B3B) : AppColors.primary,
+        if (headerAction != null)
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 16,
+            children: [
+              Text(
+                'Actividad reciente',
+                style: AppTypography.headlineMd.copyWith(
+                  color: const Color(0xFF031B3B),
+                ),
+              ),
+              headerAction!,
+            ],
+          )
+        else
+          Text(
+            guardian ? 'Actividad reciente' : 'Alertas recientes',
+            style: AppTypography.headlineMd.copyWith(
+              color: guardian ? const Color(0xFF031B3B) : AppColors.primary,
+            ),
           ),
-        ),
         const SizedBox(height: AppSpacing.sm),
         if (recent.isEmpty)
           _AlertRow(

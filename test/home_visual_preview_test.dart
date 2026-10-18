@@ -278,7 +278,9 @@ void main() {
       );
       await tester.tap(find.byKey(const ValueKey('dev-nav-variant-menu')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('dev-guardian-isometric')));
+      final isometric = find.byKey(const ValueKey('dev-guardian-isometric'));
+      await tester.ensureVisible(isometric);
+      await tester.tap(isometric);
       await tester.pumpAndSettle();
       expect(
         find.byKey(const ValueKey('guardian-art-isometric')),
