@@ -91,7 +91,6 @@ class HomeScreen extends StatelessWidget {
                   if (dev)
                     PinnedProfileHeader(
                       title: const UrbesBrandLockup(),
-                      isBrand: true,
                       onOpenProfile: () => context.push(AppRoutes.profile),
                     )
                   else

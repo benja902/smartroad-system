@@ -1,6 +1,6 @@
 # Incremento B — cuatro destinos DEV y Perfil en cabecera
 
-Estado: Incremento B conservado en el checkpoint local `d700c31` (`feat(ui): incorpora cuatro destinos y Perfil en cabeceras DEV`, 17 archivos). Ajuste posterior de cabeceras persistentes pendiente de revisión humana y sin segundo commit. No consolida MAIN ni realiza push.
+Estado: Incremento B conservado en `d700c31` (17 archivos). La primera corrección de cabeceras persistentes se conserva en `ec4a385` (`fix(ui): conserva cabeceras persistentes con Perfil en DEV`, 10 archivos), antes de corregir la alineación solicitada. El ajuste de alineación entre pestañas descrito al final permanece sin commit para revisión humana. No consolida MAIN ni realiza push.
 
 ## Estructura
 
@@ -59,3 +59,15 @@ El ajuste se aplica también a las referencias anteriores de Inicio en DEV. MAIN
 Pruebas específicas en `test/pinned_profile_header_test.dart`: scroll de Inicio y Alertas, acceso visible y pulsable a Perfil, regreso conservando pestaña y desplazamiento, una única cabecera, objetivos táctiles y adaptación a 320/360/390 dp con texto 100/200 % y movimiento reducido; MAIN sin cabecera nueva. Resultado: 64 pruebas dirigidas distintas aprobadas entre las ejecuciones (las 57 regresiones de B y 7 casos de persistencia). Se repitieron los 7 casos nuevos después de corregir una comparación demasiado estricta de precisión decimal en el test de área táctil: 48 dp se representaba como 47,99999999999999 al restar bordes. No fue necesario cambiar el tamaño del botón. Análisis estático de 9 archivos sin incidencias. No se abrió Edge ni se usó hardware físico.
 
 Para revisar: Hot Restart en debug o detener y ejecutar de nuevo DEV en profile. Elegir Diseño 1, desplazar Inicio y Alertas y abrir Perfil sin volver arriba. No se crea un nuevo panel, no se modifica la ilustración y no se requiere SDA, bridge o Firebase real encendidos.
+
+## Alineación de Perfil entre las cuatro pestañas
+
+El usuario detectó desplazamientos al pasar de Inicio a Alertas, Vehículo e Historial. Causas verificadas: la fila de marca reservaba 64 dp, la de título crecía con el texto ampliado y centraba verticalmente el botón; las otras dos pantallas usaban márgenes y altura de AppBar. Además, la transición de pestañas trasladaba todo el contenido 6 dp, incluida la cabecera.
+
+Las cuatro cabeceras DEV usan ahora `PinnedProfileHeader` con el mismo cálculo de altura, ancho máximo de 600 dp y margen horizontal de 20 dp. Perfil queda anclado a 8 dp del borde superior seguro, conservando su área de 48 × 48; una cabecera más alta por texto ampliado no desplaza el botón. Marca y títulos mantienen su presentación propia. Vehículo e Historial reutilizan el contenido placeholder existente bajo la misma cabecera, sin implementar funcionalidades nuevas. MAIN conserva sus AppBar, cinco destinos y comportamiento anterior.
+
+La transición mantiene su desplazamiento y fade en el contenido. Una notificación de traslación dentro del componente de movimiento permite que solo la cabecera compense ese desplazamiento, evitando el pequeño salto horizontal del acceso a Perfil. No se duplican controladores ni temporizadores, no cambian duración, curvas, rutas o reglas funcionales.
+
+Validación: 43 pruebas dirigidas aprobadas (`pinned_profile_header_test.dart`, `four_destination_navigation_test.dart` y `navigation_visual_preview_test.dart`). Cuatro casos nuevos comparan el rectángulo del botón entre todas las pestañas, al comenzar la transición, a los 90 ms y al terminar: 320 dp/100 %, 390 dp/200 %, 484 dp/130 % con densidad 1,49 y 800 dp/130 %. Incluyen área segura superior de 24 dp, regreso desde Perfil y misma altura de cabecera. Se conservan las pruebas de scroll, sesión, prioridad crítica, teclado, movimiento reducido y MAIN. Análisis estático dirigido sin incidencias. No se abrió navegador ni se usó hardware físico.
+
+Este ajuste modifica únicamente presentación y pruebas; permanece pendiente de revisión física y sin commit posterior a `ec4a385`. Los cambios de contactos preparados por separado permanecen intactos. Para revisar, reiniciar DEV y comprobar el botón al cambiar de las cuatro pestañas, también con la configuración de texto del teléfono.

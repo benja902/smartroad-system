@@ -9,6 +9,70 @@ import 'package:smartroad/widgets/profile_header_action.dart';
 import 'home_visual_preview_test.dart' show app, chooseHome;
 
 void main() {
+  for (final sample in [
+    (320.0, 1.0, 1.0),
+    (390.0, 2.0, 1.0),
+    (484.0, 1.3, 1.49),
+    (800.0, 1.3, 1.0),
+  ]) {
+    testWidgets(
+      'Profile has one anchor across all tabs and transition frames: $sample',
+      (tester) async {
+        tester.view.physicalSize = Size(sample.$1 * sample.$3, 940 * sample.$3);
+        tester.view.devicePixelRatio = sample.$3;
+        tester.view.padding = FakeViewPadding(top: 24 * sample.$3);
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.view.resetPadding);
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        await app(tester);
+        await chooseHome(tester, HomePreviewVariant.routeStudio);
+        tester.platformDispatcher.textScaleFactorTestValue = sample.$2;
+        await tester.pumpAndSettle();
+        final action = find.byType(ProfileHeaderAction);
+        final anchor = tester.getRect(action);
+        expect(anchor.top, closeTo(32, 1e-6));
+        final height = tester
+            .widget<SliverPersistentHeader>(find.byType(SliverPersistentHeader))
+            .delegate
+            .maxExtent;
+        void expectAnchor() {
+          final rect = tester.getRect(action);
+          expect(rect.left, closeTo(anchor.left, 1e-6));
+          expect(rect.top, closeTo(anchor.top, 1e-6));
+          expect(rect.width, closeTo(anchor.width, 1e-6));
+          expect(rect.height, closeTo(anchor.height, 1e-6));
+          expect(find.byType(ProfileHeaderAction), findsOneWidget);
+          expect(
+            tester
+                .widget<SliverPersistentHeader>(
+                  find.byType(SliverPersistentHeader),
+                )
+                .delegate
+                .maxExtent,
+            height,
+          );
+        }
+
+        for (final index in [1, 2, 3, 0]) {
+          await tester.tap(find.byKey(ValueKey('premium-nav-item-$index')));
+          await tester.pump();
+          expectAnchor();
+          await tester.pump(const Duration(milliseconds: 90));
+          expectAnchor();
+          await tester.pumpAndSettle();
+          expectAnchor();
+          expect(tester.takeException(), isNull);
+        }
+        await tester.tap(action);
+        await tester.pumpAndSettle();
+        expect(find.byType(ProfileScreenPlaceholder), findsOneWidget);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+        expectAnchor();
+      },
+    );
+  }
   for (final width in [320.0, 360.0, 390.0]) {
     for (final scale in [1.0, 2.0]) {
       testWidgets(

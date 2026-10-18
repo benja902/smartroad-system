@@ -304,6 +304,24 @@ class _NavigationPreviewItemState extends State<_NavigationPreviewItem> {
 
 /// One retained shell throughout tab switches: no outgoing Navigator clone,
 /// AnimatedSwitcher key, delayed routing or intercepted gestures.
+/// Lets pinned chrome cancel only the tab's translation, keeping content motion.
+class NavigationContentTranslation extends InheritedWidget {
+  const NavigationContentTranslation({
+    super.key,
+    required this.offset,
+    required super.child,
+  });
+  final Offset offset;
+  static Offset of(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<NavigationContentTranslation>()
+          ?.offset ??
+      Offset.zero;
+  @override
+  bool updateShouldNotify(NavigationContentTranslation oldWidget) =>
+      offset != oldWidget.offset;
+}
+
 class NavigationPreviewContentMotion extends StatefulWidget {
   const NavigationPreviewContentMotion({
     super.key,
@@ -361,13 +379,17 @@ class _NavigationPreviewContentMotionState
       final direction = Directionality.of(context) == TextDirection.rtl
           ? -_direction
           : _direction;
-      return Transform.translate(
-        key: const ValueKey('premium-nav-content-motion'),
-        offset: Offset(6 * direction * (1 - p), 0),
-        child: Opacity(
-          opacity: .94 + .06 * p,
-          alwaysIncludeSemantics: true,
-          child: child,
+      final offset = Offset(6 * direction * (1 - p), 0);
+      return NavigationContentTranslation(
+        offset: offset,
+        child: Transform.translate(
+          key: const ValueKey('premium-nav-content-motion'),
+          offset: offset,
+          child: Opacity(
+            opacity: .94 + .06 * p,
+            alwaysIncludeSemantics: true,
+            child: child,
+          ),
         ),
       );
     },

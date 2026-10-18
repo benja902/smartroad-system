@@ -84,7 +84,6 @@ class PremiumHomeContent extends StatelessWidget {
                   if (pinnedHeader)
                     PinnedProfileHeader(
                       title: const UrbesBrandLockup(),
-                      isBrand: true,
                       onOpenProfile: onOpenProfile!,
                       actionKey: studio
                           ? const ValueKey('studio-profile')
