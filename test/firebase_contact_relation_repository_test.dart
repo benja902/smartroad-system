@@ -1,12 +1,42 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartroad/repositories/firebase/firebase_contact_relation_repository.dart';
 
+class _User extends Fake implements fb_auth.User {
+  @override
+  final String uid;
+  _User(this.uid);
+}
+
+class _Auth extends Fake implements fb_auth.FirebaseAuth {
+  fb_auth.User? _current = _User('contact-test');
+  final changes = StreamController<fb_auth.User?>.broadcast(sync: true);
+
+  @override
+  fb_auth.User? get currentUser => _current;
+
+  @override
+  Stream<fb_auth.User?> authStateChanges() async* {
+    yield _current;
+    yield* changes.stream;
+  }
+
+  void changeUid(String? uid) {
+    _current = uid == null ? null : _User(uid);
+    changes.add(_current);
+  }
+
+  @override
+  Future<void> signOut() async => changeUid(null);
+}
+
 class _Database extends Fake implements FirebaseDatabase {
   final streams = <String, StreamController<DatabaseEvent>>{};
   final reads = <String>[];
+  final callbacks = <String, List<void Function(DatabaseEvent)>>{};
 
   @override
   DatabaseReference ref([String? path]) => _Reference(this, path ?? '');
@@ -33,12 +63,40 @@ class _Reference extends Fake implements DatabaseReference {
   @override
   Stream<DatabaseEvent> get onValue {
     database.reads.add(path);
-    return database.streams
+    final stream = database.streams
         .putIfAbsent(
           path,
           () => StreamController<DatabaseEvent>.broadcast(sync: true),
         )
         .stream;
+    return _ObservedStream(database, path, stream);
+  }
+}
+
+// Retain callbacks so tests can simulate a native response already in flight
+// when its subscription was cancelled. Normal events still use real streams.
+class _ObservedStream extends Stream<DatabaseEvent> {
+  final _Database database;
+  final String path;
+  final Stream<DatabaseEvent> stream;
+  _ObservedStream(this.database, this.path, this.stream);
+
+  @override
+  StreamSubscription<DatabaseEvent> listen(
+    void Function(DatabaseEvent)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) {
+    if (onData != null) {
+      database.callbacks.putIfAbsent(path, () => []).add(onData);
+    }
+    return stream.listen(
+      onData,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
   }
 }
 
@@ -61,23 +119,28 @@ const _relationPath = 'vehicleContacts/vehicle-test/contact-test';
 Future<void> _tick() => Future<void>.delayed(Duration.zero);
 
 void main() {
+  late _Auth auth;
   late _Database database;
   late List<Set<String>> results;
   late List<Object> errors;
   late StreamSubscription<Set<String>> subscription;
 
-  setUp(() {
+  setUp(() async {
+    auth = _Auth();
     database = _Database();
     results = [];
     errors = [];
-    subscription = FirebaseContactRelationRepository(database: database)
-        .watchAuthorizedVehicleIds('contact-test')
-        .listen(results.add, onError: errors.add);
+    subscription = FirebaseContactRelationRepository(
+      auth: auth,
+      database: database,
+    ).watchAuthorizedVehicleIds().listen(results.add, onError: errors.add);
+    await _tick();
   });
 
   tearDown(() async {
     await subscription.cancel();
     await database.close();
+    await auth.changes.close();
   });
 
   Future<void> discover() async {
@@ -254,18 +317,18 @@ void main() {
     await subscription.cancel();
     expect(database.streams[_indexPath]!.hasListener, isFalse);
     expect(database.streams[_relationPath]!.hasListener, isFalse);
+    expect(auth.changes.hasListener, isFalse);
   });
 
   test(
-    'another session reads its own relation and cannot reuse the first result',
+    'UID change automatically invalidates and follows only the new user',
     () async {
       await authorize();
-      await subscription.cancel();
-      subscription = FirebaseContactRelationRepository(database: database)
-          .watchAuthorizedVehicleIds('other-contact')
-          .listen(results.add, onError: errors.add);
+      auth.changeUid('other-contact');
       await _tick();
       expect(results.last, isEmpty);
+      expect(database.streams[_indexPath]!.hasListener, isFalse);
+      expect(database.streams[_relationPath]!.hasListener, isFalse);
       database.emit('users/other-contact/vehicleIds', {'vehicle-test': true});
       await _tick();
       database.emit('vehicleContacts/vehicle-test/other-contact', {
@@ -273,6 +336,110 @@ void main() {
       });
       await _tick();
       expect(results.last, isEmpty);
+      database.emit('vehicleContacts/vehicle-test/other-contact', _active);
+      await _tick();
+      expect(results.last, {'vehicle-test'});
+    },
+  );
+
+  test(
+    'sign-out automatically clears results and cancels RTDB reads',
+    () async {
+      await authorize();
+      await auth.signOut();
+      await _tick();
+      expect(results.last, isEmpty);
+      expect(database.streams[_indexPath]!.hasListener, isFalse);
+      expect(database.streams[_relationPath]!.hasListener, isFalse);
+      expect(auth.changes.hasListener, isTrue);
+    },
+  );
+
+  test(
+    'late old index and relation responses cannot affect the new session',
+    () async {
+      await authorize();
+      final oldIndex = database.callbacks[_indexPath]!.single;
+      final oldRelation = database.callbacks[_relationPath]!.single;
+      auth.changeUid('other-contact');
+      await _tick();
+      database.emit('users/other-contact/vehicleIds', {'other-vehicle': true});
+      await _tick();
+      database.emit('vehicleContacts/other-vehicle/other-contact', _active);
+      await _tick();
+      expect(results.last, {'other-vehicle'});
+      final count = results.length;
+      oldIndex(_Event({'late-vehicle': true}));
+      oldRelation(_Event(_active));
+      await _tick();
+      expect(results.length, count);
+      expect(results.last, {'other-vehicle'});
+      expect(
+        database.reads,
+        isNot(contains('vehicleContacts/late-vehicle/contact-test')),
+      );
+    },
+  );
+
+  test('late responses after logout do not restore authorization', () async {
+    await authorize();
+    final oldIndex = database.callbacks[_indexPath]!.single;
+    final oldRelation = database.callbacks[_relationPath]!.single;
+    await auth.signOut();
+    await _tick();
+    oldIndex(_Event({'vehicle-test': true}));
+    oldRelation(_Event(_active));
+    await _tick();
+    expect(results.last, isEmpty);
+    expect(database.streams[_relationPath]!.hasListener, isFalse);
+  });
+
+  test(
+    'queued authorization is discarded when Auth identity changes',
+    () async {
+      await discover();
+      final count = results.length;
+      database.emit(_relationPath, _active); // Result is queued for delivery.
+      auth.changeUid('other-contact');
+      await _tick();
+      expect(results.skip(count), everyElement(isEmpty));
+    },
+  );
+
+  test(
+    'returning to the same UID requires fresh reads after sign-out',
+    () async {
+      await authorize();
+      final oldIndex = database.callbacks[_indexPath]!.single;
+      final oldRelation = database.callbacks[_relationPath]!.single;
+      await auth.signOut();
+      await _tick();
+      auth.changeUid('contact-test');
+      await _tick();
+      oldIndex(_Event({'vehicle-test': true}));
+      oldRelation(_Event(_active));
+      await _tick();
+      expect(results.last, isEmpty);
+      database.emit(_indexPath, {'vehicle-test': true});
+      await _tick();
+      expect(results.last, isEmpty);
+      database.emit(_relationPath, _active);
+      await _tick();
+      expect(results.last, {'vehicle-test'});
+    },
+  );
+
+  test(
+    'Auth read failure invalidates and releases the old session reads',
+    () async {
+      await authorize();
+      final error = StateError('auth failed');
+      auth.changes.addError(error);
+      await _tick();
+      expect(results.last, isEmpty);
+      expect(errors, [same(error)]);
+      expect(database.streams[_indexPath]!.hasListener, isFalse);
+      expect(database.streams[_relationPath]!.hasListener, isFalse);
     },
   );
 }
