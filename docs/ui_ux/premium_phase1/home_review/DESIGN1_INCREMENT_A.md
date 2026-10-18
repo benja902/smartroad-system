@@ -6,21 +6,21 @@ Estado: presentación Flutter DEV para revisión humana. No consolida MAIN ni im
 
 - Cabecera con el lockup vectorial oficial ya utilizado en Login, saludo de sesión y subtítulo «Tu vehículo y sus últimos datos». Perfil abre la ruta existente mediante su callback. Sin fotografía de usuario ficticia.
 - Cartografía abstracta propia con `CustomPainter`, estática, excluida de semántica y sin ubicación, marcador o conexión con telemetría. No se añade SDK de mapas.
-- Hero Navy con identidad del vehículo real, placa, carretera de estudio e iluminación Aqua suave. Disponibilidad y comunicación reutilizan `_SdaCopy`: no equivalen a salud integral; época cero no se presenta como fecha válida.
+- Hero Navy con identidad del vehículo real, placa, carretera de estudio e iluminación Aqua suave. Integra `auto.webp` aportado por el usuario como ilustración temporal de revisión. Disponibilidad y comunicación reutilizan `_SdaCopy`: no equivalen a salud integral; época cero no se presenta como fecha válida.
 - Un Bento de tres indicadores: tecnología/registro móvil, fix GNSS y voltaje de batería del SDA. Valores opcionales ausentes se muestran neutralmente. La disposición depende de la medición de textos y espacio disponible; no se apila automáticamente por el porcentaje de texto. Si no cabe, pasa a vertical sin truncar información.
 - Posición compacta: coordenadas únicamente con el fix reportado, sin afirmar actualidad o última posición válida conservada. No se atribuye `lastSeen` a la hora de la posición. No hay flecha o acción cartográfica ficticia.
 - Actividad reutiliza `RecentAlertsPreview`, su clasificación y límite de tres registros. «Ver todas» acompaña a la cabecera con su acción real a Alertas; con texto grande puede pasar a la siguiente línea. El banner y sus callbacks se reciben de `HomeScreen`, antes del hero. No se fabrican eventos «SDA en línea» para parecerse a la imagen.
 - Feedback y foco estándar de los controles existentes; expansión técnica breve, desactivada con movimiento reducido. Sin nuevas animaciones de entrada o efectos constantes.
 
-## Recurso pendiente: fidelidad del hero incompleta
+## Integración de vehículo y fondo de estudio — recurso de revisión
 
-La revisión de recursos SVG/PNG/JPG/WebP en `docs` y `lib` encontró ilustraciones vectoriales, geometría nativa del vehículo y capturas completas de interfaces. No hay un render 3D independiente adecuado al Diseño 1. Las capturas y referencias externas no se usan como assets de interfaz.
+Se utiliza el archivo independiente `auto.webp` proporcionado por el usuario (1000 × 558 px, RGBA, con transparencia, unos 46 KB), sin editar sus píxeles ni recolorear su carrocería. Se registra su ruta exacta en `pubspec.yaml`, sin duplicar el archivo ni añadir paquetes. Este registro incorpora el recurso al bundle; la presentación que lo consume continúa seleccionable exclusivamente en DEV. MAIN sigue mostrando Guardian Deck.
 
-**Respaldo temporal:** geometría 2.5D del automóvil de D, estática, sobre carretera abstracta independiente. No se cambia su geometría ni el Splash. Esta ilustración no sustituye ni da por aprobado el render 3D premium.
+El fondo mantiene Navy y un halo frío suave, con carretera abstracta, trazos Aqua contenidos y sombra de apoyo dibujados en un `CustomPainter` estático. El WebP se coloca en una capa independiente con `BoxFit.contain`, sin deformación ni recorte, en un área de proporción 2,2:1. Su decodificación se limita al ancho necesario según densidad, con máximo de 1000 px. No se utilizan filtros para teñir el auto, blur animado o efectos continuos. El estado SDA dispone de un fondo Navy casi opaco para proteger sus textos. Ante un error de carga se conserva el respaldo vectorial nativo existente.
 
-**Imagen a preparar:** vehículo genérico estilizado, sin emblemas, marca ni placa legible, vista tres cuartos frontal, proporciones coherentes y contorno independiente con transparencia. Propuesta de entrega: PNG/WebP alfa de unos 1600 × 900 px, vehículo ocupando el encuadre con margen y sombra de contacto separable, luz fría suave compatible con Navy/Aqua. No debe incluir textos, tarjeta, estado, fondo de pantalla o controles. Confirmar perspectiva, derechos y licencia antes de incorporarlo. La carretera seguirá siendo una capa independiente. No se ha buscado, comprado ni generado una imagen definitiva.
+**Pendientes:** `auto.webp` representa un deportivo reconocible, no el vehículo descrito por el Provider. Su uso se limita a evaluar la composición como ilustración simbólica; no es una fotografía del vehículo asociado ni un recurso final aprobado. Procedencia y derechos no documentados: confirmar antes de consolidarlo para producción. El recurso definitivo recomendado sigue siendo un vehículo genérico sin emblemas, de perspectiva e iluminación compatibles, con transparencia. La imagen no debe incluir textos, tarjeta, estado o controles. No se ha buscado, comprado ni generado otro recurso.
 
-Faltan por tanto el volumen, materiales, iluminación y presencia del render de referencia. La revisión visual debe distinguir esta brecha de la aprobación de composición. La batería y nombre del vehículo se verán distintos si así lo indican los datos; no se replica el 12.4 V ni la Hilux de la maqueta.
+La separación entre fondo, carretera, sombra, imagen y datos permite cambiar de vehículo sin rediseñar el módulo. La composición se inspeccionó con el automóvil azul disponible; no se ha comprobado físicamente ni validado con recursos blancos, negros o rojos. No se promete contraste automático para cualquier imagen arbitraria. La batería, nombre y placa conservan sus datos del Provider. No se añaden flechas a Vehículo o posición mientras sus destinos útiles sigan pendientes.
 
 ## Alcance y comparación
 
@@ -29,6 +29,8 @@ En el selector DEV existente elegir **Diseño 1 · Ruta y Estudio (DEV)**. Guard
 La barra mantiene sus cinco destinos y Pill Active. El acceso superior a Perfil coexiste temporalmente con su pestaña; retirar la pestaña y extender la cabecera a las otras secciones corresponde al Incremento B, todavía no implementado.
 
 No hay cambios en Providers, repositorios, Firebase, router, autenticación, Login, Splash, tema global o dependencias. El informe de `alerts_review` pendiente previamente permanece intacto. El checkpoint local posterior fue autorizado por el usuario; no incluye ese informe ni el recurso `auto.webp`, todavía sin referencias en la implementación. Sin push.
+
+La integración del WebP descrita arriba es posterior al checkpoint `8c6d3b4`, que conservó la versión vectorial. Este refinamiento sí referencia `auto.webp` y su checkpoint local posterior fue autorizado por el usuario. No avanza a B/C ni realiza push. `chevi.webp` permanece como candidato local sin integrar y queda fuera de este checkpoint.
 
 ## Validación
 
@@ -55,3 +57,9 @@ Cada columna recibe un tercio del espacio restante tras los dos separadores de 1
 Validación dirigida: 16 pruebas de presentación, datos, diagnóstico y accesibilidad, incluida la combinación 484 dp/130 % con tres columnas, pantallas de 320/360/390 dp y texto al 200 %. Los tests usan la fuente Ahem del entorno de pruebas, por lo que otros puntos de cambio dependen de la fuente real: no se promete un ancho universal. La lectura opcional permite comprobarlo en el teléfono. No se usa hardware físico, no se modifican preferencias de accesibilidad ni se registra información de sesión o del SDA. MAIN permanece intacto.
 
 El usuario confirmó después que el problema de recarga web se resolvió y que el Bento funciona correctamente en su celular. Los cambios estructurales del diagnóstico pueden requerir Hot Restart (`R`), en lugar de Hot Reload, o una nueva ejecución si se utiliza profile. Esta confirmación no sustituye la preparación y revisión pendiente del render 3D.
+
+### Validación del refinamiento del hero
+
+Se añaden tres pruebas de decodificación real del WebP a 320 dp, 390 dp con texto al 200 % y 484 dp al 130 %: imagen cargada, sin tinte, `BoxFit.contain` y sin recurrir al respaldo. El arnés usa la fuente local para no depender de red al esperar la decodificación. Se reutiliza el exportador visual existente, que ahora espera explícitamente la carga de la imagen antes de capturar. Las vistas `design1_390.png` y `design1_320.png` se actualizan y se inspeccionan. Sin nueva página de revisión, servicios reales o hardware físico. Es necesario reiniciar la ejecución Flutter al incorporar la nueva declaración de asset; Hot Reload por sí solo puede no reconstruir el bundle.
+
+Resultado del refinamiento: 19 pruebas dirigidas y 2 renders aprobados. Análisis estático dirigido sin incidencias. No se ha perfilado el recurso en Android físico; falta revisión humana del hero y de su ilustración definitiva.

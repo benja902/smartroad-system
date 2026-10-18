@@ -32,9 +32,14 @@ void main() {
       ].map((w) => 'Manrope-$w.ttf').toList();
       final messenger = tester.binding.defaultBinaryMessenger;
       final fetching = GoogleFonts.config.allowRuntimeFetching;
+      const vehicleAsset = 'docs/ui_ux/premium_phase1/home_review/auto.webp';
+      final vehicleBytes = ByteData.sublistView(
+        File(vehicleAsset).readAsBytesSync(),
+      );
       GoogleFonts.config.allowRuntimeFetching = false;
       messenger.setMockMessageHandler('flutter/assets', (message) async {
         final key = const StringCodec().decodeMessage(message);
+        if (key == vehicleAsset) return vehicleBytes;
         if (key == 'AssetManifest.bin') {
           return const StandardMessageCodec().encodeMessage({
             for (final name in names)
@@ -114,6 +119,22 @@ void main() {
           );
           await tester.pumpAndSettle();
         }
+      }
+      if (studio) {
+        final vehicle = find.byKey(const ValueKey('studio-vehicle-image'));
+        final provider = tester.widget<Image>(vehicle).image;
+        await tester.runAsync(
+          () => precacheImage(provider, tester.element(vehicle)),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          tester
+              .widget<RawImage>(
+                find.descendant(of: vehicle, matching: find.byType(RawImage)),
+              )
+              .image,
+          isNotNull,
+        );
       }
       expect(tester.takeException(), isNull);
       final boundary = tester.renderObject<RenderRepaintBoundary>(

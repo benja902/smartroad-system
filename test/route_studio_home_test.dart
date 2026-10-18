@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:smartroad/models/accident_severity.dart';
 import 'package:smartroad/models/device_status.dart';
@@ -20,6 +23,82 @@ import 'home_visual_preview_test.dart'
     show app, chooseHome, reveal, presentation;
 
 void main() {
+  for (final size in [(320.0, 1.0), (390.0, 2.0), (484.0, 1.3)]) {
+    testWidgets(
+      'Studio vehicle asset decodes without cropping at ${size.$1} dp / ${size.$2} text',
+      (tester) async {
+        // Decode the image offline without flushing pending network font loads.
+        // The same local font fixture is used by the existing visual exporter.
+        final font = ByteData.sublistView(
+          File('docs/ui_ux/premium_phase1/assets/Manrope-variable.ttf')
+              .readAsBytesSync(),
+        );
+        const asset = 'docs/ui_ux/premium_phase1/home_review/auto.webp';
+        final bytes = ByteData.sublistView(File(asset).readAsBytesSync());
+        final names = [
+          'Regular',
+          'Medium',
+          'SemiBold',
+          'Bold',
+          'ExtraBold',
+        ].map((weight) => 'Manrope-$weight.ttf').toList();
+        final messenger = tester.binding.defaultBinaryMessenger;
+        final fetching = GoogleFonts.config.allowRuntimeFetching;
+        GoogleFonts.config.allowRuntimeFetching = false;
+        messenger.setMockMessageHandler('flutter/assets', (message) async {
+          final key = const StringCodec().decodeMessage(message);
+          if (key == 'AssetManifest.bin') {
+            return const StandardMessageCodec().encodeMessage({
+              for (final name in names)
+                name: [
+                  {'asset': name},
+                ],
+            });
+          }
+          if (key == asset) return bytes;
+          return names.contains(key) ? font : null;
+        });
+        addTearDown(() {
+          messenger.setMockMessageHandler('flutter/assets', null);
+          GoogleFonts.config.allowRuntimeFetching = fetching;
+        });
+        tester.view.physicalSize = Size(size.$1, 1055);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        await tester.pumpWidget(
+          presentation(
+            HomePreviewVariant.routeStudio,
+            status: MockDataSeed.initialDeviceStatus,
+            textScale: size.$2,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final finder = find.byKey(const ValueKey('studio-vehicle-image'));
+        final widget = tester.widget<Image>(finder);
+        await tester.runAsync(
+          () => precacheImage(widget.image, tester.element(finder)),
+        );
+        await tester.pumpAndSettle();
+        expect(widget.fit, BoxFit.contain);
+        expect(widget.color, isNull);
+        expect(
+          find.byKey(const ValueKey('studio-vehicle-fallback')),
+          findsNothing,
+        );
+        expect(
+          tester
+              .widget<RawImage>(
+                find.descendant(of: finder, matching: find.byType(RawImage)),
+              )
+              .image,
+          isNotNull,
+        );
+        expect(find.text('SDA reportado conectado'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
   testWidgets('Bento diagnostics are opt-in through the existing DEV menu', (
     tester,
   ) async {

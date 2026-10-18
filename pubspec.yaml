@@ -65,6 +65,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    # Temporary vehicle artwork for the opt-in DEV Home presentation.
+    - docs/ui_ux/premium_phase1/home_review/auto.webp
 
   # To add assets to your application, add an assets section, like this:
   # assets:

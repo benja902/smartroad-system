@@ -126,97 +126,93 @@ class _StudioHero extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Tu vehículo',
-                  style: _type(13, color: const Color(0xFFC5D7E5)),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _vehicleName(vehicle),
-                  style: _type(
-                    24,
-                    color: Colors.white,
-                    weight: FontWeight.w800,
-                  ).copyWith(letterSpacing: -.6),
-                ),
-                if (vehicle != null) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 11,
-                      vertical: 5,
+      child: CustomPaint(
+        painter: const _StudioBackdrop(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Tu vehículo',
+                    style: _type(13, color: const Color(0xFFC5D7E5)),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _vehicleName(vehicle),
+                    style: _type(
+                      24,
+                      color: Colors.white,
+                      weight: FontWeight.w800,
+                    ).copyWith(letterSpacing: -.6),
+                  ),
+                  if (vehicle != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 11,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF145571),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Placa ${vehicle!.plate}',
+                        style: _type(
+                          12,
+                          color: Colors.white,
+                          weight: FontWeight.w700,
+                        ),
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF145571),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'Placa ${vehicle!.plate}',
-                      style: _type(
-                        12,
-                        color: Colors.white,
-                        weight: FontWeight.w700,
+                  ],
+                ],
+              ),
+            ),
+            // User-supplied cutout for DEV art review, not a photo of this vehicle.
+            const ExcludeSemantics(
+              child: RepaintBoundary(child: _StudioVehicleImage()),
+            ),
+            Container(
+              padding: const EdgeInsets.fromLTRB(18, 15, 18, 18),
+              color: const Color(0xEB031B3B),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _SignalGlyph(copy: copy, dark: true),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            copy.title,
+                            style: _type(
+                              15,
+                              color: Colors.white,
+                              weight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            copy.communication,
+                            style: _type(12, color: const Color(0xFFD3E1ED)),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ],
-              ],
-            ),
-          ),
-          // Existing native geometry is a temporary stand-in, not the 3D render.
-          const ExcludeSemantics(
-            child: RepaintBoundary(
-              child: SizedBox(
-                height: 132,
-                child: ClipRect(
-                  child: CustomPaint(painter: _StudioVehicleArt()),
-                ),
               ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.fromLTRB(18, 15, 18, 18),
-            color: const Color(0x66031B3B),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _SignalGlyph(copy: copy, dark: true),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Semantics(
-                    liveRegion: true,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          copy.title,
-                          style: _type(
-                            15,
-                            color: Colors.white,
-                            weight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          copy.communication,
-                          style: _type(12, color: const Color(0xFFD3E1ED)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -231,57 +227,94 @@ BoxDecoration _studioSurface() => BoxDecoration(
   ],
 );
 
-/// Draws an independent abstract road; only the existing car geometry is reused.
-class _StudioVehicleArt extends CustomPainter {
-  const _StudioVehicleArt();
-  static final _vehicle = PremiumVehiclePainter(
-    const AlwaysStoppedAnimation(600 / 2600),
+/// Asset stays independent of the studio background and functional labels.
+class _StudioVehicleImage extends StatelessWidget {
+  const _StudioVehicleImage();
+  @override
+  Widget build(BuildContext context) => AspectRatio(
+    aspectRatio: 2.2,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: LayoutBuilder(
+        builder: (context, constraints) => Image.asset(
+          'docs/ui_ux/premium_phase1/home_review/auto.webp',
+          key: const ValueKey('studio-vehicle-image'),
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.medium,
+          cacheWidth:
+              (constraints.maxWidth * MediaQuery.devicePixelRatioOf(context))
+                  .ceil()
+                  .clamp(1, 1000),
+          excludeFromSemantics: true,
+          errorBuilder: (context, error, stack) => const CustomPaint(
+            key: ValueKey('studio-vehicle-fallback'),
+            painter: _GuardianIsometricArt(),
+          ),
+        ),
+      ),
+    ),
   );
+}
+
+/// Static studio lighting and abstract road; no image tint or live map.
+class _StudioBackdrop extends CustomPainter {
+  const _StudioBackdrop();
   @override
   void paint(Canvas canvas, Size size) {
-    final scale = (size.width / 250).clamp(0.0, size.height / 126);
-    canvas.save();
-    canvas.translate(
-      (size.width - 250 * scale) / 2,
-      (size.height - 126 * scale) / 2,
+    final bounds = Offset.zero & size;
+    canvas.drawRect(
+      bounds,
+      Paint()
+        ..shader = const RadialGradient(
+          center: Alignment(.35, .05),
+          radius: .9,
+          colors: [Color(0xCC52728C), Color(0x44304B65), Color(0x00031B3B)],
+          stops: [0, .55, 1],
+        ).createShader(bounds),
     );
-    canvas.scale(scale);
+    final w = size.width, h = size.height;
     final road = Path()
-      ..moveTo(-50, -20)
-      ..cubicTo(40, 5, 70, 34, 125, 63)
-      ..cubicTo(180, 92, 230, 85, 300, 135);
+      ..moveTo(-.1 * w, .8 * h)
+      ..cubicTo(.22 * w, .73 * h, .8 * w, .8 * h, 1.1 * w, .5 * h);
     canvas.drawPath(
       road,
       Paint()
-        ..color = const Color(0xFF113E52)
+        ..color = const Color(0xFF0A253B)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 60,
+        ..strokeWidth = h * .14,
     );
-    for (final dy in [-25.0, 25.0]) {
+    for (final dy in [-h * .045, h * .045]) {
       canvas.drawPath(
         road.shift(Offset(0, dy)),
         Paint()
-          ..color = const Color(0x3314E0D3)
+          ..color = const Color(0x2214E0D3)
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 6,
+          ..strokeWidth = 5,
       );
       canvas.drawPath(
         road.shift(Offset(0, dy)),
         Paint()
-          ..color = const Color(0xFF64DED8)
+          ..color = const Color(0xB364DED8)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1,
       );
     }
-    final pose = PremiumVehicleMotion.atMilliseconds(600);
-    final center = PremiumVehicleMotion.project(pose.x, pose.y);
-    canvas.translate(125 - center.dx, 63 - center.dy);
-    _vehicle.paint(canvas, const Size(620, 430));
-    canvas.restore();
+    final shadow = Rect.fromCenter(
+      center: Offset(w * .52, h * .71),
+      width: w * .78,
+      height: h * .12,
+    );
+    canvas.drawOval(
+      shadow,
+      Paint()
+        ..shader = const RadialGradient(
+          colors: [Color(0xAA000C1C), Color(0x00000C1C)],
+        ).createShader(shadow),
+    );
   }
 
   @override
-  bool shouldRepaint(_StudioVehicleArt oldDelegate) => false;
+  bool shouldRepaint(_StudioBackdrop oldDelegate) => false;
 }
 
 class _StudioDevice extends StatelessWidget {
