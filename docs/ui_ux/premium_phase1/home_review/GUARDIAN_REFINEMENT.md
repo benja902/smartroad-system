@@ -1,5 +1,11 @@
 # Guardian Deck — marca, vehículo y lectura de conectividad
 
+**Pulido posterior de jerarquía y proporciones:** Guardian conserva la marca oficial alineada a la izquierda, sin avatar. Se reduce el espacio marca–saludo de 26 a 18 dp, los márgenes entre módulos de 24 a 20 dp y el área gráfica de 132 a 120 dp. En la ilustración 2.5D se ajusta el encuadre de 140 a 126 unidades: el vehículo mantiene prácticamente su tamaño aparente, sin alterar su geometría ni perspectiva. La tarjeta alinea disponibilidad y última comunicación en una columna junto al distintivo, retirando la explicación redundante inferior.
+
+Red móvil, GNSS y posición ahora comparten una sola superficie compacta. La disponibilidad del fix se muestra una vez; las coordenadas quedan como lectura secundaria bajo un divisor. Se conserva el criterio anterior de no mostrar coordenadas sin fix, con «Sin coordenadas para mostrar» en esa línea y el estado del fix en GNSS. Los datos técnicos siguen desplegables. No hay cambios de datos, reconocimiento, clasificación ni prioridad de atención/Emergencia. MAIN y las otras composiciones se conservan.
+
+Validación de este pulido: **32/32 pruebas dirigidas de Inicio satisfactorias**, incluidas alineación de marca/saludo/tarjeta, ausencia de avatar, fix no duplicado, ambas ilustraciones a 320/360/390 dp con texto 200 %, teclado, movimiento reducido, estados y prioridad crítica; análisis estático de los cuatro Dart afectados sin incidencias. La primera pasada detectó un error de ubicación del módulo al reagrupar secciones; se corrigió y la pasada completa final es satisfactoria. No se abrió Edge, generaron capturas ni utilizó dispositivo físico. **Los renders enlazados debajo corresponden al refinamiento anterior**, no a este último pulido. La revisión actual corresponde al usuario en su celular. Cambios preparados en Git preexistentes, incluido navegación, permanecen intactos; no se alteró el staging ni se hizo commit/push.
+
 Refinamiento DEV de la base elegida por el usuario; acabado e ilustración pendientes de aprobación. No se crea otra HomeScreen. MAIN conserva Inicio actual, y Actual/A/B/Signal Flow permanecen como referencias.
 
 ## Comparar los dos tratamientos

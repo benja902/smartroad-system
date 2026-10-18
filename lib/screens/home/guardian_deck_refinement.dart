@@ -67,7 +67,7 @@ class _GuardianDeck extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(22, 22, 22, 0),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -75,7 +75,7 @@ class _GuardianDeck extends StatelessWidget {
                   'Tu vehículo',
                   style: _type(13, color: const Color(0xFFC5D2E5)),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   _vehicleName(vehicle),
                   style: _type(
@@ -85,7 +85,7 @@ class _GuardianDeck extends StatelessWidget {
                   ).copyWith(letterSpacing: -.5),
                 ),
                 if (vehicle != null) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     'Placa ${vehicle!.plate}',
                     style: _type(14, color: const Color(0xFFD3E1ED)),
@@ -98,7 +98,7 @@ class _GuardianDeck extends StatelessWidget {
             child: RepaintBoundary(
               child: SizedBox(
                 key: ValueKey('guardian-art-${artwork.name}'),
-                height: 132,
+                height: 120,
                 child: ClipRect(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -114,7 +114,7 @@ class _GuardianDeck extends StatelessWidget {
           ),
           Container(
             key: const ValueKey('home-availability'),
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
             decoration: const BoxDecoration(
               color: Color(0xFF0B2B4E),
               border: Border(top: BorderSide(color: Color(0xFF31506B))),
@@ -130,27 +130,27 @@ class _GuardianDeck extends StatelessWidget {
                     Expanded(
                       child: Semantics(
                         liveRegion: true,
-                        child: Text(
-                          copy.title,
-                          style: _type(
-                            16,
-                            color: Colors.white,
-                            weight: FontWeight.w700,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              copy.title,
+                              style: _type(
+                                16,
+                                color: Colors.white,
+                                weight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              copy.communication,
+                              style: _type(13, color: const Color(0xFFD3E1ED)),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  copy.communication,
-                  style: _type(13, color: const Color(0xFFD3E1ED)),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Disponibilidad de comunicación reportada.',
-                  style: _type(12, color: const Color(0xFFB8CCDF)),
                 ),
               ],
             ),
@@ -172,14 +172,14 @@ class _GuardianIsometricArt extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final pose = PremiumVehicleMotion.atMilliseconds(600);
     final center = PremiumVehicleMotion.project(pose.x, pose.y);
-    final scale = (size.width / 250).clamp(0.0, size.height / 140);
+    final scale = (size.width / 250).clamp(0.0, size.height / 126);
     canvas.save();
     canvas.translate(
       (size.width - 250 * scale) / 2,
-      (size.height - 140 * scale) / 2,
+      (size.height - 126 * scale) / 2,
     );
     canvas.scale(scale);
-    canvas.translate(125 - center.dx, 70 - center.dy);
+    canvas.translate(125 - center.dx, 63 - center.dy);
     final corners = [
       PremiumVehicleMotion.project(pose.x - 95, pose.y - 27),
       PremiumVehicleMotion.project(pose.x + 95, pose.y - 27),
@@ -216,89 +216,118 @@ class _GuardianConnectivity extends StatelessWidget {
   Widget build(BuildContext context) {
     final modem = status?.modem;
     final gnss = status?.gnss;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Conectividad reportada',
-          style: _type(16, weight: FontWeight.w700),
-        ),
-        const SizedBox(height: 14),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final stacked = MediaQuery.textScalerOf(context).scale(14) > 21;
-            final mobile = _ConnectionReading(
-              icon: Icons.signal_cellular_alt,
-              label: 'Red móvil',
-              value: modem?.tech ?? 'Tecnología no informada',
-              detail: modem == null
-                  ? 'Registro no informado'
-                  : modem.registered
-                  ? 'Registro celular reportado'
-                  : 'Sin registro celular reportado',
-            );
-            final position = _ConnectionReading(
-              icon: Icons.satellite_alt_outlined,
-              label: 'GNSS',
-              value: gnss == null
-                  ? 'Sin datos'
-                  : gnss.fix
-                  ? 'Fix reportado'
-                  : 'Sin fix reportado',
-              detail: 'Según el dato recibido',
-            );
-            return stacked
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [mobile, const SizedBox(height: 16), position],
-                  )
-                : Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: mobile),
-                      const SizedBox(width: 20),
-                      Expanded(child: position),
-                    ],
-                  );
-          },
-        ),
-        if (status?.power?.batteryV != null ||
-            status?.modem?.rssiDbm != null ||
-            status?.storage != null)
-          ExpansionTile(
-            key: const PageStorageKey('guardian-diagnostics'),
-            tilePadding: EdgeInsets.zero,
-            shape: const Border(),
-            collapsedShape: const Border(),
-            expansionAnimationStyle: MediaQuery.disableAnimationsOf(context)
-                ? AnimationStyle.noAnimation
-                : const AnimationStyle(duration: Duration(milliseconds: 180)),
-            title: Text(
-              'Datos técnicos recibidos',
-              style: _type(14, color: _teal),
-            ),
-            expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (status?.power?.batteryV != null)
-                _DataLine(
-                  label: 'Voltaje de batería',
-                  value: '${status!.power!.batteryV!.toStringAsFixed(2)} V',
-                ),
-              if (status?.modem?.rssiDbm != null)
-                _DataLine(
-                  label: 'Intensidad de señal',
-                  value: '${status!.modem!.rssiDbm} dBm',
-                ),
-              if (status?.storage != null)
-                _DataLine(
-                  label: 'microSD',
-                  value: status!.storage!.present
-                      ? 'Presencia reportada'
-                      : 'Ausencia reportada',
-                ),
-            ],
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 2),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Conectividad reportada',
+            style: _type(16, weight: FontWeight.w700),
           ),
-      ],
+          const SizedBox(height: 12),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final stacked = MediaQuery.textScalerOf(context).scale(14) > 21;
+              final mobile = _ConnectionReading(
+                icon: Icons.signal_cellular_alt,
+                label: 'Red móvil',
+                value: modem?.tech ?? 'Tecnología no informada',
+                detail: modem == null
+                    ? 'Registro no informado'
+                    : modem.registered
+                    ? 'Registro celular reportado'
+                    : 'Sin registro celular reportado',
+              );
+              final position = _ConnectionReading(
+                icon: Icons.satellite_alt_outlined,
+                label: 'GNSS',
+                value: gnss == null
+                    ? 'Sin datos'
+                    : gnss.fix
+                    ? 'Fix reportado'
+                    : 'Sin fix reportado',
+                detail: 'Según el dato recibido',
+              );
+              return stacked
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [mobile, const SizedBox(height: 14), position],
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: mobile),
+                        const SizedBox(width: 20),
+                        Expanded(child: position),
+                      ],
+                    );
+            },
+          ),
+          const SizedBox(height: 14),
+          const Divider(height: 1, color: _line),
+          Padding(
+            key: const ValueKey('home-position'),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Posición recibida', style: _type(12, color: _ink)),
+                const SizedBox(height: 4),
+                Text(
+                  gnss == null
+                      ? 'Sin datos de ubicación'
+                      : !gnss.fix
+                      ? 'Sin coordenadas para mostrar'
+                      : '${gnss.latitude.toStringAsFixed(5)}, ${gnss.longitude.toStringAsFixed(5)}',
+                  style: _type(13),
+                ),
+              ],
+            ),
+          ),
+          if (status?.power?.batteryV != null ||
+              status?.modem?.rssiDbm != null ||
+              status?.storage != null)
+            ExpansionTile(
+              key: const PageStorageKey('guardian-diagnostics'),
+              tilePadding: EdgeInsets.zero,
+              shape: const Border(),
+              collapsedShape: const Border(),
+              expansionAnimationStyle: MediaQuery.disableAnimationsOf(context)
+                  ? AnimationStyle.noAnimation
+                  : const AnimationStyle(duration: Duration(milliseconds: 180)),
+              title: Text(
+                'Datos técnicos recibidos',
+                style: _type(14, color: _teal),
+              ),
+              expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (status?.power?.batteryV != null)
+                  _DataLine(
+                    label: 'Voltaje de batería',
+                    value: '${status!.power!.batteryV!.toStringAsFixed(2)} V',
+                  ),
+                if (status?.modem?.rssiDbm != null)
+                  _DataLine(
+                    label: 'Intensidad de señal',
+                    value: '${status!.modem!.rssiDbm} dBm',
+                  ),
+                if (status?.storage != null)
+                  _DataLine(
+                    label: 'microSD',
+                    value: status!.storage!.present
+                        ? 'Presencia reportada'
+                        : 'Ausencia reportada',
+                  ),
+              ],
+            ),
+        ],
+      ),
     );
   }
 }
@@ -325,7 +354,7 @@ class _ConnectionReading extends StatelessWidget {
           ),
         ],
       ),
-      const SizedBox(height: 8),
+      const SizedBox(height: 6),
       Text(value, style: _type(15, weight: FontWeight.w700)),
       const SizedBox(height: 3),
       Text(detail, style: _type(12, color: _ink)),

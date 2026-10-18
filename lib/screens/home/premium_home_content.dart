@@ -105,7 +105,11 @@ class PremiumHomeContent extends StatelessWidget {
                           const SizedBox(height: 20),
                           attention!,
                         ],
-                        const SizedBox(height: 24),
+                        SizedBox(
+                          height: variant == HomePreviewVariant.guardianDeck
+                              ? 20
+                              : 24,
+                        ),
                         if (crafted)
                           editorial
                               ? _SignalFlow(vehicle: vehicle, status: status)
@@ -123,20 +127,29 @@ class PremiumHomeContent extends StatelessWidget {
                           const SizedBox(height: 20),
                           vehicleSection,
                         ],
-                        const SizedBox(height: 24),
-                        if (crafted)
+                        SizedBox(
+                          height: variant == HomePreviewVariant.guardianDeck
+                              ? 20
+                              : 24,
+                        ),
+                        if (variant == HomePreviewVariant.guardianDeck)
+                          _GuardianConnectivity(status: status)
+                        else if (crafted)
                           _SignatureSection(
                             editorial: editorial,
                             child: _PositionReport(status: status),
                           )
                         else
                           _PositionReport(status: status),
-                        const SizedBox(height: 20),
-                        if (variant == HomePreviewVariant.guardianDeck)
-                          _GuardianConnectivity(status: status)
-                        else
+                        if (variant != HomePreviewVariant.guardianDeck) ...[
+                          const SizedBox(height: 20),
                           _Connectivity(status: status),
-                        const SizedBox(height: 28),
+                        ],
+                        SizedBox(
+                          height: variant == HomePreviewVariant.guardianDeck
+                              ? 22
+                              : 28,
+                        ),
                         if (eventError) ...[
                           Semantics(
                             liveRegion: true,

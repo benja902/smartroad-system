@@ -50,7 +50,7 @@ class _SignatureMasthead extends StatelessWidget {
             ),
           ],
         ),
-      const SizedBox(height: 26),
+      SizedBox(height: editorial ? 26 : 18),
       Text(
         'Hola, ${name.isEmpty ? 'Usuario' : name}',
         style: _type(

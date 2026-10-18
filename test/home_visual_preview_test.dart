@@ -106,6 +106,39 @@ Widget presentation(
 
 void main() {
   testWidgets(
+    'Guardian aligns brand and content; connectivity owns position without duplicate fix',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        presentation(
+          HomePreviewVariant.guardianDeck,
+          status: MockDataSeed.initialDeviceStatus,
+          guardianArtwork: GuardianArtwork.isometric,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final brand = tester.getTopLeft(
+        find.byKey(const ValueKey('guardian-official-brand')),
+      );
+      final greeting = tester.getTopLeft(find.text('Hola, Persona'));
+      final deck = tester.getTopLeft(
+        find.byKey(const ValueKey('home-guardian-deck')),
+      );
+      expect(brand.dx, greeting.dx);
+      expect(brand.dx, deck.dx);
+      expect(find.byIcon(Icons.person), findsNothing);
+      await reveal(tester, find.byKey(const ValueKey('home-position')));
+      expect(find.text('Fix reportado'), findsOneWidget);
+      expect(find.text('Posición recibida'), findsOneWidget);
+      expect(find.text('Posición incluida en el dato recibido.'), findsNothing);
+      expect(find.text('LTE'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
     'Guardian impact icon does not imply resolution; acknowledgement uses visibility',
     (tester) async {
       final repo = MockEventRepository();
@@ -296,7 +329,14 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('SDA reportado desconectado'), findsOneWidget);
         await reveal(tester, find.byKey(const ValueKey('home-position')));
-        expect(find.text('Sin fix GNSS en el dato recibido'), findsOneWidget);
+        expect(
+          find.text(
+            variant == HomePreviewVariant.guardianDeck
+                ? 'Sin fix reportado'
+                : 'Sin fix GNSS en el dato recibido',
+          ),
+          findsOneWidget,
+        );
         expect(find.text('0.00000, 0.00000'), findsNothing);
         final incident = repo.triggerCrash(severity: AccidentSeverity.moderado);
         await tester.pumpAndSettle();
