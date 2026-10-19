@@ -1,0 +1,97 @@
+name: urbes
+
+x-runtime: &runtime
+  image: ${URBES_IMAGE:-urbes-backend:local}
+  restart: unless-stopped
+  init: true
+  stop_grace_period: 20s
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  logging: &logs
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: '3'
+  secrets: [firebase_admin]
+  healthcheck:
+    test: [CMD, node, -e, "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+    interval: 30s
+    timeout: 5s
+    start_period: 20s
+    retries: 3
+
+services:
+  http-api:
+    <<: *runtime
+    environment:
+      BACKEND_MODE: http-api
+      BACKEND_DEPLOYMENT: compose
+      PORT: '8080'
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:?Set the Firebase project explicitly}
+      DATABASE_URL: ${DATABASE_URL:?Set the RTDB HTTPS URL}
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase_admin
+      CONTACT_OPERATIONS_ENABLED: ${CONTACT_OPERATIONS_ENABLED:-false}
+      CONTACT_PUBLIC_URL: https://${PUBLIC_DOMAIN:?Set the public DNS hostname}
+      HTTP_TRUST_PROXY_IP: ${PROXY_IP:-172.30.42.2}
+    networks:
+      proxy:
+        ipv4_address: ${API_IP:-172.30.42.3}
+    # Deliberately no ports: Caddy is the only public entry point.
+
+  caddy:
+    image: caddy:2.11.7-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    logging: *logs
+    environment:
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:?Set the public DNS hostname}
+    ports:
+      - '${CADDY_BIND_ADDRESS:-0.0.0.0}:${HTTP_PORT:-80}:80'
+      - '${CADDY_BIND_ADDRESS:-0.0.0.0}:${HTTPS_PORT:-443}:443'
+    volumes:
+      - type: bind
+        source: ${CADDYFILE_PATH:-./Caddyfile}
+        target: /etc/caddy/Caddyfile
+        read_only: true
+        bind:
+          create_host_path: false
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      proxy:
+        ipv4_address: ${PROXY_IP:-172.30.42.2}
+    depends_on:
+      http-api:
+        condition: service_healthy
+
+  mqtt-bridge:
+    <<: *runtime
+    profiles: [mqtt]
+    env_file:
+      - path: ${MQTT_ENV_FILE:-/etc/urbes/mqtt.env}
+        required: false
+    environment:
+      BACKEND_MODE: mqtt-bridge
+      BACKEND_DEPLOYMENT: compose
+      PORT: '8080'
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:?Set the Firebase project explicitly}
+      DATABASE_URL: ${DATABASE_URL:?Set the RTDB HTTPS URL}
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase_admin
+      CONTACT_OPERATIONS_ENABLED: 'false'
+    networks: [mqtt]
+    # Stop the local consumer before explicitly starting this profile. No inbound ports.
+
+secrets:
+  firebase_admin:
+    file: ${FIREBASE_CREDENTIALS_FILE:?Set an external readable credential file path}
+
+networks:
+  proxy:
+    ipam:
+      config:
+        - subnet: ${PROXY_SUBNET:-172.30.42.0/24}
+  mqtt: {}
+
+volumes:
+  caddy_data: {}
+  caddy_config: {}

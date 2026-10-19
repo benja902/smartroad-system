@@ -1,0 +1,10 @@
+**
+!package.json
+!package-lock.json
+!index.js
+!backend.js
+!mqtt_bridge.js
+!contact_operations.js
+!event_writer.js
+!mqtt_event_normalizer.js
+!association_resolver.js

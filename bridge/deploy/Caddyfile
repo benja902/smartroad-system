@@ -1,0 +1,8 @@
+https://{$PUBLIC_DOMAIN} {
+    reverse_proxy http-api:8080 {
+        header_up Host {$PUBLIC_DOMAIN}
+        header_up X-Forwarded-Proto {scheme}
+        header_up -Forwarded
+    }
+    # Access logs intentionally not enabled: never log bearer tokens or request bodies.
+}

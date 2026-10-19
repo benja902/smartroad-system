@@ -4,7 +4,7 @@ Estado: implementacion local pendiente de revision independiente. No despliegue 
 
 ## Contrato y autoridad
 
-Se reutiliza el listener HTTP de bridge/index.js. GET / conserva la sonda de salud.
+Se reutiliza el listener HTTP del backend iniciado por bridge/index.js. GET / conserva la sonda de salud.
 POST /contacts/accept recibe solamente vehicleId; el UID procede de verifyIdToken(token, true).
 POST /contacts/revoke recibe vehicleId y contactUid; el actor debe ser propietario del vehiculo.
 El parametro administrator existe exclusivamente para invocacion administrativa interna, nunca en HTTP.
@@ -35,7 +35,7 @@ La comprobacion posterior tampoco bloquea futuras escrituras de un administrador
 
 ## Bloqueo de integracion real
 
-El handler de operaciones solo se habilita con ambos emuladores en loopback y proyecto demo-; en otros casos devuelve 503.
+La preparacion cloud incorpora dos modos de arranque en el mismo backend: mqtt-bridge y http-api. Solo http-api sirve operaciones de contactos. Se conserva el acceso con ambos emuladores en loopback y proyecto demo-. El acceso real requiere habilitacion explicita (desactivada por defecto), identidad de proyecto y despliegue Compose, origen publico HTTPS configurado y comprobacion de IP TCP del proxy privado, Host y protocolo. Caddy es la unica entrada publica; ver bridge/deploy/README.md. Ninguna operacion real se ha habilitado ni desplegado; ver bridge/README.md.
 Flutter no configura endpoint por defecto y rechaza HTTP antes de obtener tokens; no sigue redirects.
 Los controles mutadores permanecen deshabilitados/ocultos sin endpoint seguro o doble de prueba.
 Las reglas LOCALES bloquean contactIncidents incluso para active. No se modificaron las publicadas.

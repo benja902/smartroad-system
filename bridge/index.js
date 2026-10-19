@@ -1,162 +1,38 @@
-// Puente MQTT -> Firebase Realtime Database para el equipo SDA.
-//
-// Mantiene una única conexión MQTT persistente al broker (HiveMQ Cloud),
-// escribe en Realtime Database con el contrato de docs/device_contract.md,
-// y proyecta las cancelaciones sobre el original mediante transacciones para
-// que funcionen sin importar el orden de llegada. No implementa `comandos`
-// (ping/position/diag on-demand) — queda fuera del MVP.
-//
-// Requiere una cuenta de servicio con permiso de escritura en Realtime
-// Database (bypassa las reglas de seguridad, igual que el Admin SDK).
+import { existsSync, accessSync, statSync, constants } from 'node:fs';
 import { loadEnvFile } from 'node:process';
-
-import mqtt from 'mqtt';
-import http from 'node:http';
+import { initializeApp, applicationDefault, deleteApp } from 'firebase-admin/app';
+import { getDatabase } from 'firebase-admin/database';
 import { getAuth } from 'firebase-admin/auth';
-import { createContactHandler, createContactRecovery, reconcileContactIndexes } from './contact_operations.js';
-import { initializeApp, applicationDefault } from 'firebase-admin/app';
-import { getDatabase, ServerValue } from 'firebase-admin/database';
-import {
-  CancellationProjectionError, ingestMqttEvent, reconcileStoredCancellations,
-  reconcileCriticalReadIndex,
-  reconcileChronologicalReadIndex,
-} from './event_writer.js';
-import { MqttEventValidationError } from './mqtt_event_normalizer.js';
-import { AssociationLookupError, resolveAssociation } from './association_resolver.js';
-// Carga las variables locales desde .env
-loadEnvFile('.env');
-const DATABASE_URL = process.env.DATABASE_URL;
-if (!DATABASE_URL) {
-  console.error('Falta la variable de entorno DATABASE_URL (URL de tu Realtime Database).');
-  process.exit(1);
-}
+import { readBackendConfig, startBackend } from './backend.js';
 
-initializeApp({ credential: applicationDefault(), databaseURL: DATABASE_URL });
-const db = getDatabase();
-
-// Operations are enabled only against both local emulators and a fictitious project.
-const localContacts = process.env.FIREBASE_DATABASE_EMULATOR_HOST === '127.0.0.1:19000' &&
-  process.env.FIREBASE_AUTH_EMULATOR_HOST === '127.0.0.1:19099' &&
-  process.env.GCLOUD_PROJECT?.startsWith('demo-');
-const recoverContacts = createContactRecovery({
-  enabled: localContacts,
-  reconcile: () => reconcileContactIndexes(db),
-  scheduleRecovery: scheduleCancellationRecovery,
-});
-let recoveryTimer;
-async function recoverCancellations() {
-  recoveryTimer = undefined;
-  void recoverContacts();
-  try {
-    await reconcileStoredCancellations(db, {
-      reportDiagnostic: (code) => console.warn('diagnóstico MQTT:', code),
-      serverTimestamp: ServerValue.TIMESTAMP,
-    });
-    await reconcileCriticalReadIndex(db);
-    await reconcileChronologicalReadIndex(db);
-  } catch (error) {
-    console.error('conciliación de eventos fallida:', error.name);
-    scheduleCancellationRecovery();
+// Preserve the local bridge workflow. Compose injects configuration and mounts credentials.
+let app, backend;
+try {
+  if ((process.env.BACKEND_DEPLOYMENT ?? 'local') === 'local' && existsSync('.env')) loadEnvFile('.env');
+  const config = readBackendConfig();
+  if (config.deployment === 'compose') {
+    try {
+      accessSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, constants.R_OK);
+      if (!statSync(process.env.GOOGLE_APPLICATION_CREDENTIALS).isFile()) throw Error();
+    } catch { throw Object.assign(new Error(), { name: 'BackendConfigurationError', code: 'EXTERNAL_CREDENTIALS_UNREADABLE' }); }
   }
+  app = initializeApp({ credential: applicationDefault(), databaseURL: config.databaseURL,
+    ...(config.projectId ? { projectId: config.projectId } : {}),
+  });
+  backend = await startBackend({ config, db: getDatabase(app), auth: getAuth(app) });
+  console.log('backend listo:', config.mode);
+  let stopping = false;
+  const shutdown = async () => {
+    if (stopping) return;
+    stopping = true;
+    try { await backend.stop(); await deleteApp(app); }
+    catch { process.exitCode = 1; }
+  };
+  process.once('SIGTERM', shutdown);
+  process.once('SIGINT', shutdown);
+} catch (error) {
+  console.error('BACKEND_START_FAILED:', error?.code?.startsWith('INVALID_') ||
+    error?.name === 'BackendConfigurationError' ? error.code : 'CONFIGURATION_OR_STARTUP_FAILED');
+  if (app) await deleteApp(app).catch(() => {});
+  process.exitCode = 1;
 }
-
-function scheduleCancellationRecovery() {
-  if (recoveryTimer) return;
-  recoveryTimer = setTimeout(recoverCancellations, 30000);
-}
-
-// Recupera cancelaciones pendientes y el índice de lectura a partir de events.
-// No depende de que el broker vuelva a entregar un mensaje.
-void recoverCancellations();
-
-const PREFIX = process.env.MQTT_PREFIX ?? 'sda';
-const HOST = process.env.MQTT_HOST;
-const USER = process.env.MQTT_USER ?? 'lilygo';
-const PASS = process.env.MQTT_PASS;
-
-if (!HOST || !PASS) {
-  console.error('Faltan MQTT_HOST y/o MQTT_PASS.');
-  process.exit(1);
-}
-
-// clean:false solicita una sesión persistente al broker. El PUBACK del cliente
-// MQTT no espera a que termine este listener asíncrono ni la escritura RTDB.
-const cliente = mqtt.connect(`mqtts://${HOST}:8883`, {
-  clientId: 'puente-urbes-sda-1',
-  username: USER,
-  password: PASS,
-  clean: false,
-  keepalive: 60,
-  reconnectPeriod: 5000,
-  rejectUnauthorized: true,
-});
-
-cliente.on('connect', () => {
-  cliente.subscribe(
-    [`${PREFIX}/+/event`, `${PREFIX}/+/status`, `${PREFIX}/+/position`, `${PREFIX}/+/availability`],
-    { qos: 1 },
-  );
-  console.log('puente conectado al broker MQTT');
-});
-
-cliente.on('error', (e) => console.error('mqtt error:', e.message));
-cliente.on('reconnect', () => console.log('mqtt reconectando...'));
-
-cliente.on('message', async (topico, cuerpo) => {
-  const partes = topico.split('/');
-  const deviceId = partes[1];
-  const hoja = partes.slice(2).join('/');
-
-  try {
-    if (hoja === 'availability') {
-      await db.ref(`devices/${deviceId}`).update({
-        online: cuerpo.toString() === 'online',
-        lastSeen: ServerValue.TIMESTAMP,
-      });
-      return;
-    }
-
-    if (hoja === 'event') {
-      const { written } = await ingestMqttEvent(topico, cuerpo, {
-        db, resolveAssociation: (id) => resolveAssociation(db, id),
-        serverTimestamp: ServerValue.TIMESTAMP,
-        scheduleRecovery: scheduleCancellationRecovery,
-        prefix: PREFIX, reportDiagnostic: (code) => console.warn('diagnóstico MQTT:', code),
-      });
-      console.log(written ? 'evento guardado' : 'evento duplicado');
-      return;
-    }
-
-    const datos = JSON.parse(cuerpo.toString());
-
-    if (hoja === 'status') {
-      // El payload de `status` ya usa exactamente los mismos nombres de
-      // campo top-level que espera DeviceStatus.fromJson (state, fw,
-      // sensors, inputs, outputs, sd, modem, gnss, power, system) — se
-      // reenvía tal cual, sin transformar.
-      const { id, ts, ...resto } = datos;
-      await db.ref(`devices/${deviceId}`).update({ ...resto, lastSeen: ServerValue.TIMESTAMP });
-    } else if (hoja === 'position') {
-      await db.ref(`devices/${deviceId}`).update({ gnss: datos.position, lastSeen: ServerValue.TIMESTAMP });
-    }
-  } catch (e) {
-    if (e instanceof MqttEventValidationError) {
-      console.warn('mensaje MQTT inválido:', e.code);
-    } else if (e instanceof CancellationProjectionError) {
-      console.error('proyección de cancelación fallida; conciliación programada');
-      scheduleCancellationRecovery();
-    } else if (e instanceof AssociationLookupError) {
-      console.error('consulta administrativa fallida:', e.code);
-    } else {
-      console.error('procesamiento MQTT fallido:', e.name);
-    }
-  }
-});
-
-// Sonda de salud para Cloud Run.
-http
-  .createServer(createContactHandler({ db, auth: getAuth(),
-    health: () => cliente.connected, scheduleRecovery: scheduleCancellationRecovery,
-    localEmulator: localContacts,
-  }))
-  .listen(process.env.PORT ?? 8080);

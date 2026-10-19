@@ -138,9 +138,9 @@ export function createContactRecovery({ reconcile, scheduleRecovery, enabled = t
   };
 }
 
-// Real activation is deliberately unavailable in this increment. Never trust forwarded headers.
+// Trust only the configured private TCP peer; forwarded headers never establish trust themselves.
 export function createContactHandler({ db, auth, health, scheduleRecovery,
-  localEmulator = false }) {
+  localEmulator = false, realOperations = false, publicHost, trustedProxyIp }) {
   return async (req, res) => {
     const path = req.url?.split('?')[0];
     if (req.method === 'GET' && path === '/') { res.writeHead(health() ? 200 : 503).end(); return; }
@@ -151,7 +151,11 @@ export function createContactHandler({ db, auth, health, scheduleRecovery,
     if (!action) { send(404, { code: 'NOT_FOUND' }); return; }
     if (req.method !== 'POST') { send(405, { code: 'METHOD_NOT_ALLOWED' }); return; }
     const loopback = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress);
-    if (!localEmulator || !loopback) { send(503, { code: 'LOCAL_EMULATOR_ONLY' }); return; }
+    const peer = req.socket.remoteAddress?.replace(/^::ffff:/, '');
+    const proxyHttps = realOperations && trustedProxyIp && peer === trustedProxyIp &&
+      publicHost && req.headers.host === publicHost &&
+      req.headers['x-forwarded-proto'] === 'https';
+    if (!(localEmulator && loopback) && !proxyHttps) { send(503, { code: 'OPERATIONS_DISABLED_OR_INSECURE' }); return; }
     try {
       const match = /^Bearer ([^\s]+)$/.exec(req.headers.authorization ?? '');
       if (!match) throw new ContactOperationError('UNAUTHENTICATED', 401);
