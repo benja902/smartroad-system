@@ -63,7 +63,7 @@
     },
     "contactIncidents": {
       "$vehicleId": {
-        ".read": "auth != null && root.child('vehicleContacts').child($vehicleId).child(auth.uid).child('status').val() === 'active'",
+        ".read": false,
         ".write": false
       }
     },

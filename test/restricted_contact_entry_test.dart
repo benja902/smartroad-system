@@ -10,6 +10,7 @@ import 'package:smartroad/models/device_status.dart';
 import 'package:smartroad/models/user_model.dart';
 import 'package:smartroad/models/vehicle_model.dart';
 import 'package:smartroad/repositories/auth_repository.dart';
+import 'package:smartroad/repositories/firebase/firebase_contact_operations.dart';
 import 'package:smartroad/repositories/device_repository.dart';
 import 'package:smartroad/repositories/event_repository.dart';
 import 'package:smartroad/repositories/firebase/firebase_contact_relation_repository.dart';
@@ -63,6 +64,7 @@ class _Auth extends Fake implements AuthRepository {
     if (signOutError != null) throw signOutError!;
     change(null);
   }
+
   @override
   Future<UserModel> signIn(String email, String password) async {
     if (pendingSignIn != null) return pendingSignIn!.future;
@@ -116,6 +118,9 @@ class _Harness {
   final devices = _Devices();
   final invitations = <String, StreamController<PendingInvitationResolution>>{};
   final references = <String>[];
+  FirebaseContactOperations? operations;
+  ContactRelationReader? statusReader;
+  VehicleContactsReader? ownerContactsReader;
   _Harness(UserModel? user) : auth = _Auth(user);
 
   Future<void> mount(WidgetTester tester) async {
@@ -132,6 +137,9 @@ class _Harness {
     await tester.pumpWidget(
       AppProviders(
         authRepository: auth,
+        contactOperations: operations,
+        contactRelationReader: statusReader,
+        vehicleContactsReader: ownerContactsReader,
         vehicleRepository: vehicles,
         eventRepository: events,
         deviceRepository: devices,
@@ -182,11 +190,137 @@ class _Harness {
 }
 
 void main() {
-  testWidgets('existing Login signs a contact into the restricted entry', (tester) async {
+  testWidgets(
+    'acceptance waits for confirmed relation and late reply cannot undo revocation',
+    (tester) async {
+      final h = _Harness(contact);
+      final changes = StreamController<ContactRelationResolution>.broadcast(
+        sync: true,
+      );
+      addTearDown(changes.close);
+      h.statusReader = (_) => changes.stream;
+      final pending = Completer<void>();
+      var calls = 0;
+      h.operations = FirebaseContactOperations(
+        perform: (action, ref, target) async {
+          expect(action, 'accept');
+          expect(ref, 'vehicle-test');
+          expect(target, isNull);
+          calls++;
+          await pending.future;
+        },
+      );
+      await h.mount(tester);
+      await h.restricted(tester);
+      await h.lookup(tester);
+      changes.add((loading: false, status: 'pending'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Aceptar invitaci\u00f3n'));
+      await tester.pump();
+      expect(calls, 1);
+      expect(find.textContaining('Relaci\u00f3n activa.'), findsNothing);
+      changes.add((loading: false, status: 'active'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Relaci\u00f3n activa.'), findsOneWidget);
+      changes.add((loading: false, status: 'revoked'));
+      await tester.pumpAndSettle();
+      pending.completeError(StateError('late acceptance response'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('La autorizaci\u00f3n fue revocada'),
+        findsOneWidget,
+      );
+      expect(find.text('Aceptar invitaci\u00f3n'), findsNothing);
+      h.assertRestricted(tester);
+    },
+  );
+
+  testWidgets(
+    'late failed acceptance after UID change does not restore old invitation',
+    (tester) async {
+      final h = _Harness(contact);
+      final pending = Completer<void>();
+      h.operations = FirebaseContactOperations(
+        perform: (_, _, _) => pending.future,
+      );
+      await h.mount(tester);
+      await h.restricted(tester);
+      await h.lookup(tester);
+      h.invitations['vehicle-test']!.add((loading: false, pending: true));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Aceptar invitaci\u00f3n'));
+      await tester.pump();
+      h.auth.change(
+        const UserModel(id: 'new-user', name: 'New', email: 'new@example.test'),
+      );
+      await tester.pump();
+      await tester.pump();
+      await h.restricted(tester);
+      pending.completeError(StateError('late failure'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('No se pudo confirmar la operaci\u00f3n'),
+        findsNothing,
+      );
+      expect(find.text('Aceptar invitaci\u00f3n'), findsNothing);
+      h.assertRestricted(tester);
+    },
+  );
+
+  testWidgets(
+    'owner revokes pending contact after confirmation and waits for RTDB',
+    (tester) async {
+      final h = _Harness(owner);
+      final contacts = StreamController<Map<String, String>>.broadcast(
+        sync: true,
+      );
+      addTearDown(contacts.close);
+      h.ownerContactsReader = (_) => contacts.stream;
+      final pending = Completer<void>();
+      var calls = 0;
+      h.operations = FirebaseContactOperations(
+        perform: (action, ref, target) async {
+          expect(action, 'revoke');
+          expect(ref, 'vehicle-test');
+          expect(target, 'contact-test');
+          calls++;
+          await pending.future;
+        },
+      );
+      await h.mount(tester);
+      h.vehicles.streams[owner.id]!.add(vehicle);
+      await tester.pumpAndSettle();
+      GoRouter.of(tester.element(find.byType(HomeScreen))).push('/contacts');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      contacts.add({'contact-test': 'pending'});
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Revocar'));
+      await tester.pumpAndSettle();
+      expect(calls, 0);
+      await tester.tap(find.text('Revocar').last);
+      await tester.pump();
+      expect(calls, 1);
+      pending.complete();
+      await tester.pumpAndSettle();
+      expect(find.text('pending'), findsOneWidget);
+      contacts.add({'contact-test': 'revoked'});
+      await tester.pumpAndSettle();
+      expect(find.text('revoked'), findsOneWidget);
+      expect(find.text('Revocar'), findsNothing);
+    },
+  );
+
+  testWidgets('existing Login signs a contact into the restricted entry', (
+    tester,
+  ) async {
     final h = _Harness(null);
     await h.mount(tester);
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField).at(0), 'contact@example.test');
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'contact@example.test',
+    );
     await tester.enterText(find.byType(TextFormField).at(1), 'fake-password');
     await tester.tap(find.text('Iniciar sesión'));
     await tester.pump();
@@ -197,14 +331,19 @@ void main() {
     expect(find.byType(LoginScreen), findsNothing);
   });
 
-  testWidgets('failed sign-out clears local access and displays an error', (tester) async {
+  testWidgets('failed sign-out clears local access and displays an error', (
+    tester,
+  ) async {
     final h = _Harness(contact);
     await h.mount(tester);
     await h.restricted(tester);
     h.auth.signOutError = StateError('sign-out failed');
     await tester.tap(find.text('Cerrar sesión'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('No se pudo comprobar tu acceso'), findsOneWidget);
+    expect(
+      find.textContaining('No se pudo comprobar tu acceso'),
+      findsOneWidget,
+    );
     expect(find.byType(TextField), findsNothing);
     h.assertRestricted(tester);
   });

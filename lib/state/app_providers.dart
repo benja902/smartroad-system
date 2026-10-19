@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 import '../repositories/auth_repository.dart';
+import '../repositories/firebase/firebase_contact_operations.dart';
 import '../repositories/device_repository.dart';
 import '../repositories/event_repository.dart';
 import '../repositories/firebase/firebase_auth_repository.dart';
@@ -36,6 +37,9 @@ class AppProviders extends StatelessWidget {
   final EventRepository? eventRepository;
   final VehicleRepository? vehicleRepository;
   final PendingInvitationReader? pendingInvitationReader;
+  final ContactRelationReader? contactRelationReader;
+  final VehicleContactsReader? vehicleContactsReader;
+  final FirebaseContactOperations? contactOperations;
 
   /// DEV explicitly keeps its existing mock composition.
   final bool enforceAccess;
@@ -48,6 +52,9 @@ class AppProviders extends StatelessWidget {
     this.eventRepository,
     this.vehicleRepository,
     this.pendingInvitationReader,
+    this.contactRelationReader,
+    this.vehicleContactsReader,
+    this.contactOperations,
     this.enforceAccess = true,
   });
 
@@ -111,6 +118,26 @@ class AppProviders extends StatelessWidget {
             pendingInvitationReader ??
             FirebaseContactRelationRepository()
                 .watchPendingInvitationResolution,
+      ),
+      Provider<FirebaseContactOperations>(
+        create: (_) => contactOperations ?? FirebaseContactOperations(),
+      ),
+      Provider<ContactRelationReader>(
+        create: (ctx) =>
+            contactRelationReader ??
+            (pendingInvitationReader != null
+                ? (ref) => pendingInvitationReader!(ref).map(
+                    (r) => (
+                      loading: r.loading,
+                      status: r.pending ? 'pending' : null,
+                    ),
+                  )
+                : FirebaseContactRelationRepository().watchOwnRelation),
+      ),
+      Provider<VehicleContactsReader>(
+        create: (_) =>
+            vehicleContactsReader ??
+            FirebaseContactRelationRepository().watchVehicleContacts,
       ),
       ChangeNotifierProvider(
         create: (ctx) => SessionProvider(ctx.read<AuthRepository>()),

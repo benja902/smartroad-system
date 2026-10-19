@@ -12,6 +12,8 @@ import { loadEnvFile } from 'node:process';
 
 import mqtt from 'mqtt';
 import http from 'node:http';
+import { getAuth } from 'firebase-admin/auth';
+import { createContactHandler, createContactRecovery, reconcileContactIndexes } from './contact_operations.js';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getDatabase, ServerValue } from 'firebase-admin/database';
 import {
@@ -32,9 +34,19 @@ if (!DATABASE_URL) {
 initializeApp({ credential: applicationDefault(), databaseURL: DATABASE_URL });
 const db = getDatabase();
 
+// Operations are enabled only against both local emulators and a fictitious project.
+const localContacts = process.env.FIREBASE_DATABASE_EMULATOR_HOST === '127.0.0.1:19000' &&
+  process.env.FIREBASE_AUTH_EMULATOR_HOST === '127.0.0.1:19099' &&
+  process.env.GCLOUD_PROJECT?.startsWith('demo-');
+const recoverContacts = createContactRecovery({
+  enabled: localContacts,
+  reconcile: () => reconcileContactIndexes(db),
+  scheduleRecovery: scheduleCancellationRecovery,
+});
 let recoveryTimer;
 async function recoverCancellations() {
   recoveryTimer = undefined;
+  void recoverContacts();
   try {
     await reconcileStoredCancellations(db, {
       reportDiagnostic: (code) => console.warn('diagnóstico MQTT:', code),
@@ -143,7 +155,8 @@ cliente.on('message', async (topico, cuerpo) => {
 
 // Sonda de salud para Cloud Run.
 http
-  .createServer((req, res) => {
-    res.writeHead(cliente.connected ? 200 : 503).end();
-  })
+  .createServer(createContactHandler({ db, auth: getAuth(),
+    health: () => cliente.connected, scheduleRecovery: scheduleCancellationRecovery,
+    localEmulator: localContacts,
+  }))
   .listen(process.env.PORT ?? 8080);

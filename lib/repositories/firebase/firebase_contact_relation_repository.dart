@@ -3,6 +3,14 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:firebase_database/firebase_database.dart';
 
+typedef ContactRelationResolution = ({bool loading, String? status});
+typedef ContactRelationReader = Stream<ContactRelationResolution> Function(
+  String reference,
+);
+typedef VehicleContactsReader = Stream<Map<String, String>> Function(
+  String vehicleId,
+);
+
 typedef PendingInvitationResolution = ({bool loading, bool pending});
 typedef PendingInvitationReader = Stream<PendingInvitationResolution> Function(
   String reference,
@@ -35,12 +43,35 @@ class FirebaseContactRelationRepository {
   /// UI consumers must distinguish an unresolved read from confirmed absence.
   Stream<PendingInvitationResolution> watchPendingInvitationResolution(
     String vehicleId,
-  ) {
+  ) =>
+      watchOwnRelation(vehicleId)
+          .map((r) => (loading: r.loading, pending: r.status == 'pending'));
+
+  // Owner-only list. RTDB rules remain authoritative for this read.
+  Stream<Map<String, String>> watchVehicleContacts(String vehicleId) {
+    if (!_isKey(vehicleId)) return Stream.value(const {});
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return Stream.value(const {});
+    return _contactsRef.child(vehicleId).onValue.map((event) {
+      if (_auth.currentUser?.uid != uid) return <String, String>{};
+      final value = event.snapshot.value;
+      if (value is! Map) return <String, String>{};
+      return <String, String>{
+        for (final entry in value.entries)
+          if (entry.key is String &&
+              entry.value is Map &&
+              ['pending', 'active', 'revoked'].contains(entry.value['status']))
+            entry.key as String: entry.value['status'] as String,
+      };
+    });
+  }
+
+  Stream<ContactRelationResolution> watchOwnRelation(String vehicleId) {
     if (!_isKey(vehicleId)) {
-      return Stream.value((loading: false, pending: false));
+      return Stream.value((loading: false, status: null));
     }
 
-    late StreamController<(int, PendingInvitationResolution)> controller;
+    late StreamController<(int, ContactRelationResolution)> controller;
     StreamSubscription<fb_auth.User?>? authSubscription;
     StreamSubscription<DatabaseEvent>? relationSubscription;
     String? sessionUid;
@@ -48,15 +79,15 @@ class FirebaseContactRelationRepository {
     var resultVersion = 0;
     var cancelled = false;
 
-    void emit(bool pending, {bool loading = false}) =>
-        controller.add((++resultVersion, (loading: loading, pending: pending)));
+    void emit(String? status, {bool loading = false}) =>
+        controller.add((++resultVersion, (loading: loading, status: status)));
 
     void clearSession() {
       sessionGeneration++;
       sessionUid = null;
       relationSubscription?.cancel();
       relationSubscription = null;
-      emit(false, loading: _auth.currentUser != null);
+      emit(null, loading: _auth.currentUser != null);
     }
 
     void followUser(fb_auth.User? user) {
@@ -88,27 +119,40 @@ class FirebaseContactRelationRepository {
             (event) {
               if (!isCurrentSession()) return;
               final value = event.snapshot.value;
+              final pending =
+                  value is Map &&
+                  value['status'] == 'pending' &&
+                  value['activeFrom'] == null &&
+                  value['revokedAt'] == null;
+              final revoked =
+                  value is Map &&
+                  value['status'] == 'revoked' &&
+                  value['revokedAt'] is num &&
+                  (value['revokedAt'] as num).isFinite;
               emit(
-                value is Map &&
-                    value['status'] == 'pending' &&
-                    value['activeFrom'] == null &&
-                    value['revokedAt'] == null,
+                pending
+                    ? 'pending'
+                    : _isActive(value)
+                    ? 'active'
+                    : revoked
+                    ? 'revoked'
+                    : null,
               );
             },
             onError: (Object error, StackTrace stackTrace) {
               if (!isCurrentSession()) return;
-              emit(false);
+              emit(null);
               controller.addError(error, stackTrace);
             },
             onDone: () {
-              if (isCurrentSession()) emit(false);
+              if (isCurrentSession()) emit(null);
             },
           );
     }
 
-    controller = StreamController<(int, PendingInvitationResolution)>(
+    controller = StreamController<(int, ContactRelationResolution)>(
       onListen: () {
-        emit(false, loading: _auth.currentUser != null);
+        emit(null, loading: _auth.currentUser != null);
         authSubscription = _auth.authStateChanges().listen(
           followUser,
           onError: (Object error, StackTrace stackTrace) {
@@ -135,7 +179,7 @@ class FirebaseContactRelationRepository {
               result.$1 == resultVersion &&
               sessionUid == _auth.currentUser?.uid
           ? result.$2
-          : (loading: _auth.currentUser != null, pending: false),
+          : (loading: _auth.currentUser != null, status: null),
     );
   }
 

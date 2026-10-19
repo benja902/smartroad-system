@@ -263,8 +263,8 @@ test('pending or active contact cannot directly query canonical events, even whe
   }
 });
 
-test('active contact reads only the critical projection and their own relation', async () => {
-  await assertSucceeds(db('active').ref('contactIncidents/owned').once('value'));
+test('active contact cannot read incidents before temporal eligibility is implemented', async () => {
+  await assertFails(db('active').ref('contactIncidents/owned').once('value'));
   await assertSucceeds(db('active').ref('vehicleContacts/owned/active').once('value'));
   await assertFails(db('active').ref('contactIncidents').once('value'));
   await assertFails(db('active').ref('devices/SDA-OWNED').once('value'));
@@ -297,7 +297,7 @@ test('stale discovery indexes cannot override pending or revoked relationships',
     await assertFails(db(uid).ref('devices/SDA-OWNED').once('value'));
     await assertFails(db(uid).ref('events/current').once('value'));
   }
-  await assertSucceeds(db('active').ref('contactIncidents/owned').once('value'));
+  await assertFails(db('active').ref('contactIncidents/owned').once('value'));
   await env.withSecurityRulesDisabled(async context => {
     await context.database().ref('vehicleContacts/owned/active').update({
       status: 'revoked', revokedAt: 2000,

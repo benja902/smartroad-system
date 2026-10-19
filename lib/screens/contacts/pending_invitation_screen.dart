@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_spacing.dart';
+import '../../repositories/firebase/firebase_contact_operations.dart';
 import '../../repositories/firebase/firebase_contact_relation_repository.dart';
 import '../../state/access_context_provider.dart';
 import '../../state/session_provider.dart';
@@ -20,9 +21,11 @@ class PendingInvitationScreen extends StatefulWidget {
 
 class _PendingInvitationScreenState extends State<PendingInvitationScreen> {
   final _reference = TextEditingController();
-  StreamSubscription<PendingInvitationResolution>? _subscription;
+  StreamSubscription<ContactRelationResolution>? _subscription;
   int _version = 0;
   bool _loading = false;
+  bool _accepting = false;
+  String? _relationStatus;
   bool _signingOut = false;
   String? _message;
 
@@ -32,6 +35,8 @@ class _PendingInvitationScreenState extends State<PendingInvitationScreen> {
     _subscription = null;
     _loading = false;
     _message = null;
+    _relationStatus = null;
+    _accepting = false;
   }
 
   void _lookup() {
@@ -44,11 +49,12 @@ class _PendingInvitationScreenState extends State<PendingInvitationScreen> {
     final version = _version;
     final uid = context.read<SessionProvider>().user?.id;
     if (uid == null ||
-        context.read<AccessContextProvider>().status != AccessStatus.restricted) {
+        context.read<AccessContextProvider>().status !=
+            AccessStatus.restricted) {
       return;
     }
     setState(() => _loading = true);
-    _subscription = context.read<PendingInvitationReader>()(reference).listen(
+    _subscription = context.read<ContactRelationReader>()(reference).listen(
       (result) {
         if (!mounted ||
             version != _version ||
@@ -57,10 +63,15 @@ class _PendingInvitationScreenState extends State<PendingInvitationScreen> {
         }
         setState(() {
           _loading = result.loading;
+          _relationStatus = result.status;
           _message = result.loading
               ? null
-              : result.pending
+              : result.status == 'pending'
               ? 'Tienes una invitación pendiente. Todavía no concede acceso a datos.'
+              : result.status == 'active'
+              ? 'Relaci\u00f3n activa. La consulta de incidentes todav\u00eda no est\u00e1 disponible.'
+              : result.status == 'revoked'
+              ? 'La autorizaci\u00f3n fue revocada. No concede acceso a datos.'
               : 'No hay una invitación pendiente confirmada para esta referencia.';
         });
       },
@@ -72,11 +83,39 @@ class _PendingInvitationScreenState extends State<PendingInvitationScreen> {
         }
         setState(() {
           _loading = false;
+          _relationStatus = null;
           _message =
               'No se pudo consultar la invitación. Puedes volver a intentarlo.';
         });
       },
     );
+  }
+
+  Future<void> _accept() async {
+    final version = _version;
+    final initialStatus = _relationStatus;
+    final uid = context.read<SessionProvider>().user?.id;
+    setState(() => _accepting = true);
+    try {
+      await context.read<FirebaseContactOperations>().accept(
+        _reference.text.trim(),
+      );
+    } catch (_) {
+      if (mounted &&
+          version == _version &&
+          _relationStatus == initialStatus &&
+          context.read<SessionProvider>().user?.id == uid) {
+        setState(
+          () => _message = 'No se pudo confirmar la operaci\u00f3n. Puedes consultar de nuevo.',
+        );
+      }
+    } finally {
+      if (mounted &&
+          version == _version &&
+          context.read<SessionProvider>().user?.id == uid) {
+        setState(() => _accepting = false);
+      }
+    }
   }
 
   Future<void> _signOut() async {
@@ -157,6 +196,14 @@ class _PendingInvitationScreenState extends State<PendingInvitationScreen> {
                   ),
                   if (_loading) const LinearProgressIndicator(),
                 ],
+                if (_relationStatus == 'pending' &&
+                    context.read<FirebaseContactOperations>().available)
+                  PrimaryButton(
+                    label: _accepting
+                        ? 'Aceptando...'
+                        : 'Aceptar invitaci\u00f3n',
+                    onPressed: _accepting ? null : _accept,
+                  ),
                 if (_message != null)
                   Padding(
                     padding: const EdgeInsets.symmetric(
